@@ -1,19 +1,20 @@
+const template = () => `
 <!-- end auto-generated rule header -->
-<!-- Do not manually modify this header. Run: `npm run fix:eslint-docs` -->
+<!-- Do not manually modify this header. Run: \`npm run fix:eslint-docs\` -->
 
 <!-- Remove this comment, add more detailed description. -->
 
 ## Examples
 
-```js
+\`\`\`js
 // ❌
 const foo = 'unicorn';
 
 // ✅
 const foo = '🦄';
-```
+\`\`\`
 
-```js
+\`\`\`js
 // ❌
 function foo() {
 	var replace = 'me';
@@ -24,4 +25,7 @@ function foo() {
 function foo() {
 	return 'me';
 }
-```
+\`\`\`
+`.trimStart();
+
+export default template;

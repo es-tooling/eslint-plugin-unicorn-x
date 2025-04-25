@@ -1,3 +1,4 @@
+const template = () => `
 import outdent from 'outdent';
 import {getTester} from './utils/test.js';
 
@@ -11,3 +12,6 @@ test.snapshot({
 		'const foo = "unicorn";',
 	],
 });
+`.trimStart();
+
+export default template;

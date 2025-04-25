@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {camelCase} from 'lodash-es';
+import {camelCase} from 'scule';
 import {outdent} from 'outdent';
 
 const DIRECTORY = new URL('../rules/', import.meta.url);
