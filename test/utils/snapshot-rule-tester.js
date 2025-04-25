@@ -158,56 +158,51 @@ class SnapshotRuleTester {
 			);
 		}
 
-		for (const [index, testCase] of invalid.entries()) {
-			const {code, options, filename, only} = testCase;
+		test.for(invalid)('invalid(%#): $code', (testCase) => {
+			const {code, options, filename} = testCase;
 			const verifyConfig = getVerifyConfig(ruleId, rule, testerConfig, testCase);
 			const runVerify = code => verify(code, verifyConfig, {filename});
 
-			(only ? test.only : test)(
-				`invalid(${index + 1}): ${code}`,
-				() => {
-					const {linter, messages} = runVerify(code);
+			const {linter, messages} = runVerify(code);
 
-					assert.notDeepEqual(messages, [], 'Invalid case should have at least one error.');
-					const {fixed, output} = fixable ? linter.verifyAndFix(code, verifyConfig, {filename}) : {fixed: false};
+			assert.notDeepEqual(messages, [], 'Invalid case should have at least one error.');
+			const {fixed, output} = fixable ? linter.verifyAndFix(code, verifyConfig, {filename}) : {fixed: false};
 
-					expect(`\n${printCode(code)}\n`).toMatchSnapshot();
+			expect(`\n${printCode(code)}\n`).toMatchSnapshot('Code');
 
-					if (filename) {
-						expect(`\n${filename}\n`).toMatchSnapshot();
-					}
+			if (filename) {
+				expect(`\n${filename}\n`).toMatchSnapshot('Filename');
+			}
 
-					if (Array.isArray(options)) {
-						expect(`\n${JSON.stringify(options, undefined, 2)}\n`).toMatchSnapshot();
-					}
+			if (Array.isArray(options)) {
+				expect(`\n${JSON.stringify(options, undefined, 2)}\n`).toMatchSnapshot('Options');
+			}
 
-					if (fixable && fixed) {
-						runVerify(output);
-						expect(`\n${printCode(output)}\n`).toMatchSnapshot();
-					}
+			if (fixable && fixed) {
+				runVerify(output);
+				expect(`\n${printCode(output)}\n`).toMatchSnapshot('Output');
+			}
 
-					for (const [_index, message] of messages.entries()) {
-						let messageForSnapshot = visualizeEslintMessage(code, message);
+			for (const [index, message] of messages.entries()) {
+				let messageForSnapshot = visualizeEslintMessage(code, message);
 
-						const {suggestions = []} = message;
+				const {suggestions = []} = message;
 
-						for (const [index, suggestion] of suggestions.entries()) {
-							const output = applyFix(code, suggestion);
-							runVerify(output);
+				for (const [index, suggestion] of suggestions.entries()) {
+					const output = applyFix(code, suggestion);
+					runVerify(output);
 
-							messageForSnapshot += outdent`
-								\n
-								${'-'.repeat(80)}
-								Suggestion ${index + 1}/${suggestions.length}: ${suggestion.desc}
-								${printCode(output)}
-							`;
-						}
+					messageForSnapshot += outdent`
+						\n
+						${'-'.repeat(80)}
+						Suggestion ${index + 1}/${suggestions.length}: ${suggestion.desc}
+						${printCode(output)}
+					`;
+				}
 
-						expect(`\n${messageForSnapshot}\n`).toMatchSnapshot();
-					}
-				},
-			);
-		}
+				expect(`\n${messageForSnapshot}\n`).toMatchSnapshot(`Error ${index + 1}/${messages.length}`);
+			}
+		});
 	}
 }
 
