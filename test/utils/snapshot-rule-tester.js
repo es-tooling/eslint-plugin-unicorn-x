@@ -1,4 +1,5 @@
 import path from 'node:path';
+import {test, assert, expect} from 'vitest';
 import {Linter} from 'eslint';
 import {codeFrameColumns} from '@babel/code-frame';
 import outdent from 'outdent';
@@ -134,13 +135,12 @@ function verify(code, verifyConfig, {filename}) {
 }
 
 class SnapshotRuleTester {
-	constructor(test, testerConfig) {
-		this.test = test;
+	constructor(testerConfig) {
 		this.testerConfig = testerConfig;
 	}
 
 	run(ruleId, rule, tests) {
-		const {test, testerConfig} = this;
+		const {testerConfig} = this;
 		const fixable = rule.meta && rule.meta.fixable;
 
 		const {valid, invalid} = normalizeTests(tests);
@@ -151,9 +151,9 @@ class SnapshotRuleTester {
 
 			(only ? test.only : test)(
 				`valid(${index + 1}): ${code}`,
-				t => {
+				() => {
 					const {messages} = verify(code, verifyConfig, {filename});
-					t.deepEqual(messages, [], 'Valid case should not have errors.');
+					assert.deepEqual(messages, [], 'Valid case should not have errors.');
 				},
 			);
 		}
@@ -165,28 +165,28 @@ class SnapshotRuleTester {
 
 			(only ? test.only : test)(
 				`invalid(${index + 1}): ${code}`,
-				t => {
+				() => {
 					const {linter, messages} = runVerify(code);
 
-					t.notDeepEqual(messages, [], 'Invalid case should have at least one error.');
+					assert.notDeepEqual(messages, [], 'Invalid case should have at least one error.');
 					const {fixed, output} = fixable ? linter.verifyAndFix(code, verifyConfig, {filename}) : {fixed: false};
 
-					t.snapshot(`\n${printCode(code)}\n`, 'Input');
+					expect(`\n${printCode(code)}\n`).toMatchSnapshot();
 
 					if (filename) {
-						t.snapshot(`\n${filename}\n`, 'Filename');
+						expect(`\n${filename}\n`).toMatchSnapshot();
 					}
 
 					if (Array.isArray(options)) {
-						t.snapshot(`\n${JSON.stringify(options, undefined, 2)}\n`, 'Options');
+						expect(`\n${JSON.stringify(options, undefined, 2)}\n`).toMatchSnapshot();
 					}
 
 					if (fixable && fixed) {
 						runVerify(output);
-						t.snapshot(`\n${printCode(output)}\n`, 'Output');
+						expect(`\n${printCode(output)}\n`).toMatchSnapshot();
 					}
 
-					for (const [index, message] of messages.entries()) {
+					for (const [_index, message] of messages.entries()) {
 						let messageForSnapshot = visualizeEslintMessage(code, message);
 
 						const {suggestions = []} = message;
@@ -203,7 +203,7 @@ class SnapshotRuleTester {
 							`;
 						}
 
-						t.snapshot(`\n${messageForSnapshot}\n`, `Error ${index + 1}/${messages.length}`);
+						expect(`\n${messageForSnapshot}\n`).toMatchSnapshot();
 					}
 				},
 			);
