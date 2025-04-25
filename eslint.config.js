@@ -1,12 +1,12 @@
 import globals from 'globals';
-import xo from 'eslint-config-xo';
+import eslintjs from '@eslint/js';
 import eslintPlugin from 'eslint-plugin-eslint-plugin';
 import jsdoc from 'eslint-plugin-jsdoc';
 import internalRules from './scripts/internal-rules/index.js';
 import unicorn from './index.js';
 
 const config = [
-	...xo,
+	eslintjs.configs.recommended,
 	unicorn.configs.recommended,
 	internalRules,
 	{
@@ -39,7 +39,6 @@ const config = [
 			'unicorn/consistent-function-scoping': 'off',
 			'import/order': 'off',
 			'func-names': 'off',
-			'@stylistic/function-paren-newline': 'off',
 		},
 	},
 	{

@@ -132,5 +132,7 @@ try {
 			'.',
 			...filesToOpen,
 		], {cwd: ROOT});
-	} catch {}
+	} catch {
+		// do nothing
+	}
 }
