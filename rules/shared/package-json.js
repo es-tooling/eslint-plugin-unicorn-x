@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import {findUpSync} from 'find-up-simple';
+import * as find from 'empathic/find';
 
 const directoryCache = new Map();
 const dataCache = new Map();
@@ -17,7 +17,7 @@ export function readPackageJson(dirname) {
 	if (directoryCache.has(dirname)) {
 		packageJsonPath = directoryCache.get(dirname);
 	} else {
-		packageJsonPath = findUpSync('package.json', {cwd: dirname, type: 'file'});
+		packageJsonPath = find.up('package.json', {cwd: dirname});
 		directoryCache.set(dirname, packageJsonPath);
 	}
 

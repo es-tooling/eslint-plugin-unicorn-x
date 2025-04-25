@@ -1,4 +1,4 @@
-const ISSUE_LINK_PREFIX = 'https://github.com/sindresorhus/eslint-plugin-unicorn/issues/new?';
+const ISSUE_LINK_PREFIX = 'https://github.com/es-tooling/eslint-plugin-unicorn-x/issues/new?';
 
 export default function assertToken(token, {test, expected, ruleId}) {
 	if (test?.(token)) {

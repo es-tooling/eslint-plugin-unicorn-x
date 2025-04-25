@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import enquirer from 'enquirer';
 import {template} from 'lodash-es';
 import openEditor from 'open-editor';
-import spawn from 'nano-spawn';
+import {x} from 'tinyexec';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(dirname, '..');
@@ -127,7 +127,7 @@ try {
 } catch {
 	// https://github.com/sindresorhus/open-editor/issues/15
 	try {
-		await spawn('code', [
+		await x('code', [
 			'--new-window',
 			'.',
 			...filesToOpen,

@@ -1,4 +1,4 @@
-import {upperFirst} from './utils/lodash.js';
+import {pascalCase} from 'scule';
 
 const MESSAGE_ID_INVALID_EXPORT = 'invalidExport';
 const messages = {
@@ -7,7 +7,7 @@ const messages = {
 
 const nameRegexp = /^(?:[A-Z][\da-z]*)*Error$/;
 
-const getClassName = name => upperFirst(name).replace(/(?:error|)$/i, 'Error');
+const getClassName = name => pascalCase(name).replace(/(?:error|)$/i, 'Error');
 
 const getConstructorMethod = className => `
 	constructor() {

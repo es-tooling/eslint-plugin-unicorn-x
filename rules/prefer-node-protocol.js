@@ -1,4 +1,4 @@
-import isBuiltinModule from 'is-builtin-module';
+import {isBuiltin} from 'node:module';
 import {
 	isStaticRequire,
 	isMethodCall,
@@ -9,6 +9,12 @@ const messages = {
 	[MESSAGE_ID]: 'Prefer `node:{{moduleName}}` over `{{moduleName}}`.',
 };
 const NODE_PROTOCOL = 'node:';
+
+// These are being removed from node, so users should use the equivalent
+// npm package instead
+const ignoredBuiltins = new Set([
+	'punycode',
+]);
 
 const create = context => ({
 	Literal(node) {
@@ -43,8 +49,9 @@ const create = context => ({
 		if (!(
 			typeof value === 'string'
 			&& !value.startsWith(NODE_PROTOCOL)
-			&& isBuiltinModule(value)
-			&& isBuiltinModule(`${NODE_PROTOCOL}${value}`)
+			&& isBuiltin(value)
+			&& isBuiltin(`${NODE_PROTOCOL}${value}`)
+			&& !ignoredBuiltins.has(value)
 		)) {
 			return;
 		}

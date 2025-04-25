@@ -1,21 +1,16 @@
-# eslint-plugin-unicorn [![Coverage Status](https://codecov.io/gh/sindresorhus/eslint-plugin-unicorn/branch/main/graph/badge.svg)](https://codecov.io/gh/sindresorhus/eslint-plugin-unicorn/branch/main) [![npm version](https://img.shields.io/npm/v/eslint-plugin-unicorn.svg?style=flat)](https://npmjs.com/package/eslint-plugin-unicorn)
-
-<!-- markdownlint-disable-next-line no-inline-html -->
-<img src="https://cloud.githubusercontent.com/assets/170270/18659176/1cc373d0-7f33-11e6-890f-0ba35362ee7e.jpg" width="180" align="right" alt="Unicorn">
+# eslint-plugin-unicorn-x
 
 > More than 100 powerful ESLint rules
 
-You might want to check out [XO](https://github.com/xojs/xo), which includes this plugin.
-
-[**Propose or contribute a new rule ➡**](.github/contributing.md)
+A modern and lighter fork of `eslint-plugin-unicorn`.
 
 ## Install
 
 ```sh
-npm install --save-dev eslint eslint-plugin-unicorn
+npm install --save-dev eslint eslint-plugin-unicorn-x
 ```
 
-**Requires ESLint `>=9.20.0`, [flat config](https://eslint.org/docs/latest/use/configure/configuration-files), and [ESM](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c#how-can-i-make-my-typescript-project-output-esm).**
+**Requires ESLint `>=9.20.0` and [flat config](https://eslint.org/docs/latest/use/configure/configuration-files).**
 
 ## Usage
 
@@ -24,7 +19,7 @@ Use a [preset config](#preset-configs) or configure each rule in `eslint.config.
 If you don't use the preset, ensure you use the same `languageOptions` config as below.
 
 ```js
-import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import eslintPluginUnicorn from 'eslint-plugin-unicorn-x';
 import globals from 'globals';
 
 export default [
@@ -49,8 +44,8 @@ export default [
 <!-- Do not manually modify this list. Run: `npm run fix:eslint-docs` -->
 <!-- begin auto-generated rules list -->
 
-💼 [Configurations](https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config) enabled in.\
-✅ Set in the `recommended` [configuration](https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config).\
+💼 [Configurations](https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config) enabled in.\
+✅ Set in the `recommended` [configuration](https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config).\
 🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).\
 💡 Manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
 
@@ -234,16 +229,3 @@ export default [
 		},
 ];
 ```
-
-## Maintainers
-
-- [Sindre Sorhus](https://github.com/sindresorhus)
-- [Fisker Cheung](https://github.com/fisker)
-- [Bryan Mishkin](https://github.com/bmish)
-- [futpib](https://github.com/futpib)
-
-### Former
-
-- [Jeroen Engels](https://github.com/jfmengels)
-- [Sam Verschueren](https://github.com/SamVerschueren)
-- [Adam Babcock](https://github.com/MrHen)

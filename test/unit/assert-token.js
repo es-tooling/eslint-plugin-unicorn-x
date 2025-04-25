@@ -74,7 +74,7 @@ test('Error message', t => {
 		error.message.includes('extraKeyInToken'),
 		'Should not include extra key in token.',
 	);
-	const correctIssueLink = 'https://github.com/sindresorhus/eslint-plugin-unicorn/issues/new?title='
+	const correctIssueLink = 'https://github.com/es-tooling/eslint-plugin-unicorn-x/issues/new?title='
 		+ encodeURIComponent('`test-rule`: Unexpected token \'{"value":"b","type":"a"}\'');
 	t.true(
 		error.message.includes(correctIssueLink),

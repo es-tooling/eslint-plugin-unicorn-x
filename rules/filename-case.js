@@ -1,11 +1,11 @@
 import path from 'node:path';
 import {isRegExp} from 'node:util/types';
 import {
-	camelCase,
-	kebabCase,
+	pascalCase,
 	snakeCase,
-	upperFirst,
-} from './utils/lodash.js';
+	kebabCase,
+	camelCase,
+} from 'scule';
 import cartesianProductSamples from './utils/cartesian-product-samples.js';
 
 const MESSAGE_ID = 'filename-case';
@@ -15,7 +15,6 @@ const messages = {
 	[MESSAGE_ID_EXTENSION]: 'File extension `{{extension}}` is not in lowercase. Rename it to `{{filename}}`.',
 };
 
-const pascalCase = string => upperFirst(camelCase(string));
 const numberRegex = /\d+/;
 const PLACEHOLDER = '\uFFFF\uFFFF\uFFFF';
 const PLACEHOLDER_REGEX = new RegExp(PLACEHOLDER, 'i');
@@ -46,19 +45,37 @@ function ignoreNumbers(caseFunction) {
 
 const cases = {
 	camelCase: {
-		fn: camelCase,
+		fn(string) {
+			return camelCase(string, {normalize: true});
+		},
 		name: 'camel case',
 	},
 	kebabCase: {
-		fn: kebabCase,
+		fn(string) {
+			const result = kebabCase(string);
+			if (result.endsWith('-')) {
+				return result.slice(0, -1);
+			}
+
+			return result;
+		},
 		name: 'kebab case',
 	},
 	snakeCase: {
-		fn: snakeCase,
+		fn(string) {
+			const result = snakeCase(string);
+			if (result.endsWith('_')) {
+				return result.slice(0, -1);
+			}
+
+			return result;
+		},
 		name: 'snake case',
 	},
 	pascalCase: {
-		fn: pascalCase,
+		fn(string) {
+			return pascalCase(string, {normalize: true});
+		},
 		name: 'pascal case',
 	},
 };
