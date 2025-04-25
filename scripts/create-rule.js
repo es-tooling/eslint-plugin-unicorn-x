@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import enquirer from 'enquirer';
-import {template} from 'lodash-es';
 import openEditor from 'open-editor';
 import {x} from 'tinyexec';
 
@@ -26,13 +25,11 @@ function checkFiles(ruleId) {
 	}
 }
 
-function renderTemplate({source, target, data}) {
-	const templateFile = path.join(dirname, `template/${source}`);
+async function renderTemplate({source, target, data}) {
 	const targetFile = path.join(ROOT, target);
-	const templateContent = fs.readFileSync(templateFile, 'utf8');
+	const module_ = await import(`./template/${source}.js`);
 
-	const compiled = template(templateContent);
-	const content = compiled(data);
+	const content = module_.default(data);
 	return fs.writeFileSync(targetFile, content);
 }
 
@@ -101,18 +98,18 @@ const data = await getData();
 const {id} = data;
 
 checkFiles(id);
-renderTemplate({
-	source: 'documentation.md.jst',
+await renderTemplate({
+	source: 'documentation',
 	target: `docs/rules/${id}.md`,
 	data,
 });
-renderTemplate({
-	source: 'rule.js.jst',
+await renderTemplate({
+	source: 'rule',
 	target: `rules/${id}.js`,
 	data,
 });
-renderTemplate({
-	source: 'test.js.jst',
+await renderTemplate({
+	source: 'test',
 	target: `test/${id}.js`,
 	data,
 });
