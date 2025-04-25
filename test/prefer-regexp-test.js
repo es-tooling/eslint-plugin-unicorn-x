@@ -178,11 +178,10 @@ test.vue({
 
 const supportsUnicodeSets = (() => {
 	try {
-		// eslint-disable-next-line prefer-regex-literals -- Can't test with regex literal
 		return new RegExp('.', 'v').unicodeSets;
-	} catch {}
-
-	return false;
+	} catch {
+		return false;
+	}
 })();
 // These cases can be auto-fixed in environments supports `v` flag (eg, Node.js v20),
 // But will use suggestions instead in environments doesn't support `v` flag.

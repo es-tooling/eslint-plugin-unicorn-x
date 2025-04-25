@@ -18,9 +18,9 @@ const TEST_URL_BASES = [
 const isSafeToAddDotSlashToUrl = (url, base) => {
 	try {
 		return new URL(url, base).href === new URL(DOT_SLASH + url, base).href;
-	} catch {}
-
-	return false;
+	} catch {
+		return false;
+	}
 };
 
 const isSafeToAddDotSlash = (url, bases = TEST_URL_BASES) => bases.every(base => isSafeToAddDotSlashToUrl(url, base));
