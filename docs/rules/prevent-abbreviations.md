@@ -1,6 +1,6 @@
 # Prevent abbreviations
 
-💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config).
+💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config).
 
 🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 
@@ -11,7 +11,7 @@ Using complete words results in more readable code. Not everyone knows all your 
 
 This rule can also be used to replace terms, disallow words, etc. See the [`replacements`](#replacements) and [`extendDefaultReplacements`](#extenddefaultreplacements) options.
 
-You can find the default replacements [here](https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/rules/shared/abbreviations.js).
+You can find the default replacements [here](https://github.com/es-tooling/eslint-plugin-unicorn-x/blob/main/rules/shared/abbreviations.js).
 
 This rule is fixable only for variable names with exactly one replacement defined.
 

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {parseArgs} from 'node:util';
 import {Listr} from 'listr2';
-import spawn from 'nano-spawn';
+import {x} from 'tinyexec';
 import styleText from 'node-style-text';
 import {outdent} from 'outdent';
 import {isCI} from 'ci-info';
@@ -62,7 +62,7 @@ if (projects.length === 0) {
 }
 
 const getBranch = memoize(async dirname => {
-	const {stdout} = await spawn('git', ['branch', '--show-current'], {cwd: dirname});
+	const {stdout} = await x('git', ['branch', '--show-current'], {cwd: dirname});
 	return stdout;
 });
 
@@ -71,14 +71,14 @@ const execute = project => new Listr(
 		{
 			title: 'Cloning',
 			skip: () => fs.existsSync(project.location) ? 'Project already downloaded.' : false,
-			task: () => spawn('git', [
+			task: () => x('git', [
 				'clone',
 				project.repository,
 				'--single-branch',
 				'--depth',
 				'1',
 				project.location,
-			], {stdout: 'inherit', stderr: 'inherit'}),
+			], {nodeOptions: {stdout: 'inherit', stderr: 'inherit'}}),
 		},
 		{
 			title: 'Running eslint',

@@ -1,6 +1,5 @@
 import path from 'node:path';
 import {isRegExp} from 'node:util/types';
-import {defaultsDeep, upperFirst, lowerFirst} from './utils/lodash.js';
 import {
 	getAvailableVariableName,
 	cartesianProductSamples,
@@ -12,6 +11,7 @@ import {
 import {defaultReplacements, defaultAllowList, defaultIgnore} from './shared/abbreviations.js';
 import {renameVariable} from './fix/index.js';
 import {isStaticRequire} from './ast/index.js';
+import {upperFirst, lowerFirst} from 'scule';
 
 const MESSAGE_ID_REPLACE = 'replace';
 const MESSAGE_ID_SUGGESTION = 'suggestion';
@@ -42,12 +42,22 @@ const prepareOptions = ({
 
 	ignore = [],
 } = {}) => {
-	const mergedReplacements = extendDefaultReplacements
-		? defaultsDeep({}, replacements, defaultReplacements)
-		: replacements;
+	const mergedReplacements = new Map();
+
+	for (const [discouragedName, replacement] of Object.entries(replacements)) {
+		mergedReplacements.set(discouragedName, new Map(Object.entries(replacement)));
+	}
+
+	if (extendDefaultReplacements) {
+		for (const [discouragedName, replacement] of Object.entries(defaultReplacements)) {
+			if (!mergedReplacements.has(discouragedName)) {
+				mergedReplacements.set(discouragedName, new Map(Object.entries(replacement)));
+			}
+		}
+	}
 
 	const mergedAllowList = extendDefaultAllowList
-		? defaultsDeep({}, allowList, defaultAllowList)
+		? {...defaultAllowList, ...allowList}
 		: allowList;
 
 	ignore = [...defaultIgnore, ...ignore];
@@ -66,12 +76,7 @@ const prepareOptions = ({
 
 		checkFilenames,
 
-		replacements: new Map(
-			Object.entries(mergedReplacements).map(
-				([discouragedName, replacements]) =>
-					[discouragedName, new Map(Object.entries(replacements))],
-			),
-		),
+		replacements: mergedReplacements,
 		allowList: new Map(Object.entries(mergedAllowList)),
 
 		ignore,

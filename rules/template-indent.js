@@ -1,5 +1,4 @@
-import stripIndent from 'strip-indent';
-import indentString from 'indent-string';
+import dedent from 'dedent';
 import esquery from 'esquery';
 import {replaceTemplateElement} from './fix/index.js';
 import {isMethodCall, isCallExpression, isTaggedTemplateLiteral} from './ast/index.js';
@@ -78,12 +77,17 @@ const create = context => {
 			indent = tabs ? '\t' : '  ';
 		}
 
-		const dedented = stripIndent(joined);
+		const hasNoIndentation = /^\S/gm.test(joined);
+		let dedented = joined;
+		if (!hasNoIndentation) {
+			dedented = dedent(joined) + (joined.match(/\S([\t ]+)[\n\r]*$/)?.[1] ?? '');
+		}
+
 		const trimmed = dedented.replaceAll(new RegExp(`^${eol}|${eol}[ \t]*$`, 'g'), '');
 
 		const fixed
 			= eol
-				+ indentString(trimmed, 1, {indent: parentMargin + indent})
+				+ trimmed.replaceAll(/^(?!\s*$)/gm, parentMargin + indent)
 				+ eol
 				+ parentMargin;
 

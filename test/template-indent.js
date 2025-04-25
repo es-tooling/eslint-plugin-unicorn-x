@@ -1,5 +1,5 @@
 import outdent from 'outdent';
-import stripIndent from 'strip-indent';
+import dedent from 'dedent';
 import {getTester} from './utils/test.js';
 
 /**
@@ -7,7 +7,7 @@ The interesting things to test for this rule are whitespace and multiline templa
 
 @param {string} text
 */
-const fixInput = text => stripIndent(text)
+const fixInput = text => dedent(text)
 	.replaceAll('•', ' ')
 	.replaceAll('→→', '\t');
 

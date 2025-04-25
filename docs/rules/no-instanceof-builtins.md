@@ -1,6 +1,6 @@
 # Disallow `instanceof` with built-in objects
 
-💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config).
+💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config).
 
 🔧💡 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix) and manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
 
@@ -9,7 +9,7 @@
 
 Using `instanceof` to determine the type of an object has [limitations](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_multiple_realms).
 
-Therefore, it is recommended to use a safer method, like `Object.prototype.toString.call(foo)` or the npm package [@sindresorhus/is](https://www.npmjs.com/package/@sindresorhus/is) to determine the type of an object.
+Therefore, it is recommended to use a safer method, like `Object.prototype.toString.call(foo)` or the npm package [type-detect](https://github.com/chaijs/type-detect) to determine the type of an object.
 
 ## Examples
 
@@ -54,7 +54,7 @@ Object.prototype.toString.call(foo) === '[object Object]'; // ✅
 ```
 
 ```js
-import is from '@sindresorhus/is';
+import type from 'type-detect';
 
 foo instanceof Map; // ❌
 is(foo) === 'Map'; // ✅
