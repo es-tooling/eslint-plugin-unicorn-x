@@ -21,8 +21,8 @@ const config = {
 	],
 	urlConfigs: 'https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config',
 	// Workaround for https://github.com/bmish/eslint-doc-generator/issues/615
-	pathRuleDoc: '../docs/rules/{name}.md',
-	pathRuleList: '../readme.md',
+	pathRuleDoc: './docs/rules/{name}.md',
+	pathRuleList: './readme.md',
 };
 
 export default config;
