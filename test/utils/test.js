@@ -1,7 +1,6 @@
 import path from 'node:path';
 import url from 'node:url';
-import test from 'ava';
-import AvaRuleTester from 'eslint-ava-rule-tester';
+import {RuleTester} from 'eslint';
 import SnapshotRuleTester from './snapshot-rule-tester.js';
 import parsers from './parsers.js';
 import {DEFAULT_LANGUAGE_OPTIONS, normalizeLanguageOptions, mergeLanguageOptions} from './language-options.js';
@@ -83,7 +82,7 @@ class Tester {
 			languageOptions: mergeLanguageOptions(DEFAULT_LANGUAGE_OPTIONS, testerOptions.languageOptions),
 		};
 
-		const tester = new AvaRuleTester(test, testConfig);
+		const tester = new RuleTester(testConfig);
 
 		return tester.run(
 			ruleId,
@@ -103,7 +102,7 @@ class Tester {
 			languageOptions: mergeLanguageOptions(DEFAULT_LANGUAGE_OPTIONS, testerOptions.languageOptions),
 		};
 
-		const tester = new SnapshotRuleTester(test, testConfig);
+		const tester = new SnapshotRuleTester(testConfig);
 		const {ruleId, rule} = this;
 		return tester.run(ruleId, rule, {valid, invalid});
 	}

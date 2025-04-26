@@ -39,6 +39,7 @@ const config = [
 			'unicorn/consistent-function-scoping': 'off',
 			'import/order': 'off',
 			'func-names': 'off',
+			'no-unused-vars': 'off',
 		},
 	},
 	{

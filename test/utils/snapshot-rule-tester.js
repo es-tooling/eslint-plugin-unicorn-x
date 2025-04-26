@@ -1,4 +1,5 @@
 import path from 'node:path';
+import {test, assert, expect} from 'vitest';
 import {Linter} from 'eslint';
 import {codeFrameColumns} from '@babel/code-frame';
 import outdent from 'outdent';
@@ -134,13 +135,12 @@ function verify(code, verifyConfig, {filename}) {
 }
 
 class SnapshotRuleTester {
-	constructor(test, testerConfig) {
-		this.test = test;
+	constructor(testerConfig) {
 		this.testerConfig = testerConfig;
 	}
 
 	run(ruleId, rule, tests) {
-		const {test, testerConfig} = this;
+		const {testerConfig} = this;
 		const fixable = rule.meta && rule.meta.fixable;
 
 		const {valid, invalid} = normalizeTests(tests);
@@ -151,63 +151,58 @@ class SnapshotRuleTester {
 
 			(only ? test.only : test)(
 				`valid(${index + 1}): ${code}`,
-				t => {
+				() => {
 					const {messages} = verify(code, verifyConfig, {filename});
-					t.deepEqual(messages, [], 'Valid case should not have errors.');
+					assert.deepEqual(messages, [], 'Valid case should not have errors.');
 				},
 			);
 		}
 
-		for (const [index, testCase] of invalid.entries()) {
-			const {code, options, filename, only} = testCase;
+		test.for(invalid)('invalid(%#): $code', (testCase) => {
+			const {code, options, filename} = testCase;
 			const verifyConfig = getVerifyConfig(ruleId, rule, testerConfig, testCase);
 			const runVerify = code => verify(code, verifyConfig, {filename});
 
-			(only ? test.only : test)(
-				`invalid(${index + 1}): ${code}`,
-				t => {
-					const {linter, messages} = runVerify(code);
+			const {linter, messages} = runVerify(code);
 
-					t.notDeepEqual(messages, [], 'Invalid case should have at least one error.');
-					const {fixed, output} = fixable ? linter.verifyAndFix(code, verifyConfig, {filename}) : {fixed: false};
+			assert.notDeepEqual(messages, [], 'Invalid case should have at least one error.');
+			const {fixed, output} = fixable ? linter.verifyAndFix(code, verifyConfig, {filename}) : {fixed: false};
 
-					t.snapshot(`\n${printCode(code)}\n`, 'Input');
+			expect(`\n${printCode(code)}\n`).toMatchSnapshot('Code');
 
-					if (filename) {
-						t.snapshot(`\n${filename}\n`, 'Filename');
-					}
+			if (filename) {
+				expect(`\n${filename}\n`).toMatchSnapshot('Filename');
+			}
 
-					if (Array.isArray(options)) {
-						t.snapshot(`\n${JSON.stringify(options, undefined, 2)}\n`, 'Options');
-					}
+			if (Array.isArray(options)) {
+				expect(`\n${JSON.stringify(options, undefined, 2)}\n`).toMatchSnapshot('Options');
+			}
 
-					if (fixable && fixed) {
-						runVerify(output);
-						t.snapshot(`\n${printCode(output)}\n`, 'Output');
-					}
+			if (fixable && fixed) {
+				runVerify(output);
+				expect(`\n${printCode(output)}\n`).toMatchSnapshot('Output');
+			}
 
-					for (const [index, message] of messages.entries()) {
-						let messageForSnapshot = visualizeEslintMessage(code, message);
+			for (const [index, message] of messages.entries()) {
+				let messageForSnapshot = visualizeEslintMessage(code, message);
 
-						const {suggestions = []} = message;
+				const {suggestions = []} = message;
 
-						for (const [index, suggestion] of suggestions.entries()) {
-							const output = applyFix(code, suggestion);
-							runVerify(output);
+				for (const [index, suggestion] of suggestions.entries()) {
+					const output = applyFix(code, suggestion);
+					runVerify(output);
 
-							messageForSnapshot += outdent`
-								\n
-								${'-'.repeat(80)}
-								Suggestion ${index + 1}/${suggestions.length}: ${suggestion.desc}
-								${printCode(output)}
-							`;
-						}
+					messageForSnapshot += outdent`
+						\n
+						${'-'.repeat(80)}
+						Suggestion ${index + 1}/${suggestions.length}: ${suggestion.desc}
+						${printCode(output)}
+					`;
+				}
 
-						t.snapshot(`\n${messageForSnapshot}\n`, `Error ${index + 1}/${messages.length}`);
-					}
-				},
-			);
-		}
+				expect(`\n${messageForSnapshot}\n`).toMatchSnapshot(`Error ${index + 1}/${messages.length}`);
+			}
+		});
 	}
 }
 
