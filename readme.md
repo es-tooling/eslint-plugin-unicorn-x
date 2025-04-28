@@ -39,6 +39,22 @@ export default [
 ];
 ```
 
+## Migration from `eslint-plugin-unicorn`
+
+If you are migrating from `eslint-plugin-unicorn`, simply replace `unicorn` with `unicorn-x` in your rules and update the plugin import path:
+
+```json5
+{
+	"rules": {
+		// before
+		"unicorn/better-regex": "error",
+
+		// after
+		"unicorn-x/better-regex": "error",
+	}
+}
+```
+
 ## Rules
 
 <!-- Do not manually modify this list. Run: `npm run fix:eslint-docs` -->
