@@ -27,15 +27,15 @@ const config = [
 	{
 		rules: {
 			// https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1109#issuecomment-782689255
-			'unicorn/consistent-destructuring': 'off',
+			'unicorn-x/consistent-destructuring': 'off',
 			// https://github.com/sindresorhus/eslint-plugin-unicorn/issues/2341
-			'unicorn/escape-case': 'off',
-			'unicorn/no-hex-escape': 'off',
+			'unicorn-x/escape-case': 'off',
+			'unicorn-x/no-hex-escape': 'off',
 			// Buggy
-			'unicorn/custom-error-definition': 'off',
-			'unicorn/consistent-function-scoping': 'off',
+			'unicorn-x/custom-error-definition': 'off',
+			'unicorn-x/consistent-function-scoping': 'off',
 			// Annoying
-			'unicorn/no-keyword-prefix': 'off',
+			'unicorn-x/no-keyword-prefix': 'off',
 		},
 	},
 	{
@@ -43,8 +43,8 @@ const config = [
 			'**/*.js',
 		],
 		rules: {
-			'unicorn/prefer-module': 'off',
-			'unicorn/prefer-import-meta-properties': 'off', // We can enable this rule when we drop support for Node.js v18.
+			'unicorn-x/prefer-module': 'off',
+			'unicorn-x/prefer-import-meta-properties': 'off', // We can enable this rule when we drop support for Node.js v18.
 		},
 	},
 ];

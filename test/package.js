@@ -42,7 +42,7 @@ test('Every rule is defined in index file in alphabetical order', () => {
 		assert.ok(eslintPluginUnicorn.rules[name], `'${name}' is not exported in 'index.js'`);
 		if (!deprecatedRules.includes(name)) {
 			assert.ok(
-				eslintPluginUnicorn.configs.recommended.rules[`unicorn/${name}`],
+				eslintPluginUnicorn.configs.recommended.rules[`unicorn-x/${name}`],
 				`'${name}' is not set in the recommended config`,
 			);
 		}
@@ -189,11 +189,11 @@ test('Plugin should have metadata', () => {
 // TODO: Fix.
 // test('flat configs', t => {
 // 	assert.deepEqual(
-// 		{...getCompactConfig(eslintPluginUnicorn.configs.recommended), name: 'unicorn/recommended'},
+// 		{...getCompactConfig(eslintPluginUnicorn.configs.recommended), name: 'unicorn-x/recommended'},
 // 		{...eslintPluginUnicorn.configs.recommended, plugins: undefined},
 // 	);
 // 	assert.deepEqual(
-// 		{...getCompactConfig(eslintPluginUnicorn.configs.all), name: 'unicorn/all'},
+// 		{...getCompactConfig(eslintPluginUnicorn.configs.all), name: 'unicorn-x/all'},
 // 		{...eslintPluginUnicorn.configs.all, plugins: undefined},
 // 	);
 // });
@@ -207,7 +207,7 @@ test('rule.meta.docs.recommended should be synchronized with presets', () => {
 		const {recommended} = rule.meta.docs;
 		assert.strictEqual(typeof recommended, 'boolean', `meta.docs.recommended in '${name}' rule should be a boolean.`);
 
-		const severity = eslintPluginUnicorn.configs.recommended.rules[`unicorn/${name}`];
+		const severity = eslintPluginUnicorn.configs.recommended.rules[`unicorn-x/${name}`];
 		if (recommended) {
 			assert.strictEqual(severity, 'error', `'${name}' rule should set to 'error'.`);
 		} else {

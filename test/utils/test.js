@@ -34,7 +34,7 @@ function normalizeInvalidTest(test, rule) {
 	return {
 		// Use `null` instead of `code` to get a better message
 		// See https://github.com/eslint/eslint/blob/8a77b661bc921c3408bae01b3aa41579edfc6e58/lib/rule-tester/rule-tester.js#L847-L853
-		// eslint-disable-next-line unicorn/no-null
+		// eslint-disable-next-line unicorn-x/no-null
 		output: null,
 		...test,
 	};

@@ -13,7 +13,7 @@ test.snapshot({
 		'const array = new Array(1, 2)',
 		'const array = Array(1, 2)',
 
-		// `unicorn/new-for-builtins` cases
+		// `unicorn-x/new-for-builtins` cases
 		'const array = Array(1)',
 	],
 	invalid: [

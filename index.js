@@ -6,32 +6,32 @@ import packageJson from './package.json' with {type: 'json'};
 const deprecatedRules = createDeprecatedRules({
 	// {ruleId: {message: string, replacedBy: string[]}}
 	'no-instanceof-array': {
-		message: 'Replaced by `unicorn/no-instanceof-builtins` which covers more cases.',
-		replacedBy: ['unicorn/no-instanceof-builtins'],
+		message: 'Replaced by `unicorn-x/no-instanceof-builtins` which covers more cases.',
+		replacedBy: ['unicorn-x/no-instanceof-builtins'],
 	},
 	'no-length-as-slice-end': {
-		message: 'Replaced by `unicorn/no-unnecessary-slice-end` which covers more cases.',
-		replacedBy: ['unicorn/no-unnecessary-slice-end'],
+		message: 'Replaced by `unicorn-x/no-unnecessary-slice-end` which covers more cases.',
+		replacedBy: ['unicorn-x/no-unnecessary-slice-end'],
 	},
 });
 
 const externalRules = {
-	// Covered by `unicorn/no-negated-condition`
+	// Covered by `unicorn-x/no-negated-condition`
 	'no-negated-condition': 'off',
-	// Covered by `unicorn/no-nested-ternary`
+	// Covered by `unicorn-x/no-nested-ternary`
 	'no-nested-ternary': 'off',
 };
 
 const recommendedRules = Object.fromEntries(
 	Object.entries(rules).map(([id, rule]) => [
-		`unicorn/${id}`,
+		`unicorn-x/${id}`,
 		rule.meta.docs.recommended ? 'error' : 'off',
 	]),
 );
 
 const allRules = Object.fromEntries(
 	Object.keys(rules).map(id => [
-		`unicorn/${id}`,
+		`unicorn-x/${id}`,
 		'error',
 	]),
 );
@@ -40,7 +40,7 @@ const createConfig = (rules, flatConfigName) => ({
 	...flatConfigBase,
 	name: flatConfigName,
 	plugins: {
-		unicorn,
+		'unicorn-x': unicorn,
 	},
 	rules: {
 		...externalRules,
@@ -60,12 +60,12 @@ const unicorn = {
 };
 
 const configs = {
-	recommended: createConfig(recommendedRules, 'unicorn/recommended'),
-	all: createConfig(allRules, 'unicorn/all'),
+	recommended: createConfig(recommendedRules, 'unicorn-x/recommended'),
+	all: createConfig(allRules, 'unicorn-x/all'),
 
 	// TODO: Remove this at some point. Kept for now to avoid breaking users.
-	'flat/recommended': createConfig(recommendedRules, 'unicorn/flat/recommended'),
-	'flat/all': createConfig(allRules, 'unicorn/flat/all'),
+	'flat/recommended': createConfig(recommendedRules, 'unicorn-x/flat/recommended'),
+	'flat/all': createConfig(allRules, 'unicorn-x/flat/all'),
 };
 
 const allConfigs = {

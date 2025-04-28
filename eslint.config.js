@@ -26,17 +26,17 @@ const config = [
 	},
 	{
 		rules: {
-			'unicorn/escape-case': 'off',
-			'unicorn/expiring-todo-comments': 'off',
-			'unicorn/no-hex-escape': 'off',
-			'unicorn/no-null': 'error',
-			'unicorn/prefer-array-flat': ['error', {
+			'unicorn-x/escape-case': 'off',
+			'unicorn-x/expiring-todo-comments': 'off',
+			'unicorn-x/no-hex-escape': 'off',
+			'unicorn-x/no-null': 'error',
+			'unicorn-x/prefer-array-flat': ['error', {
 				functions: [
 					'flat',
 					'flatten',
 				],
 			}],
-			'unicorn/consistent-function-scoping': 'off',
+			'unicorn-x/consistent-function-scoping': 'off',
 			'import/order': 'off',
 			'func-names': 'off',
 			'no-unused-vars': 'off',
