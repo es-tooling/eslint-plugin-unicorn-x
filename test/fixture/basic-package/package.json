@@ -1,0 +1,15 @@
+{
+	"name": "basic-package",
+	"private": true,
+	"version": "3.2.1",
+	"description": "A very worthless package",
+	"license": "MIT",
+	"type": "module",
+	"engines": {
+		"node": ">=21.0.0"
+	},
+	"dependencies": {
+		"known-package": "^2.0.0",
+		"pre-release-package": "^1.0.0-beta.1"
+	}
+}

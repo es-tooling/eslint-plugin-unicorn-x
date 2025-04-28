@@ -60,24 +60,51 @@ test({
 		},
 		'// Expire Condition [2000-01-01]: new term name',
 		'// TODO [>2000]: We sure didnt past this version',
-		'// TODO [-empathic]: We actually use this.',
-		'// TODO [+popura]: I think we wont need a broken package.',
+		{
+			code: '// TODO [-known-package]: We actually use this.',
+			filename: './test/fixture/basic-package/foo.js',
+		},
+		{
+			code: '// TODO [+unknown-package]: I think we wont need a broken package.',
+			filename: './test/fixture/basic-package/foo.js',
+		},
 		'// TODO [semver@>1000]: Welp hopefully we wont get at that.',
 		'// TODO [semver@>=1000]: Welp hopefully we wont get at that.',
-		'// TODO [@lubien/fixture-beta-package@>=1.0.0]: we are using a pre-release',
-		'// TODO [@lubien/fixture-beta-package@>=1.0.0-gamma.1]: beta comes first from gamma',
-		'// TODO [@lubien/fixture-beta-package@>=1.0.0-beta.2]: we are in beta.1',
-		'// TODO [2200-12-12, -empathic]: Combo',
-		'// TODO [2200-12-12, -empathic, +popura]: Combo',
-		'// TODO [2200-12-12, -empathic, +popura, semver@>=1000]: Combo',
+		{
+			code: '// TODO [pre-release-package@>=1.0.0]: we are using a pre-release',
+			filename: './test/fixture/basic-package/foo.js',
+		},
+		{
+			code: '// TODO [pre-release-package@>=1.0.0-gamma.1]: beta comes first from gamma',
+			filename: './test/fixture/basic-package/foo.js',
+		},
+		{
+			code: '// TODO [pre-release-package@>=1.0.0-beta.2]: we are in beta.1',
+			filename: './test/fixture/basic-package/foo.js',
+		},
+		{
+			code: '// TODO [2200-12-12, -known-package]: Combo',
+			filename: './test/fixture/basic-package/foo.js',
+		},
+		{
+			code: '// TODO [2200-12-12, -known-package, +unknown-package]: Combo',
+			filename: './test/fixture/basic-package/foo.js',
+		},
+		{
+			code: '// TODO [2200-12-12, -known-package, +unknown-package, semver@>=1000]: Combo',
+			filename: './test/fixture/basic-package/foo.js',
+		},
 		'// TODO [engine:node@>=100]: When we start supporting only >= 10',
 		`// TODO [2200-12-12]: Multiple
 		// TODO [2200-12-12]: Lines`,
-		`/*
+		{
+			code: `/*
 		  * TODO [2200-12-12]: Yet
 		  * TODO [engine:node@>=100]: Another
-		  * TODO [+popura]: Way
+		  * TODO [+unknown-package]: Way
 		  */`,
+			filename: './test/fixture/basic-package/foo.js',
+		},
 		{
 			code: '// TODO',
 			errors: [],
@@ -198,47 +225,57 @@ test({
 		},
 		{
 			code: '// TODO [>1]: if your package.json version is >1',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [reachedPackageVersionError('>1', 'if your package.json version is >1')],
 		},
 		{
 			code: '// TODO [>1, >2]: multiple package versions',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [avoidMultiplePackageVersionsError('>1, >2', 'multiple package versions')],
 		},
 		{
 			code: '// TODO [>=1]: if your package.json version is >=1',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [reachedPackageVersionError('>=1', 'if your package.json version is >=1')],
 		},
 		{
-			code: '// TODO [+empathic]: when you install `empathic`',
-			errors: [havePackageError('empathic', 'when you install `empathic`')],
+			code: '// TODO [+known-package]: when you install `known-package`',
+			filename: './test/fixture/basic-package/foo.js',
+			errors: [havePackageError('known-package', 'when you install `known-package`')],
 		},
 		{
-			code: '// TODO [-popura]: when you uninstall `popura`',
-			errors: [dontHavePackageError('popura', 'when you uninstall `popura`')],
+			code: '// TODO [-unknown-package]: when you uninstall `unknown-package`',
+			filename: './test/fixture/basic-package/foo.js',
+			errors: [dontHavePackageError('unknown-package', 'when you uninstall `unknown-package`')],
 		},
 		{
-			code: '// TODO [empathic@>=1]: when `empathic` version is >= 1',
-			errors: [versionMatchesError('empathic >= 1', 'when `empathic` version is >= 1')],
+			code: '// TODO [known-package@>=1]: when `known-package` version is >= 1',
+			filename: './test/fixture/basic-package/foo.js',
+			errors: [versionMatchesError('known-package >= 1', 'when `known-package` version is >= 1')],
 		},
 		{
 			code: '// TODO [engine:node@>=8]: when support is for node >= 8',
 			errors: [engineMatchesError('node>=8', 'when support is for node >= 8')],
 		},
 		{
-			code: '// TODO [empathic@>0.2.0]: when `empathic` version is > 0.2.0',
-			errors: [versionMatchesError('empathic > 0.2.0', 'when `empathic` version is > 0.2.0')],
+			code: '// TODO [known-package@>0.2.0]: when `known-package` version is > 0.2.0',
+			filename: './test/fixture/basic-package/foo.js',
+			errors: [versionMatchesError('known-package > 0.2.0', 'when `known-package` version is > 0.2.0')],
 		},
 		{
-			code: '// TODO [@lubien/fixture-beta-package@>=1.0.0-alfa.1]: when `@lubien/fixture-beta-package` version is >= 1.0.0-alfa.1',
-			errors: [versionMatchesError('@lubien/fixture-beta-package >= 1.0.0-alfa.1', 'when `@lubien/fixture-beta-package` version is >= 1.0.0-alfa.1')],
+			code: '// TODO [pre-release-package@>=1.0.0-alfa.1]: when `pre-release-package` version is >= 1.0.0-alfa.1',
+			filename: './test/fixture/basic-package/foo.js',
+			errors: [versionMatchesError('pre-release-package >= 1.0.0-alfa.1', 'when `pre-release-package` version is >= 1.0.0-alfa.1')],
 		},
 		{
-			code: '// TODO [@lubien/fixture-beta-package@>=1.0.0-beta.1]: when `@lubien/fixture-beta-package` version is >= 1.0.0-beta.1',
-			errors: [versionMatchesError('@lubien/fixture-beta-package >= 1.0.0-beta.1', 'when `@lubien/fixture-beta-package` version is >= 1.0.0-beta.1')],
+			code: '// TODO [pre-release-package@>=1.0.0-beta.1]: when `pre-release-package` version is >= 1.0.0-beta.1',
+			filename: './test/fixture/basic-package/foo.js',
+			errors: [versionMatchesError('pre-release-package >= 1.0.0-beta.1', 'when `pre-release-package` version is >= 1.0.0-beta.1')],
 		},
 		{
-			code: '// TODO [@lubien/fixture-beta-package@>=1.0.0-beta.0]: when `@lubien/fixture-beta-package` version is >= 1.0.0-beta.0',
-			errors: [versionMatchesError('@lubien/fixture-beta-package >= 1.0.0-beta.0', 'when `@lubien/fixture-beta-package` version is >= 1.0.0-beta.0')],
+			code: '// TODO [pre-release-package@>=1.0.0-beta.0]: when `pre-release-package` version is >= 1.0.0-beta.0',
+			filename: './test/fixture/basic-package/foo.js',
+			errors: [versionMatchesError('pre-release-package >= 1.0.0-beta.0', 'when `pre-release-package` version is >= 1.0.0-beta.0')],
 		},
 		{
 			code: '// TODO [semver>1]: Missing @.',
@@ -309,6 +346,7 @@ test({
 		},
 		{
 			code: '// TODO [2000-01-01, >1]: Combine date with package version',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [
 				expiredTodoError('2000-01-01', 'Combine date with package version'),
 				reachedPackageVersionError('>1', 'Combine date with package version'),
@@ -317,23 +355,26 @@ test({
 		},
 		{
 			code: '// TODO [2200-12-12, >1, 2200-12-12, >2]: Multiple dates and package versions',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [
 				avoidMultipleDatesError('2200-12-12, 2200-12-12', 'Multiple dates and package versions'),
 				avoidMultiplePackageVersionsError('>1, >2', 'Multiple dates and package versions'),
 			],
 		},
 		{
-			code: '// TODO [-popura, empathic@>=1]: Combine not having a package with version match',
+			code: '// TODO [-unknown-package, known-package@>=1]: Combine not having a package with version match',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [
-				dontHavePackageError('popura', 'Combine not having a package with version match'),
-				versionMatchesError('empathic >= 1', 'Combine not having a package with version match'),
+				dontHavePackageError('unknown-package', 'Combine not having a package with version match'),
+				versionMatchesError('known-package >= 1', 'Combine not having a package with version match'),
 			],
 		},
 		{
-			code: '// TODO [+empathic, -popura]: Combine presence/absence of packages',
+			code: '// TODO [+known-package, -unknown-package]: Combine presence/absence of packages',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [
-				havePackageError('empathic', 'Combine presence/absence of packages'),
-				dontHavePackageError('popura', 'Combine presence/absence of packages'),
+				havePackageError('known-package', 'Combine presence/absence of packages'),
+				dontHavePackageError('unknown-package', 'Combine presence/absence of packages'),
 			],
 		},
 		{
@@ -345,20 +386,22 @@ test({
 			options: [{ignoreDatesOnPullRequests: false, terms: ['Expire Condition']}],
 		},
 		{
-			code: '// TODO [semver @>=1, -popura]: Package uninstalled and whitespace error',
+			code: '// TODO [semver @>=1, -unknown-package]: Package uninstalled and whitespace error',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [
-				dontHavePackageError('popura', 'Package uninstalled and whitespace error'),
+				dontHavePackageError('unknown-package', 'Package uninstalled and whitespace error'),
 				removeWhitespaceError('semver @>=1', 'Package uninstalled and whitespace error'),
 			],
 		},
 		{
-			code: '// HUGETODO [semver @>=1, engine:node@>=8, 2000-01-01, -popura, >1, +empathic, empathic@>=1]: Big mix',
+			code: '// HUGETODO [semver @>=1, engine:node@>=8, 2000-01-01, -unknown-package, >1, +known-package, known-package@>=1]: Big mix',
+			filename: './test/fixture/basic-package/foo.js',
 			errors: [
 				expiredTodoError('2000-01-01', 'Big mix'),
 				reachedPackageVersionError('>1', 'Big mix'),
-				dontHavePackageError('popura', 'Big mix'),
-				havePackageError('empathic', 'Big mix'),
-				versionMatchesError('empathic >= 1', 'Big mix'),
+				dontHavePackageError('unknown-package', 'Big mix'),
+				havePackageError('known-package', 'Big mix'),
+				versionMatchesError('known-package >= 1', 'Big mix'),
 				engineMatchesError('node>=8', 'Big mix'),
 				removeWhitespaceError('semver @>=1', 'Big mix'),
 			],
