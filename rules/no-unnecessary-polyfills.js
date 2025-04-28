@@ -39,8 +39,6 @@ const polyfills_ = Object.keys(compatData).map(feature => {
 		additionalName: additionalPolyfillNames[feature],
 	};
 });
-const polyfillWithPrefixOrSuffix =
-	/^(?:(?:mdn-polyfills\/|polyfill-)([\w-]+)|([\w-]+)-polyfill)$/i;
 const modulePrefixSuffix =
 	/(^mdn-polyfills\/|polyfill-)|(-polyfill$)/gi;
 const modulePrefixPattern = /^(?<version>[a-z]+)\d*[./-]/i;
@@ -100,7 +98,6 @@ const findPolyfill = (moduleName) => {
 	const moduleNameLower = moduleName.toLowerCase();
 	const normalisedModuleName =
 		moduleNameLower.replaceAll(modulePrefixSuffix, '');
-	const withPrefixOrSuffix = moduleNameLower.match(polyfillWithPrefixOrSuffix);
 	const modulePrefix = moduleName.match(modulePrefixPattern);
 
 	for (const polyfill of polyfills_) {
@@ -116,15 +113,14 @@ const findPolyfill = (moduleName) => {
 			return polyfill;
 		}
 
-		if (withPrefixOrSuffix) {
+		if (normalisedModuleName !== moduleNameLower) {
 			const methodOrConstructor =
 				methodName || constructorName;
 			const normalisedMethodOrConstructor =
 				normalisedMethodName || normalisedConstructorName;
-			const withPrefixOrSuffixName = withPrefixOrSuffix[1] || withPrefixOrSuffix[2];
 			if (
-				withPrefixOrSuffixName === methodOrConstructor
-				|| withPrefixOrSuffixName === normalisedMethodOrConstructor
+				normalisedModuleName === methodOrConstructor
+				|| normalisedModuleName === normalisedMethodOrConstructor
 			) {
 				return polyfill;
 			}
