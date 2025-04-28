@@ -9,7 +9,7 @@ const messages = {
 
 const getReplacement = encoding => {
 	switch (encoding.toLowerCase()) {
-		// eslint-disable-next-line unicorn/text-encoding-identifier-case
+		// eslint-disable-next-line unicorn-x/text-encoding-identifier-case
 		case 'utf-8':
 		case 'utf8': {
 			return 'utf8';
@@ -42,7 +42,7 @@ const create = () => ({
 		}
 
 		if (
-			// eslint-disable-next-line unicorn/text-encoding-identifier-case
+			// eslint-disable-next-line unicorn-x/text-encoding-identifier-case
 			node.value === 'utf-8'
 			&& node.parent.type === 'JSXAttribute'
 			&& node.parent.value === node

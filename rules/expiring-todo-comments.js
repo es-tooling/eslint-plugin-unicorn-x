@@ -7,18 +7,18 @@ import {readPackageJson} from './shared/package-json.js';
 
 const baseRule = getBuiltinRule('no-warning-comments');
 
-// `unicorn/` prefix is added to avoid conflicts with core rule
-const MESSAGE_ID_AVOID_MULTIPLE_DATES = 'unicorn/avoidMultipleDates';
-const MESSAGE_ID_EXPIRED_TODO = 'unicorn/expiredTodo';
+// `unicorn-x/` prefix is added to avoid conflicts with core rule
+const MESSAGE_ID_AVOID_MULTIPLE_DATES = 'unicorn-x/avoidMultipleDates';
+const MESSAGE_ID_EXPIRED_TODO = 'unicorn-x/expiredTodo';
 const MESSAGE_ID_AVOID_MULTIPLE_PACKAGE_VERSIONS
-	= 'unicorn/avoidMultiplePackageVersions';
-const MESSAGE_ID_REACHED_PACKAGE_VERSION = 'unicorn/reachedPackageVersion';
-const MESSAGE_ID_HAVE_PACKAGE = 'unicorn/havePackage';
-const MESSAGE_ID_DONT_HAVE_PACKAGE = 'unicorn/dontHavePackage';
-const MESSAGE_ID_VERSION_MATCHES = 'unicorn/versionMatches';
-const MESSAGE_ID_ENGINE_MATCHES = 'unicorn/engineMatches';
-const MESSAGE_ID_REMOVE_WHITESPACE = 'unicorn/removeWhitespaces';
-const MESSAGE_ID_MISSING_AT_SYMBOL = 'unicorn/missingAtSymbol';
+	= 'unicorn-x/avoidMultiplePackageVersions';
+const MESSAGE_ID_REACHED_PACKAGE_VERSION = 'unicorn-x/reachedPackageVersion';
+const MESSAGE_ID_HAVE_PACKAGE = 'unicorn-x/havePackage';
+const MESSAGE_ID_DONT_HAVE_PACKAGE = 'unicorn-x/dontHavePackage';
+const MESSAGE_ID_VERSION_MATCHES = 'unicorn-x/versionMatches';
+const MESSAGE_ID_ENGINE_MATCHES = 'unicorn-x/engineMatches';
+const MESSAGE_ID_REMOVE_WHITESPACE = 'unicorn-x/removeWhitespaces';
+const MESSAGE_ID_MISSING_AT_SYMBOL = 'unicorn-x/missingAtSymbol';
 
 // Override of core rule message with a more specific one - no prefix
 const MESSAGE_ID_CORE_RULE_UNEXPECTED_COMMENT = 'unexpectedComment';

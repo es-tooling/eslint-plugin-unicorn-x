@@ -16,7 +16,7 @@ export const isNumberLiteral = node => node.type === 'Literal' && typeof node.va
 
 export const isRegexLiteral = node => node.type === 'Literal' && Boolean(node.regex);
 
-// eslint-disable-next-line unicorn/no-null
+// eslint-disable-next-line unicorn-x/no-null
 export const isNullLiteral = node => isLiteral(node, null);
 
 export const isBigIntLiteral = node => node.type === 'Literal' && Boolean(node.bigint);

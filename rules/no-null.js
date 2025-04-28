@@ -22,7 +22,7 @@ const create = context => {
 	return {
 		Literal(node) {
 			if (
-				// eslint-disable-next-line unicorn/no-null
+				// eslint-disable-next-line unicorn-x/no-null
 				!isLiteral(node, null)
 				|| (!checkStrictEquality && isStrictEqual(node.parent))
 				// `Object.create(null)`, `Object.create(null, foo)`

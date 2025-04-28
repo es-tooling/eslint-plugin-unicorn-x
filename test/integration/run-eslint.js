@@ -55,7 +55,7 @@ const basicConfigs = [
 	{
 		rules: {
 			// This rule crashing on replace string inside `jsx` or `Unicode escape sequence`
-			'unicorn/string-content': 'off',
+			'unicorn-x/string-content': 'off',
 		},
 	},
 	{

@@ -28,7 +28,7 @@ const isEmptyObject = node =>
 			optionalCall: false,
 			optionalMember: false,
 		})
-		// eslint-disable-next-line unicorn/no-null
+		// eslint-disable-next-line unicorn-x/no-null
 		&& isLiteral(node.arguments[0], null)
 	);
 

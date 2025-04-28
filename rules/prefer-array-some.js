@@ -36,7 +36,7 @@ const isCheckingUndefined = node =>
 				node.parent.operator === '!='
 				|| node.parent.operator === '=='
 			)
-			// eslint-disable-next-line unicorn/no-null
+			// eslint-disable-next-line unicorn-x/no-null
 			&& isLiteral(node.parent.right, null)
 		)
 	);
@@ -148,7 +148,7 @@ const create = context => {
 	// `.filter(…).length !== 0`
 	context.on('BinaryExpression', binaryExpression => {
 		if (!(
-			// We assume the user already follows `unicorn/explicit-length-check`. These are allowed in that rule.
+			// We assume the user already follows `unicorn-x/explicit-length-check`. These are allowed in that rule.
 			(binaryExpression.operator === '>' || binaryExpression.operator === '!==')
 			&& binaryExpression.right.type === 'Literal'
 			&& binaryExpression.right.raw === '0'
