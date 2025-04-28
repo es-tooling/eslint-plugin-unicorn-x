@@ -31,8 +31,8 @@ export default [
 			unicorn: eslintPluginUnicorn,
 		},
 		rules: {
-			'unicorn/better-regex': 'error',
-			'unicorn/…': 'error',
+			'unicorn-x/better-regex': 'error',
+			'unicorn-x/…': 'error',
 		},
 	},
 	// …
@@ -199,14 +199,14 @@ See the [ESLint docs](https://eslint.org/docs/latest/use/configure/configuration
 This plugin exports a `recommended` config that enforces good practices.
 
 ```js
-import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import eslintPluginUnicorn from 'eslint-plugin-unicorn-x';
 
 export default [
 		// …
 		eslintPluginUnicorn.configs.recommended,
 		{
 			rules: {
-				'unicorn/better-regex': 'warn',
+				'unicorn-x/better-regex': 'warn',
 			},
 		},
 ];
@@ -217,14 +217,14 @@ export default [
 This plugin exports an `all` that makes use of all rules (except for deprecated ones).
 
 ```js
-import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import eslintPluginUnicorn from 'eslint-plugin-unicorn-x';
 
 export default [
 		// …
 		eslintPluginUnicorn.configs.all,
 		{
 			rules: {
-				'unicorn/better-regex': 'warn',
+				'unicorn-x/better-regex': 'warn',
 			},
 		},
 ];
