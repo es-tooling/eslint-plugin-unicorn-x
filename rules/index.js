@@ -188,7 +188,7 @@ const rules = {
 	'no-unnecessary-array-flat-depth': createRule(noUnnecessaryArrayFlatDepth, 'no-unnecessary-array-flat-depth'),
 	'no-unnecessary-array-splice-count': createRule(noUnnecessaryArraySpliceCount, 'no-unnecessary-array-splice-count'),
 	'no-unnecessary-await': createRule(noUnnecessaryAwait, 'no-unnecessary-await'),
-	'no-unnecessary-polyfills': createRule(noUnnecessaryPolyfills, 'no-unnecessary-polyfills'),
+	'no-unnecessary-polyfills': createRule(noUnnecessaryPolyfills, 'no-unnecessary-polyfills', true),
 	'no-unnecessary-slice-end': createRule(noUnnecessarySliceEnd, 'no-unnecessary-slice-end'),
 	'no-unreadable-array-destructuring': createRule(noUnreadableArrayDestructuring, 'no-unreadable-array-destructuring'),
 	'no-unreadable-iife': createRule(noUnreadableIife, 'no-unreadable-iife'),
