@@ -8,11 +8,12 @@ const messages = {
 	[MESSAGE_ID_SUGGESTION]: 'Remove this case.',
 };
 
-const isEmptySwitchCase = node => node.consequent.every(node => isEmptyNode(node));
+const isEmptySwitchCase = (node) =>
+	node.consequent.every((node) => isEmptyNode(node));
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
-	* SwitchStatement(switchStatement) {
+const create = (context) => ({
+	*SwitchStatement(switchStatement) {
 		const {cases} = switchStatement;
 
 		// We only check cases where the last case is the `default` case
@@ -34,7 +35,7 @@ const create = context => ({
 					{
 						messageId: MESSAGE_ID_SUGGESTION,
 						/** @param {import('eslint').Rule.RuleFixer} fixer */
-						fix: fixer => fixer.remove(node),
+						fix: (fixer) => fixer.remove(node),
 					},
 				],
 			};

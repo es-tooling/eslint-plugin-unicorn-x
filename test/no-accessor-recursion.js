@@ -274,13 +274,15 @@ test.snapshot({
 			'[this.bar = defaultValue] = array;',
 			'({property: this.bar} = object);',
 			'({property: this.bar = defaultValue} = object);',
-		].map(code => outdent`
-			class Foo {
-				set bar(v) {
-					${code}
+		].map(
+			(code) => outdent`
+				class Foo {
+					set bar(v) {
+						${code}
+					}
 				}
-			}
-		`),
+			`,
+		),
 	],
 });
 
@@ -291,9 +293,7 @@ test.snapshot({
 			parserOptions: {
 				babelOptions: {
 					parserOpts: {
-						plugins: [
-							['destructuringPrivate'],
-						],
+						plugins: [['destructuringPrivate']],
 					},
 				},
 			},
@@ -311,22 +311,32 @@ test.snapshot({
 	],
 });
 
-test.snapshot(avoidTestTitleConflict({
-	testerOptions: {
-		languageOptions: {
-			sourceType: 'commonjs',
+test.snapshot(
+	avoidTestTitleConflict(
+		{
+			testerOptions: {
+				languageOptions: {
+					sourceType: 'commonjs',
+				},
+			},
+			valid: validCases,
+			invalid: [],
 		},
-	},
-	valid: validCases,
-	invalid: [],
-}, 'commonjs'));
+		'commonjs',
+	),
+);
 
-test.snapshot(avoidTestTitleConflict({
-	testerOptions: {
-		languageOptions: {
-			sourceType: 'script',
+test.snapshot(
+	avoidTestTitleConflict(
+		{
+			testerOptions: {
+				languageOptions: {
+					sourceType: 'script',
+				},
+			},
+			valid: validCases,
+			invalid: [],
 		},
-	},
-	valid: validCases,
-	invalid: [],
-}, 'script'));
+		'script',
+	),
+);

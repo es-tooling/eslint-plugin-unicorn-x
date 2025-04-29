@@ -10,8 +10,8 @@ const baseRule = getBuiltinRule('no-warning-comments');
 // `unicorn-x/` prefix is added to avoid conflicts with core rule
 const MESSAGE_ID_AVOID_MULTIPLE_DATES = 'unicorn-x/avoidMultipleDates';
 const MESSAGE_ID_EXPIRED_TODO = 'unicorn-x/expiredTodo';
-const MESSAGE_ID_AVOID_MULTIPLE_PACKAGE_VERSIONS
-	= 'unicorn-x/avoidMultiplePackageVersions';
+const MESSAGE_ID_AVOID_MULTIPLE_PACKAGE_VERSIONS =
+	'unicorn-x/avoidMultiplePackageVersions';
 const MESSAGE_ID_REACHED_PACKAGE_VERSION = 'unicorn-x/reachedPackageVersion';
 const MESSAGE_ID_HAVE_PACKAGE = 'unicorn-x/havePackage';
 const MESSAGE_ID_DONT_HAVE_PACKAGE = 'unicorn-x/dontHavePackage';
@@ -40,12 +40,12 @@ const messages = {
 	[MESSAGE_ID_ENGINE_MATCHES]:
 		'There is a TODO match for Node.js version: {{comparison}}. {{message}}',
 	[MESSAGE_ID_REMOVE_WHITESPACE]:
-		'Avoid using whitespace on TODO argument. On \'{{original}}\' use \'{{fix}}\'. {{message}}',
+		"Avoid using whitespace on TODO argument. On '{{original}}' use '{{fix}}'. {{message}}",
 	[MESSAGE_ID_MISSING_AT_SYMBOL]:
-		'Missing \'@\' on TODO argument. On \'{{original}}\' use \'{{fix}}\'. {{message}}',
+		"Missing '@' on TODO argument. On '{{original}}' use '{{fix}}'. {{message}}",
 	...baseRule.meta.messages,
 	[MESSAGE_ID_CORE_RULE_UNEXPECTED_COMMENT]:
-		'Unexpected \'{{matchedTerm}}\' comment without any conditions: \'{{comment}}\'.',
+		"Unexpected '{{matchedTerm}}' comment without any conditions: '{{comment}}'.",
 };
 
 /** @param {string} dirname */
@@ -61,8 +61,10 @@ function getPackageHelpers(dirname) {
 
 	function parseTodoWithArguments(string, {terms}) {
 		const lowerCaseString = string.toLowerCase();
-		const lowerCaseTerms = terms.map(term => term.toLowerCase());
-		const hasTerm = lowerCaseTerms.some(term => lowerCaseString.includes(term));
+		const lowerCaseTerms = terms.map((term) => term.toLowerCase());
+		const hasTerm = lowerCaseTerms.some((term) =>
+			lowerCaseString.includes(term),
+		);
 
 		if (!hasTerm) {
 			return false;
@@ -79,7 +81,7 @@ function getPackageHelpers(dirname) {
 
 		const parsedArguments = rawArguments
 			.split(',')
-			.map(argument => parseArgument(argument.trim()));
+			.map((argument) => parseArgument(argument.trim()));
 
 		return createArgumentGroup(parsedArguments);
 	}
@@ -187,8 +189,10 @@ function getPackageHelpers(dirname) {
 }
 
 const DEPENDENCY_INCLUSION_RE = /^[+-]\s*@?\S+\/?\S+/;
-const VERSION_COMPARISON_RE = /^(?<name>@?\S\/?\S+)@(?<condition>>|>=)(?<version>\d+(?:\.\d+){0,2}(?:-[\da-z-]+(?:\.[\da-z-]+)*)?(?:\+[\da-z-]+(?:\.[\da-z-]+)*)?)/i;
-const PKG_VERSION_RE = /^(?<condition>>|>=)(?<version>\d+(?:\.\d+){0,2}(?:-[\da-z-]+(?:\.[\da-z-]+)*)?(?:\+[\da-z-]+(?:\.[\da-z-]+)*)?)\s*$/;
+const VERSION_COMPARISON_RE =
+	/^(?<name>@?\S\/?\S+)@(?<condition>>|>=)(?<version>\d+(?:\.\d+){0,2}(?:-[\da-z-]+(?:\.[\da-z-]+)*)?(?:\+[\da-z-]+(?:\.[\da-z-]+)*)?)/i;
+const PKG_VERSION_RE =
+	/^(?<condition>>|>=)(?<version>\d+(?:\.\d+){0,2}(?:-[\da-z-]+(?:\.[\da-z-]+)*)?(?:\+[\da-z-]+(?:\.[\da-z-]+)*)?)\s*$/;
 const ISO8601_DATE = /\d{4}-\d{2}-\d{2}/;
 
 function createArgumentGroup(arguments_) {
@@ -215,15 +219,10 @@ function tryToCoerceVersion(rawVersion) {
 	let version = String(rawVersion);
 
 	// Remove leading things like `^1.0.0`, `>1.0.0`
-	const leadingNoises = [
-		'>=',
-		'<=',
-		'>',
-		'<',
-		'~',
-		'^',
-	];
-	const foundTrailingNoise = leadingNoises.find(noise => version.startsWith(noise));
+	const leadingNoises = ['>=', '<=', '>', '<', '~', '^'];
+	const foundTrailingNoise = leadingNoises.find((noise) =>
+		version.startsWith(noise),
+	);
 	if (foundTrailingNoise) {
 		version = version.slice(foundTrailingNoise.length);
 	}
@@ -268,24 +267,30 @@ const DEFAULT_OPTIONS = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const options = {
 		...DEFAULT_OPTIONS,
 		date: new Date().toISOString().slice(0, 10),
 		...context.options[0],
 	};
 
-	const ignoreRegexes = options.ignore.map(
-		pattern => isRegExp(pattern) ? pattern : new RegExp(pattern, 'u'),
+	const ignoreRegexes = options.ignore.map((pattern) =>
+		isRegExp(pattern) ? pattern : new RegExp(pattern, 'u'),
 	);
 
 	const dirname = path.dirname(context.filename);
-	const {packageJson, packageDependencies, parseArgument, parseTodoMessage, parseTodoWithArguments} = getPackageHelpers(dirname);
+	const {
+		packageJson,
+		packageDependencies,
+		parseArgument,
+		parseTodoMessage,
+		parseTodoWithArguments,
+	} = getPackageHelpers(dirname);
 
 	const {sourceCode} = context;
 	const comments = sourceCode.getAllComments();
 	const unusedComments = comments
-		.filter(token => token.type !== 'Shebang')
+		.filter((token) => token.type !== 'Shebang')
 		// Block comments come as one.
 		// Split for situations like this:
 		// /*
@@ -293,12 +298,13 @@ const create = context => {
 		//  * TODO [2999-01-01]: And this
 		//  * TODO [2999-01-01]: Also this
 		//  */
-		.flatMap(comment =>
-			comment.value.split('\n').map(line => ({
+		.flatMap((comment) =>
+			comment.value.split('\n').map((line) => ({
 				...comment,
 				value: line,
 			})),
-		).filter(comment => processComment(comment));
+		)
+		.filter((comment) => processComment(comment));
 
 	// This is highly dependable on ESLint's `no-warning-comments` implementation.
 	// What we do is patch the parts we know the rule will use, `getAllComments`.
@@ -308,7 +314,8 @@ const create = context => {
 			if (property === 'sourceCode') {
 				return {
 					...sourceCode,
-					getAllComments: () => options.allowWarningComments ? [] : unusedComments,
+					getAllComments: () =>
+						options.allowWarningComments ? [] : unusedComments,
 				};
 			}
 
@@ -318,7 +325,7 @@ const create = context => {
 	const rules = baseRule.create(fakeContext);
 
 	function processComment(comment) {
-		if (ignoreRegexes.some(ignore => ignore.test(comment.value))) {
+		if (ignoreRegexes.some((ignore) => ignore.test(comment.value))) {
 			return;
 		}
 
@@ -408,8 +415,8 @@ const create = context => {
 
 			const isInclusion = ['in', 'out'].includes(dependency.condition);
 			if (isInclusion) {
-				const [trigger, messageId]
-					= dependency.condition === 'in'
+				const [trigger, messageId] =
+					dependency.condition === 'in'
 						? [hasTargetPackage, MESSAGE_ID_HAVE_PACKAGE]
 						: [!hasTargetPackage, MESSAGE_ID_DONT_HAVE_PACKAGE];
 
@@ -531,7 +538,7 @@ const create = context => {
 
 	return {
 		Program() {
-			rules.Program(); // eslint-disable-line new-cap
+			rules.Program();
 		},
 	};
 };

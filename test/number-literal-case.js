@@ -19,10 +19,7 @@ test({
 			},
 		},
 	},
-	valid: [
-		'var foo = 0777',
-		'var foo = 0888',
-	],
+	valid: ['var foo = 0777', 'var foo = 0888'],
 	invalid: [],
 });
 
@@ -51,8 +48,8 @@ const tests = {
 		'const foo = 1.2e+3',
 
 		// Not number
-		'const foo = \'0Xff\'',
-		'const foo = \'0Xffn\'',
+		"const foo = '0Xff'",
+		"const foo = '0Xffn'",
 
 		// Numeric separator
 		'const foo = 123_456',
@@ -180,8 +177,8 @@ const tests = {
 				code: 'const foo = 0XdeEd_Beefn',
 				output: 'const foo = 0xdeed_beefn',
 			},
-		].map(item => ({...item, options: [{hexadecimalValue: 'lowercase'}]})),
-	].map(item => ({...item, errors: [error]})),
+		].map((item) => ({...item, options: [{hexadecimalValue: 'lowercase'}]})),
+	].map((item) => ({...item, errors: [error]})),
 };
 
 test(tests);
@@ -190,9 +187,7 @@ test.typescript(avoidTestTitleConflict(tests, 'typescript'));
 
 test.snapshot({
 	valid: [],
-	invalid: [
-		'console.log(BigInt(0B10 + 1.2E+3) + 0XdeEd_Beefn)',
-	],
+	invalid: ['console.log(BigInt(0B10 + 1.2E+3) + 0XdeEd_Beefn)'],
 });
 
 test.snapshot({

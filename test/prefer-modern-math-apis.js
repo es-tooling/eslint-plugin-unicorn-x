@@ -4,10 +4,12 @@ import {getTester} from './utils/test.js';
 const {test} = getTester(import.meta);
 
 // `Math.log10()` and `Math.log2()`
-const duplicateLog10Test = code => [
+const duplicateLog10Test = (code) => [
 	code,
 	// `Math.log2()` test
-	code.replaceAll('Math.LOG10E', 'Math.LOG2E').replaceAll('Math.LN10', 'Math.LN2'),
+	code
+		.replaceAll('Math.LOG10E', 'Math.LOG2E')
+		.replaceAll('Math.LN10', 'Math.LN2'),
 ];
 test.snapshot({
 	valid: [
@@ -47,7 +49,7 @@ test.snapshot({
 		'Math.log() / Math.LN10',
 		'Math.log(x, extraArgument) / Math.LN10',
 		'Math.log(...x) / Math.LN10',
-	].flatMap(code => duplicateLog10Test(code)),
+	].flatMap((code) => duplicateLog10Test(code)),
 	invalid: [
 		'Math.log(x) * Math.LOG10E',
 		'Math.LOG10E * Math.log(x)',
@@ -63,7 +65,7 @@ test.snapshot({
 				);
 			}
 		`,
-	].flatMap(code => duplicateLog10Test(code)),
+	].flatMap((code) => duplicateLog10Test(code)),
 });
 
 // `Math.hypot`

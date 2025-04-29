@@ -28,10 +28,8 @@ function normalizeLanguageOptions(languageOptions) {
 
 	const {parser, parserOptions} = languageOptions;
 
-	const {
-		implementation: parserImplementation,
-		mergeParserOptions,
-	} = parser ?? {};
+	const {implementation: parserImplementation, mergeParserOptions} =
+		parser ?? {};
 
 	return cleanLanguageOptions({
 		...languageOptions,
@@ -59,4 +57,8 @@ function mergeLanguageOptions(languageOptionsA, languageOptionsB) {
 	});
 }
 
-export {DEFAULT_LANGUAGE_OPTIONS, normalizeLanguageOptions, mergeLanguageOptions};
+export {
+	DEFAULT_LANGUAGE_OPTIONS,
+	normalizeLanguageOptions,
+	mergeLanguageOptions,
+};

@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
 import {getTester} from './utils/test.js';
 
 const {test} = getTester(import.meta);
@@ -152,7 +151,9 @@ test({
 		{
 			code: 'const foo = `\\ud834${foo}\\ud834${foo}\\ud834`;',
 			output: 'const foo = `\\uD834${foo}\\uD834${foo}\\uD834`;',
-			errors: Array.from({length: 3}, () => ({messageId: MESSAGE_ID_UPPERCASE})),
+			errors: Array.from({length: 3}, () => ({
+				messageId: MESSAGE_ID_UPPERCASE,
+			})),
 		},
 		{
 			code: 'const foo = `\\\\\\ud834foo`;',
@@ -194,8 +195,11 @@ test({
 		// Many
 		{
 			code: 'const foo = `\\xAab\\xaab\\xAA${foo}\\uAaAab\\uaaaab\\uAAAAb\\u{AaAa}${foo}\\u{aaaa}b\\u{AAAA}`;',
-			output: 'const foo = `\\xAAb\\xAAb\\xAA${foo}\\uAAAAb\\uAAAAb\\uAAAAb\\u{AAAA}${foo}\\u{AAAA}b\\u{AAAA}`;',
-			errors: Array.from({length: 3}, () => ({messageId: MESSAGE_ID_UPPERCASE})),
+			output:
+				'const foo = `\\xAAb\\xAAb\\xAA${foo}\\uAAAAb\\uAAAAb\\uAAAAb\\u{AAAA}${foo}\\u{AAAA}b\\u{AAAA}`;',
+			errors: Array.from({length: 3}, () => ({
+				messageId: MESSAGE_ID_UPPERCASE,
+			})),
 		},
 
 		// Literal regex
@@ -257,7 +261,7 @@ test({
 			code: String.raw`const foo = new RegExp("/\u{1d306}/", "u")`,
 			output: String.raw`const foo = new RegExp("/\u{1D306}/", "u")`,
 		},
-	].map(item => ({errors: [{messageId: MESSAGE_ID_UPPERCASE}], ...item})),
+	].map((item) => ({errors: [{messageId: MESSAGE_ID_UPPERCASE}], ...item})),
 });
 
 // 'lowercase'
@@ -309,7 +313,7 @@ test({
 		String.raw`const foo = new RegExp("/\u{1d306}/", "u")`,
 		String.raw`const foo = new RegExp("/\ca/")`,
 		String.raw`const foo = new RegExp("/\cA/")`,
-	].map(code => ({code, options: ['lowercase']})),
+	].map((code) => ({code, options: ['lowercase']})),
 	invalid: [
 		// Literal string
 		{
@@ -402,7 +406,9 @@ test({
 		{
 			code: 'const foo = `\\uD834${FOO}\\uD834${FOO}\\uD834`;',
 			output: 'const foo = `\\ud834${FOO}\\ud834${FOO}\\ud834`;',
-			errors: Array.from({length: 3}, () => ({messageId: MESSAGE_ID_LOWERCASE})),
+			errors: Array.from({length: 3}, () => ({
+				messageId: MESSAGE_ID_LOWERCASE,
+			})),
 		},
 		{
 			code: 'const foo = `\\\\\\uD834FOO`;',
@@ -444,8 +450,11 @@ test({
 		// Many
 		{
 			code: 'const foo = `\\xAab\\xaab\\xaAb\\xAA${foo}\\uAaAab\\uaaaab\\uAAAAb\\u{AaAa}${foo}\\u{aaaa}b\\u{AAAA}`;',
-			output: 'const foo = `\\xaab\\xaab\\xaab\\xaa${foo}\\uaaaab\\uaaaab\\uaaaab\\u{aaaa}${foo}\\u{aaaa}b\\u{aaaa}`;',
-			errors: Array.from({length: 3}, () => ({messageId: MESSAGE_ID_LOWERCASE})),
+			output:
+				'const foo = `\\xaab\\xaab\\xaab\\xaa${foo}\\uaaaab\\uaaaab\\uaaaab\\u{aaaa}${foo}\\u{aaaa}b\\u{aaaa}`;',
+			errors: Array.from({length: 3}, () => ({
+				messageId: MESSAGE_ID_LOWERCASE,
+			})),
 		},
 
 		// Literal regex
@@ -507,5 +516,9 @@ test({
 			code: String.raw`const foo = new RegExp("/\u{1D306}/", "u")`,
 			output: String.raw`const foo = new RegExp("/\u{1d306}/", "u")`,
 		},
-	].map(item => ({errors: [{messageId: MESSAGE_ID_LOWERCASE}], ...item, options: ['lowercase']})),
+	].map((item) => ({
+		errors: [{messageId: MESSAGE_ID_LOWERCASE}],
+		...item,
+		options: ['lowercase'],
+	})),
 });

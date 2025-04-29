@@ -5,9 +5,13 @@ import {outdent} from 'outdent';
 
 const DIRECTORY = new URL('../rules/', import.meta.url);
 
-const rules = fs.readdirSync(DIRECTORY, {withFileTypes: true})
-	.filter(file => file.isFile() && file.name !== '.DS_Store' && file.name !== 'index.js')
-	.map(file => {
+const rules = fs
+	.readdirSync(DIRECTORY, {withFileTypes: true})
+	.filter(
+		(file) =>
+			file.isFile() && file.name !== '.DS_Store' && file.name !== 'index.js',
+	)
+	.map((file) => {
 		const filename = file.name;
 		const id = path.basename(filename, '.js');
 		const specifier = camelCase(id);
@@ -15,7 +19,7 @@ const rules = fs.readdirSync(DIRECTORY, {withFileTypes: true})
 		return {id, specifier, filename};
 	});
 
-const toObjectKey = name => name.includes('-') ? `'${name}'` : name;
+const toObjectKey = (name) => (name.includes('-') ? `'${name}'` : name);
 const content = outdent`
   // Generated file, DO NOT edit
   import {createRule} from './utils/rule.js';
@@ -29,7 +33,4 @@ const content = outdent`
   export default rules;
 `;
 
-fs.writeFileSync(
-	new URL('index.js', DIRECTORY),
-	content + '\n',
-);
+fs.writeFileSync(new URL('index.js', DIRECTORY), content + '\n');

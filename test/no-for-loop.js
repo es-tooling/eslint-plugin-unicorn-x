@@ -185,70 +185,88 @@ test({
 
 	invalid: [
 		// Use default name
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				console.log(arr[i])
-			}
-		`, outdent`
-			for (const element of arr) {
-				console.log(element)
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i += 1) {
+					console.log(arr[i])
+				}
+			`,
+			outdent`
+				for (const element of arr) {
+					console.log(element)
+				}
+			`,
+		),
 
-		testCase(outdent`
-			for (let i = 0; arr.length > i; i += 1) {
-				let el = arr[i];
-				console.log(i, el);
-			}
-		`, outdent`
-			for (let [i, el] of arr.entries()) {
-				console.log(i, el);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; arr.length > i; i += 1) {
+					let el = arr[i];
+					console.log(i, el);
+				}
+			`,
+			outdent`
+				for (let [i, el] of arr.entries()) {
+					console.log(i, el);
+				}
+			`,
+		),
 
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const el = arr[i];
-				console.log(i, el);
-			}
-		`, outdent`
-			for (const [i, el] of arr.entries()) {
-				console.log(i, el);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const el = arr[i];
+					console.log(i, el);
+				}
+			`,
+			outdent`
+				for (const [i, el] of arr.entries()) {
+					console.log(i, el);
+				}
+			`,
+		),
 
-		testCase(outdent`
-			for (let i = 0; i < arr.length; ++i) {
-				const el = arr[i];
-				console.log(i, el);
-			}
-		`, outdent`
-			for (const [i, el] of arr.entries()) {
-				console.log(i, el);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; ++i) {
+					const el = arr[i];
+					console.log(i, el);
+				}
+			`,
+			outdent`
+				for (const [i, el] of arr.entries()) {
+					console.log(i, el);
+				}
+			`,
+		),
 
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const el = arr[i];
-				console.log(el);
-			}
-		`, outdent`
-			for (const el of arr) {
-				console.log(el);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const el = arr[i];
+					console.log(el);
+				}
+			`,
+			outdent`
+				for (const el of arr) {
+					console.log(el);
+				}
+			`,
+		),
 
 		// This tests that the "whole line" removal does not happen when it should not
-		testCase(outdent`
-			for (var j = 0; j < xs.length; j = j + 1) {
-				var x = xs[j];console.log(j, x);
-			}
-		`, outdent`
-			for (var [j, x] of xs.entries()) {
-				console.log(j, x);
-			}
-		`),
+		testCase(
+			outdent`
+				for (var j = 0; j < xs.length; j = j + 1) {
+					var x = xs[j];console.log(j, x);
+				}
+			`,
+			outdent`
+				for (var [j, x] of xs.entries()) {
+					console.log(j, x);
+				}
+			`,
+		),
 
 		// Index is used outside of the loop, fixer should not apply
 		testCase(outdent`
@@ -269,385 +287,478 @@ test({
 		`),
 
 		// Complex element declarations
-		testCase(outdent`
-			for (var j = 0; j < xs.length; j = j + 1) {
-				var x = xs[j], y = ys[j];
-				console.log(j, x, y);
-			}
-		`, outdent`
-			for (var [j, x] of xs.entries()) {
-				var y = ys[j];
-				console.log(j, x, y);
-			}
-		`),
+		testCase(
+			outdent`
+				for (var j = 0; j < xs.length; j = j + 1) {
+					var x = xs[j], y = ys[j];
+					console.log(j, x, y);
+				}
+			`,
+			outdent`
+				for (var [j, x] of xs.entries()) {
+					var y = ys[j];
+					console.log(j, x, y);
+				}
+			`,
+		),
 
-		testCase(outdent`
-			for (var j = 0; j < xs.length; j = j + 1) {
-				var y = ys[j], x = xs[j];
-				console.log(j, x, y);
-			}
-		`, outdent`
-			for (var [j, x] of xs.entries()) {
-				var y = ys[j];
-				console.log(j, x, y);
-			}
-		`),
+		testCase(
+			outdent`
+				for (var j = 0; j < xs.length; j = j + 1) {
+					var y = ys[j], x = xs[j];
+					console.log(j, x, y);
+				}
+			`,
+			outdent`
+				for (var [j, x] of xs.entries()) {
+					var y = ys[j];
+					console.log(j, x, y);
+				}
+			`,
+		),
 
-		testCase(outdent`
-			for (var j = 0; j < xs.length; j = j + 1) {
-				var y = ys[j], x = xs[j], i = 10;
-				console.log(j, x, y);
-			}
-		`, outdent`
-			for (var [j, x] of xs.entries()) {
-				var y = ys[j], i = 10;
-				console.log(j, x, y);
-			}
-		`),
+		testCase(
+			outdent`
+				for (var j = 0; j < xs.length; j = j + 1) {
+					var y = ys[j], x = xs[j], i = 10;
+					console.log(j, x, y);
+				}
+			`,
+			outdent`
+				for (var [j, x] of xs.entries()) {
+					var y = ys[j], i = 10;
+					console.log(j, x, y);
+				}
+			`,
+		),
 
 		// Complex replacement without index
-		testCase(outdent`
-			for (var i = 0; i < arr.length; i++) {
-				console.log(arr[i]);
-				arr[i].doSomething();
-				counter += arr[i].total;
-				const z = arr[i];
-			}
-		`, outdent`
-			for (const z of arr) {
-				console.log(z);
-				z.doSomething();
-				counter += z.total;
-			}
-		`),
+		testCase(
+			outdent`
+				for (var i = 0; i < arr.length; i++) {
+					console.log(arr[i]);
+					arr[i].doSomething();
+					counter += arr[i].total;
+					const z = arr[i];
+				}
+			`,
+			outdent`
+				for (const z of arr) {
+					console.log(z);
+					z.doSomething();
+					counter += z.total;
+				}
+			`,
+		),
 
 		// Complex replacement with index
-		testCase(outdent`
-			for (var i = 0; i < arr.length; i++) {
-				console.log(arr[i]);
-				arr[i].doSomething();
-				counter += arr[i].total;
-				const z = arr[i];
-				const y = i + 1;
-			}
-		`, outdent`
-			for (const [i, z] of arr.entries()) {
-				console.log(z);
-				z.doSomething();
-				counter += z.total;
-				const y = i + 1;
-			}
-		`),
+		testCase(
+			outdent`
+				for (var i = 0; i < arr.length; i++) {
+					console.log(arr[i]);
+					arr[i].doSomething();
+					counter += arr[i].total;
+					const z = arr[i];
+					const y = i + 1;
+				}
+			`,
+			outdent`
+				for (const [i, z] of arr.entries()) {
+					console.log(z);
+					z.doSomething();
+					counter += z.total;
+					const y = i + 1;
+				}
+			`,
+		),
 
 		// Using array element in a child scope
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				console.log(arr[i])
-				if (Map) {
-					use(arr[i]);
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i += 1) {
+					console.log(arr[i])
+					if (Map) {
+						use(arr[i]);
+					}
 				}
-			}
-		`, outdent`
-			for (const element of arr) {
-				console.log(element)
-				if (Map) {
-					use(element);
+			`,
+			outdent`
+				for (const element of arr) {
+					console.log(element)
+					if (Map) {
+						use(element);
+					}
 				}
-			}
-		`),
+			`,
+		),
 
 		// Destructuring assignment in usage:
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const { a, b } = arr[i];
-				console.log(a, b);
-			}
-		`, outdent`
-			for (const { a, b } of arr) {
-				console.log(a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const [ a, b ] = arr[i];
-				console.log(a, b);
-			}
-		`, outdent`
-			for (const [ a, b ] of arr) {
-				console.log(a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				var { a, b } = arr[i];
-				console.log(a, b);
-			}
-		`, outdent`
-			for (var { a, b } of arr) {
-				console.log(a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				var [ a, b ] = arr[i];
-				console.log(a, b);
-			}
-		`, outdent`
-			for (var [ a, b ] of arr) {
-				console.log(a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				let { a, b } = arr[i];
-				console.log(a, b);
-			}
-		`, outdent`
-			for (let { a, b } of arr) {
-				console.log(a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				let [ a, b ] = arr[i];
-				console.log(a, b);
-			}
-		`, outdent`
-			for (let [ a, b ] of arr) {
-				console.log(a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				var { a, b } = arr[i];
-				console.log(i, a, b);
-			}
-		`, outdent`
-			for (var [i, { a, b }] of arr.entries()) {
-				console.log(i, a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				var [ a, b ] = arr[i];
-				console.log(i, a, b);
-			}
-		`, outdent`
-			for (var [i, [ a, b ]] of arr.entries()) {
-				console.log(i, a, b);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const { a, b } = arr[i];
-				console.log(a, b, i, arr[i]);
-			}
-		`, outdent`
-			for (const [i, element] of arr.entries()) {
-				const { a, b } = element;
-				console.log(a, b, i, element);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const [ a, b ] = arr[i];
-				console.log(a, b, i, arr[i]);
-			}
-		`, outdent`
-			for (const [i, element] of arr.entries()) {
-				const [ a, b ] = element;
-				console.log(a, b, i, element);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const { a, b } = arr[i];
-				console.log(a, b, arr[i]);
-			}
-		`, outdent`
-			for (const element of arr) {
-				const { a, b } = element;
-				console.log(a, b, element);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i++) {
-				const [ a, b ] = arr[i];
-				console.log(a, b, arr[i]);
-			}
-		`, outdent`
-			for (const element of arr) {
-				const [ a, b ] = element;
-				console.log(a, b, element);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const { a, b } = arr[i];
+					console.log(a, b);
+				}
+			`,
+			outdent`
+				for (const { a, b } of arr) {
+					console.log(a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const [ a, b ] = arr[i];
+					console.log(a, b);
+				}
+			`,
+			outdent`
+				for (const [ a, b ] of arr) {
+					console.log(a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					var { a, b } = arr[i];
+					console.log(a, b);
+				}
+			`,
+			outdent`
+				for (var { a, b } of arr) {
+					console.log(a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					var [ a, b ] = arr[i];
+					console.log(a, b);
+				}
+			`,
+			outdent`
+				for (var [ a, b ] of arr) {
+					console.log(a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					let { a, b } = arr[i];
+					console.log(a, b);
+				}
+			`,
+			outdent`
+				for (let { a, b } of arr) {
+					console.log(a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					let [ a, b ] = arr[i];
+					console.log(a, b);
+				}
+			`,
+			outdent`
+				for (let [ a, b ] of arr) {
+					console.log(a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					var { a, b } = arr[i];
+					console.log(i, a, b);
+				}
+			`,
+			outdent`
+				for (var [i, { a, b }] of arr.entries()) {
+					console.log(i, a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					var [ a, b ] = arr[i];
+					console.log(i, a, b);
+				}
+			`,
+			outdent`
+				for (var [i, [ a, b ]] of arr.entries()) {
+					console.log(i, a, b);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const { a, b } = arr[i];
+					console.log(a, b, i, arr[i]);
+				}
+			`,
+			outdent`
+				for (const [i, element] of arr.entries()) {
+					const { a, b } = element;
+					console.log(a, b, i, element);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const [ a, b ] = arr[i];
+					console.log(a, b, i, arr[i]);
+				}
+			`,
+			outdent`
+				for (const [i, element] of arr.entries()) {
+					const [ a, b ] = element;
+					console.log(a, b, i, element);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const { a, b } = arr[i];
+					console.log(a, b, arr[i]);
+				}
+			`,
+			outdent`
+				for (const element of arr) {
+					const { a, b } = element;
+					console.log(a, b, element);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i++) {
+					const [ a, b ] = arr[i];
+					console.log(a, b, arr[i]);
+				}
+			`,
+			outdent`
+				for (const element of arr) {
+					const [ a, b ] = element;
+					console.log(a, b, element);
+				}
+			`,
+		),
 
 		// Avoid naming collision when using default element name.
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				console.log(arr[i]);
-				const element = foo();
-				console.log(element);
-			}
-		`, outdent`
-			for (const element_ of arr) {
-				console.log(element_);
-				const element = foo();
-				console.log(element);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i += 1) {
+					console.log(arr[i]);
+					const element = foo();
+					console.log(element);
+				}
+			`,
+			outdent`
+				for (const element_ of arr) {
+					console.log(element_);
+					const element = foo();
+					console.log(element);
+				}
+			`,
+		),
 
 		// Avoid naming collision when using default element name (different scope).
-		testCase(outdent`
-			function element(element_) {
+		testCase(
+			outdent`
+				function element(element_) {
+					for (let i = 0; i < arr.length; i += 1) {
+						console.log(arr[i], element);
+					}
+				}
+			`,
+			outdent`
+				function element(element_) {
+					for (const element__ of arr) {
+						console.log(element__, element);
+					}
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				let element;
+				function foo() {
+					for (let i = 0; i < arr.length; i += 1) {
+						console.log(arr[i]);
+					}
+				}
+			`,
+			outdent`
+				let element;
+				function foo() {
+					for (const element_ of arr) {
+						console.log(element_);
+					}
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i += 1) {
+					function element__(element) {
+						console.log(arr[i], element);
+					}
+				}
+			`,
+			outdent`
+				for (const element_ of arr) {
+					function element__(element) {
+						console.log(element_, element);
+					}
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i += 1) {
+					function element_(element) {
+						console.log(arr[i], element);
+					}
+				}
+			`,
+			outdent`
+				for (const element__ of arr) {
+					function element_(element) {
+						console.log(element__, element);
+					}
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i += 1) {
+					function element() {
+						console.log(arr[i], element);
+					}
+				}
+			`,
+			outdent`
+				for (const element_ of arr) {
+					function element() {
+						console.log(element_, element);
+					}
+				}
+			`,
+		),
+		testCase(
+			outdent`
 				for (let i = 0; i < arr.length; i += 1) {
 					console.log(arr[i], element);
 				}
-			}
-		`, outdent`
-			function element(element_) {
-				for (const element__ of arr) {
-					console.log(element__, element);
+			`,
+			outdent`
+				for (const element_ of arr) {
+					console.log(element_, element);
 				}
-			}
-		`),
-		testCase(outdent`
-			let element;
-			function foo() {
+			`,
+		),
+		testCase(
+			outdent`
+				for (let i = 0; i < element.length; i += 1) {
+					console.log(element[i]);
+				}
+			`,
+			outdent`
+				for (const element_ of element) {
+					console.log(element_);
+				}
+			`,
+		),
+		testCase(
+			outdent`
 				for (let i = 0; i < arr.length; i += 1) {
 					console.log(arr[i]);
+					function foo(element) {
+						console.log(element);
+					}
 				}
-			}
-		`, outdent`
-			let element;
-			function foo() {
+			`,
+			outdent`
+				for (const element_ of arr) {
+					console.log(element_);
+					function foo(element) {
+						console.log(element);
+					}
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let element = 0; element < arr.length; element += 1) {
+					console.log(element, arr[element]);
+				}
+			`,
+			outdent`
+				for (const [element, element_] of arr.entries()) {
+					console.log(element, element_);
+				}
+			`,
+		),
+		testCase(
+			outdent`
+				for (let element = 0; element < arr.length; element += 1) {
+					console.log(arr[element]);
+				}
+			`,
+			outdent`
 				for (const element_ of arr) {
 					console.log(element_);
 				}
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				function element__(element) {
-					console.log(arr[i], element);
+			`,
+		),
+		testCase(
+			outdent`
+				for (const element of arr) {
+					for (let j = 0; j < arr2.length; j += 1) {
+						console.log(element, arr2[j]);
+					}
 				}
-			}
-		`, outdent`
-			for (const element_ of arr) {
-				function element__(element) {
-					console.log(element_, element);
+			`,
+			outdent`
+				for (const element of arr) {
+					for (const element_ of arr2) {
+						console.log(element, element_);
+					}
 				}
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				function element_(element) {
-					console.log(arr[i], element);
-				}
-			}
-		`, outdent`
-			for (const element__ of arr) {
-				function element_(element) {
-					console.log(element__, element);
-				}
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				function element() {
-					console.log(arr[i], element);
-				}
-			}
-		`, outdent`
-			for (const element_ of arr) {
-				function element() {
-					console.log(element_, element);
-				}
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				console.log(arr[i], element);
-			}
-		`, outdent`
-			for (const element_ of arr) {
-				console.log(element_, element);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < element.length; i += 1) {
-				console.log(element[i]);
-			}
-		`, outdent`
-			for (const element_ of element) {
-				console.log(element_);
-			}
-		`),
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				console.log(arr[i]);
-				function foo(element) {
-					console.log(element);
-				}
-			}
-		`, outdent`
-			for (const element_ of arr) {
-				console.log(element_);
-				function foo(element) {
-					console.log(element);
-				}
-			}
-		`),
-		testCase(outdent`
-			for (let element = 0; element < arr.length; element += 1) {
-				console.log(element, arr[element]);
-			}
-		`, outdent`
-			for (const [element, element_] of arr.entries()) {
-				console.log(element, element_);
-			}
-		`),
-		testCase(outdent`
-			for (let element = 0; element < arr.length; element += 1) {
-				console.log(arr[element]);
-			}
-		`, outdent`
-			for (const element_ of arr) {
-				console.log(element_);
-			}
-		`),
-		testCase(outdent`
-			for (const element of arr) {
-				for (let j = 0; j < arr2.length; j += 1) {
-					console.log(element, arr2[j]);
-				}
-			}
-		`, outdent`
-			for (const element of arr) {
-				for (const element_ of arr2) {
-					console.log(element, element_);
-				}
-			}
-		`),
+			`,
+		),
 
 		// Avoid naming collision when using default element name (multiple collisions).
-		testCase(outdent`
-			for (let i = 0; i < arr.length; i += 1) {
-				const element = foo();
-				console.log(arr[i]);
-				const element_ = foo();
-				console.log(element);
-				console.log(element_);
-			}
-		`, outdent`
-			for (const element__ of arr) {
-				const element = foo();
-				console.log(element__);
-				const element_ = foo();
-				console.log(element);
-				console.log(element_);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < arr.length; i += 1) {
+					const element = foo();
+					console.log(arr[i]);
+					const element_ = foo();
+					console.log(element);
+					console.log(element_);
+				}
+			`,
+			outdent`
+				for (const element__ of arr) {
+					const element = foo();
+					console.log(element__);
+					const element_ = foo();
+					console.log(element);
+					console.log(element_);
+				}
+			`,
+		),
 
 		// Singularization:
 		...[
@@ -666,94 +777,114 @@ test({
 		),
 
 		// Singularization (avoid using reserved JavaScript keywords):
-		testCase(outdent`
-			for (let i = 0; i < cases.length; i++) {
-				console.log(cases[i]);
-			}
-		`, outdent`
-			for (const case_ of cases) {
-				console.log(case_);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < cases.length; i++) {
+					console.log(cases[i]);
+				}
+			`,
+			outdent`
+				for (const case_ of cases) {
+					console.log(case_);
+				}
+			`,
+		),
 		// Singularization (avoid variable name collision):
-		testCase(outdent`
-			for (let i = 0; i < cities.length; i++) {
-				console.log(cities[i]);
-				const city = foo();
-				console.log(city);
-			}
-		`, outdent`
-			for (const city_ of cities) {
-				console.log(city_);
-				const city = foo();
-				console.log(city);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < cities.length; i++) {
+					console.log(cities[i]);
+					const city = foo();
+					console.log(city);
+				}
+			`,
+			outdent`
+				for (const city_ of cities) {
+					console.log(city_);
+					const city = foo();
+					console.log(city);
+				}
+			`,
+		),
 		// Singularization (uses i):
-		testCase(outdent`
-			for (let i = 0; i < cities.length; i++) {
-				console.log(i, cities[i]);
-			}
-		`, outdent`
-			for (const [i, city] of cities.entries()) {
-				console.log(i, city);
-			}
-		`),
+		testCase(
+			outdent`
+				for (let i = 0; i < cities.length; i++) {
+					console.log(i, cities[i]);
+				}
+			`,
+			outdent`
+				for (const [i, city] of cities.entries()) {
+					console.log(i, city);
+				}
+			`,
+		),
 
 		// With static array variable.
-		testCase(outdent`
-			const someArray = [1,2,3];
-			for (let i = 0; i < someArray.length; i++) {
-				console.log(someArray[i]);
-			}
-		`, outdent`
-			const someArray = [1,2,3];
-			for (const element of someArray) {
-				console.log(element);
-			}
-		`),
+		testCase(
+			outdent`
+				const someArray = [1,2,3];
+				for (let i = 0; i < someArray.length; i++) {
+					console.log(someArray[i]);
+				}
+			`,
+			outdent`
+				const someArray = [1,2,3];
+				for (const element of someArray) {
+					console.log(element);
+				}
+			`,
+		),
 
 		// With non-static variable.
-		testCase(outdent`
-			const someArray = getSomeArray();
-			for (let i = 0; i < someArray.length; i++) {
-				console.log(someArray[i]);
-			}
-		`, outdent`
-			const someArray = getSomeArray();
-			for (const element of someArray) {
-				console.log(element);
-			}
-		`),
+		testCase(
+			outdent`
+				const someArray = getSomeArray();
+				for (let i = 0; i < someArray.length; i++) {
+					console.log(someArray[i]);
+				}
+			`,
+			outdent`
+				const someArray = getSomeArray();
+				for (const element of someArray) {
+					console.log(element);
+				}
+			`,
+		),
 	],
 });
 
-test(avoidTestTitleConflict({
-	testerOptions: {
-		languageOptions: {
-			sourceType: 'script',
-			ecmaVersion: 5,
+test(
+	avoidTestTitleConflict(
+		{
+			testerOptions: {
+				languageOptions: {
+					sourceType: 'script',
+					ecmaVersion: 5,
+				},
+			},
+			valid: [
+				'for (;;);',
+				'for (;;) {}',
+				'for (var j = 0; j < 10; j++) {}',
+				outdent`
+					for (i = 0; i < arr.length; i++) {
+						el = arr[i];
+						console.log(i, el);
+					}
+				`,
+				outdent`
+					var foo = function () {
+						for (var i = 0; i < bar.length; i++) {
+						}
+					};
+				`,
+			],
+			invalid: [],
 		},
-	},
-	valid: [
-		'for (;;);',
-		'for (;;) {}',
-		'for (var j = 0; j < 10; j++) {}',
-		outdent`
-			for (i = 0; i < arr.length; i++) {
-				el = arr[i];
-				console.log(i, el);
-			}
-		`,
-		outdent`
-			var foo = function () {
-				for (var i = 0; i < bar.length; i++) {
-				}
-			};
-		`,
-	],
-	invalid: [],
-}, 'es5'));
+		'es5',
+	),
+);
 
 test.typescript({
 	valid: [],

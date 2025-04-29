@@ -3,11 +3,7 @@ const messages = {
 	[MESSAGE_ID_ERROR]: 'Prefer `{{replacement}}` over `{{value}}`.',
 };
 
-const globalIdentifier = new Set([
-	'window',
-	'self',
-	'global',
-]);
+const globalIdentifier = new Set(['window', 'self', 'global']);
 
 const windowSpecificEvents = new Set([
 	'resize',
@@ -64,7 +60,7 @@ const windowSpecificAPIs = new Set([
 	'postMessage',
 
 	// Events commonly associated with "window"
-	...[...windowSpecificEvents].map(event => `on${event}`),
+	...[...windowSpecificEvents].map((event) => `on${event}`),
 
 	// To add/remove/dispatch events that are commonly associated with "window"
 	// https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-flow
@@ -130,7 +126,7 @@ Check if the node is a window-specific API.
 @param {import('estree').MemberExpression} node
 @returns {boolean}
 */
-const isWindowSpecificAPI = node => {
+const isWindowSpecificAPI = (node) => {
 	if (node.type !== 'MemberExpression') {
 		return false;
 	}
@@ -140,9 +136,19 @@ const isWindowSpecificAPI = node => {
 	}
 
 	if (windowSpecificAPIs.has(node.property.name)) {
-		if (['addEventListener', 'removeEventListener', 'dispatchEvent'].includes(node.property.name) && node.parent.type === 'CallExpression' && node.parent.callee === node) {
+		if (
+			['addEventListener', 'removeEventListener', 'dispatchEvent'].includes(
+				node.property.name,
+			) &&
+			node.parent.type === 'CallExpression' &&
+			node.parent.callee === node
+		) {
 			const argument = node.parent.arguments[0];
-			return argument && argument.type === 'Literal' && windowSpecificEvents.has(argument.value);
+			return (
+				argument &&
+				argument.type === 'Literal' &&
+				windowSpecificEvents.has(argument.value)
+			);
 		}
 
 		return true;
@@ -156,7 +162,11 @@ const isWindowSpecificAPI = node => {
 @returns {boolean}
 */
 function isComputedMemberExpressionObject(identifier) {
-	return identifier.parent.type === 'MemberExpression' && identifier.parent.computed && identifier.parent.object === identifier;
+	return (
+		identifier.parent.type === 'MemberExpression' &&
+		identifier.parent.computed &&
+		identifier.parent.object === identifier
+	);
 }
 
 /**
@@ -165,39 +175,52 @@ Check if the node is a web worker specific API.
 @param {import('estree').MemberExpression} node
 @returns {boolean}
 */
-const isWebWorkerSpecificAPI = node => node.type === 'MemberExpression' && node.object.name === 'self' && node.property.type === 'Identifier' && webWorkerSpecificAPIs.has(node.property.name);
+const isWebWorkerSpecificAPI = (node) =>
+	node.type === 'MemberExpression' &&
+	node.object.name === 'self' &&
+	node.property.type === 'Identifier' &&
+	webWorkerSpecificAPIs.has(node.property.name);
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
-	* Program(program) {
+const create = (context) => ({
+	*Program(program) {
 		const scope = context.sourceCode.getScope(program);
 
 		const references = [
 			// Variables declared at globals options
-			...scope.variables.flatMap(variable => globalIdentifier.has(variable.name) ? variable.references : []),
+			...scope.variables.flatMap((variable) =>
+				globalIdentifier.has(variable.name) ? variable.references : [],
+			),
 			// Variables not declared at globals options
-			...scope.through.filter(reference => globalIdentifier.has(reference.identifier.name)),
+			...scope.through.filter((reference) =>
+				globalIdentifier.has(reference.identifier.name),
+			),
 		];
 
 		for (const {identifier} of references) {
 			if (
-				isComputedMemberExpressionObject(identifier)
-				|| isWindowSpecificAPI(identifier.parent)
-				|| isWebWorkerSpecificAPI(identifier.parent)
+				isComputedMemberExpressionObject(identifier) ||
+				isWindowSpecificAPI(identifier.parent) ||
+				isWebWorkerSpecificAPI(identifier.parent)
 			) {
 				continue;
 			}
 
 			// Skip the fix for `typeof window` and `typeof self`
-			const isTypeofLegacyGlobal = identifier.parent.type === 'UnaryExpression' && identifier.parent.operator === 'typeof' && identifier.parent.argument === identifier;
+			const isTypeofLegacyGlobal =
+				identifier.parent.type === 'UnaryExpression' &&
+				identifier.parent.operator === 'typeof' &&
+				identifier.parent.argument === identifier;
 
-			const replacement = isTypeofLegacyGlobal ? 'globalThis.' + identifier.name : 'globalThis';
+			const replacement = isTypeofLegacyGlobal
+				? 'globalThis.' + identifier.name
+				: 'globalThis';
 
 			yield {
 				node: identifier,
 				messageId: MESSAGE_ID_ERROR,
 				data: {replacement, value: identifier.name},
-				fix: fixer => fixer.replaceText(identifier, replacement),
+				fix: (fixer) => fixer.replaceText(identifier, replacement),
 			};
 		}
 	},

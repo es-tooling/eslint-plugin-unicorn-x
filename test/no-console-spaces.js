@@ -147,10 +147,9 @@ test({
 			output: 'console.log(`abc`, "def");',
 		},
 		{
-			// eslint-disable-next-line no-template-curly-in-string
 			code: 'console.log(`abc ${1 + 2} `, "def");',
 			errors: [buildError({method: 'log', position: 'trailing'})],
-			// eslint-disable-next-line no-template-curly-in-string
+
 			output: 'console.log(`abc ${1 + 2}`, "def");',
 		},
 		{
@@ -161,9 +160,7 @@ test({
 					'ghi'
 				);
 			`,
-			errors: [
-				buildError({method: 'log', position: 'trailing'}),
-			],
+			errors: [buildError({method: 'log', position: 'trailing'})],
 			output: outdent`
 				console.log(
 					'abc',
@@ -181,9 +178,7 @@ test({
 					theme.error(errorMessage)
 				);
 			`,
-			errors: [
-				buildError({method: 'error', position: 'trailing'}),
-			],
+			errors: [buildError({method: 'error', position: 'trailing'})],
 			output: outdent`
 				console.error(
 					theme.error('✗'),

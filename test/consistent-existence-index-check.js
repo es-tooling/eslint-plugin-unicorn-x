@@ -78,17 +78,15 @@ test.snapshot({
 		'const index = foo?.indexOf(foo); index < 0;',
 	],
 	invalid: [
-		...[
-			'index < 0',
-			'index >= 0',
-			'index > -1',
-		].map(code => `const index = foo.indexOf(bar); ${code}`),
+		...['index < 0', 'index >= 0', 'index > -1'].map(
+			(code) => `const index = foo.indexOf(bar); ${code}`,
+		),
 		...[
 			'foo.indexOf(bar)',
 			'foo.lastIndexOf(bar)',
 			'foo.findIndex(bar)',
 			'foo.findLastIndex(bar)',
-		].map(code => `const index = ${code}; index < 0`),
+		].map((code) => `const index = ${code}; index < 0`),
 		// It will search the scope chain for 'index' and find the 'index' variable declared above.
 		outdent`
 			const index = foo.indexOf(bar);

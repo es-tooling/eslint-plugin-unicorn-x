@@ -106,9 +106,9 @@ test.snapshot({
 				console.log(x, y);
 			}
 		`,
-		'window`Hello ${42} World`', // eslint-disable-line no-template-curly-in-string
-		'tag`Hello ${window.foo} World`', // eslint-disable-line no-template-curly-in-string
-		'var str = `hello ${window.foo} world!`', // eslint-disable-line no-template-curly-in-string
+		'window`Hello ${42} World`',
+		'tag`Hello ${window.foo} World`',
+		'var str = `hello ${window.foo} world!`',
 		'delete window.foo',
 		'++window',
 		'++window.foo',

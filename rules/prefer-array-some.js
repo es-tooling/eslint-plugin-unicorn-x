@@ -1,5 +1,9 @@
 import {checkVueTemplate} from './utils/rule.js';
-import {isBooleanNode, getParenthesizedRange, isNodeValueNotFunction} from './utils/index.js';
+import {
+	isBooleanNode,
+	getParenthesizedRange,
+	isNodeValueNotFunction,
+} from './utils/index.js';
 import {removeMemberExpressionProperty} from './fix/index.js';
 import {
 	isLiteral,
@@ -14,47 +18,44 @@ const ERROR_ID_ARRAY_FILTER = 'filter';
 const messages = {
 	[ERROR_ID_ARRAY_SOME]: 'Prefer `.some(…)` over `.{{method}}(…)`.',
 	[SUGGESTION_ID_ARRAY_SOME]: 'Replace `.{{method}}(…)` with `.some(…)`.',
-	[ERROR_ID_ARRAY_FILTER]: 'Prefer `.some(…)` over non-zero length check from `.filter(…)`.',
+	[ERROR_ID_ARRAY_FILTER]:
+		'Prefer `.some(…)` over non-zero length check from `.filter(…)`.',
 };
 
-const isCheckingUndefined = node =>
-	node.parent.type === 'BinaryExpression'
+const isCheckingUndefined = (node) =>
+	node.parent.type === 'BinaryExpression' &&
 	// Not checking yoda expression `null != foo.find()` and `undefined !== foo.find()
-	&& node.parent.left === node
-	&& (
-		(
-			(
-				node.parent.operator === '!='
-				|| node.parent.operator === '=='
-				|| node.parent.operator === '==='
-				|| node.parent.operator === '!=='
-			)
-			&& isUndefined(node.parent.right)
-		)
-		|| (
-			(
-				node.parent.operator === '!='
-				|| node.parent.operator === '=='
-			)
+	node.parent.left === node &&
+	(((node.parent.operator === '!=' ||
+		node.parent.operator === '==' ||
+		node.parent.operator === '===' ||
+		node.parent.operator === '!==') &&
+		isUndefined(node.parent.right)) ||
+		((node.parent.operator === '!=' || node.parent.operator === '==') &&
 			// eslint-disable-next-line unicorn-x/no-null
-			&& isLiteral(node.parent.right, null)
-		)
-	);
-const isNegativeOne = node => node.type === 'UnaryExpression' && node.operator === '-' && node.argument && node.argument.type === 'Literal' && node.argument.value === 1;
-const isLiteralZero = node => isLiteral(node, 0);
+			isLiteral(node.parent.right, null)));
+const isNegativeOne = (node) =>
+	node.type === 'UnaryExpression' &&
+	node.operator === '-' &&
+	node.argument &&
+	node.argument.type === 'Literal' &&
+	node.argument.value === 1;
+const isLiteralZero = (node) => isLiteral(node, 0);
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	// `.find(…)`
 	// `.findLast(…)`
-	context.on('CallExpression', callExpression => {
-		if (!isMethodCall(callExpression, {
-			methods: ['find', 'findLast'],
-			minimumArguments: 1,
-			maximumArguments: 2,
-			optionalCall: false,
-			optionalMember: false,
-		})) {
+	context.on('CallExpression', (callExpression) => {
+		if (
+			!isMethodCall(callExpression, {
+				methods: ['find', 'findLast'],
+				minimumArguments: 1,
+				maximumArguments: 2,
+				optionalCall: false,
+				optionalMember: false,
+			})
+		) {
 			return;
 		}
 
@@ -71,7 +72,7 @@ const create = context => {
 			suggest: [
 				{
 					messageId: SUGGESTION_ID_ARRAY_SOME,
-					* fix(fixer) {
+					*fix(fixer) {
 						yield fixer.replaceText(methodNode, 'some');
 
 						if (!isCompare) {
@@ -79,10 +80,19 @@ const create = context => {
 						}
 
 						const {sourceCode} = context;
-						const parenthesizedRange = getParenthesizedRange(callExpression, sourceCode);
-						yield fixer.removeRange([parenthesizedRange[1], sourceCode.getRange(callExpression.parent)[1]]);
+						const parenthesizedRange = getParenthesizedRange(
+							callExpression,
+							sourceCode,
+						);
+						yield fixer.removeRange([
+							parenthesizedRange[1],
+							sourceCode.getRange(callExpression.parent)[1],
+						]);
 
-						if (callExpression.parent.operator === '!=' || callExpression.parent.operator === '!==') {
+						if (
+							callExpression.parent.operator === '!=' ||
+							callExpression.parent.operator === '!=='
+						) {
 							return;
 						}
 
@@ -101,21 +111,22 @@ const create = context => {
 	// `.{findIndex,findLastIndex}(…) == -1`
 	// `.{findIndex,findLastIndex}(…) >= 0`
 	// `.{findIndex,findLastIndex}(…) < 0`
-	context.on('BinaryExpression', binaryExpression => {
+	context.on('BinaryExpression', (binaryExpression) => {
 		const {left, right, operator} = binaryExpression;
 
-		if (!(
-			isMethodCall(left, {
-				methods: ['findIndex', 'findLastIndex'],
-				argumentsLength: 1,
-				optionalCall: false,
-				optionalMember: false,
-			})
-			&& (
-				(['!==', '!=', '>', '===', '=='].includes(operator) && isNegativeOne(right))
-				|| (['>=', '<'].includes(operator) && isLiteralZero(right))
+		if (
+			!(
+				isMethodCall(left, {
+					methods: ['findIndex', 'findLastIndex'],
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+				((['!==', '!=', '>', '===', '=='].includes(operator) &&
+					isNegativeOne(right)) ||
+					(['>=', '<'].includes(operator) && isLiteralZero(right)))
 			)
-		)) {
+		) {
 			return;
 		}
 
@@ -124,7 +135,7 @@ const create = context => {
 			node: methodNode,
 			messageId: ERROR_ID_ARRAY_SOME,
 			data: {method: methodNode.name},
-			* fix(fixer) {
+			*fix(fixer) {
 				if (['===', '==', '<'].includes(operator)) {
 					yield fixer.insertTextBefore(binaryExpression, '!');
 				}
@@ -134,7 +145,7 @@ const create = context => {
 				const {sourceCode} = context;
 				const operatorToken = sourceCode.getTokenAfter(
 					left,
-					token => token.type === 'Punctuator' && token.value === operator,
+					(token) => token.type === 'Punctuator' && token.value === operator,
 				);
 				const [start] = sourceCode.getRange(operatorToken);
 				const [, end] = sourceCode.getRange(binaryExpression);
@@ -146,19 +157,27 @@ const create = context => {
 
 	// `.filter(…).length > 0`
 	// `.filter(…).length !== 0`
-	context.on('BinaryExpression', binaryExpression => {
-		if (!(
-			// We assume the user already follows `unicorn-x/explicit-length-check`. These are allowed in that rule.
-			(binaryExpression.operator === '>' || binaryExpression.operator === '!==')
-			&& binaryExpression.right.type === 'Literal'
-			&& binaryExpression.right.raw === '0'
-			&& isMemberExpression(binaryExpression.left, {property: 'length', optional: false})
-			&& isMethodCall(binaryExpression.left.object, {
-				method: 'filter',
-				optionalCall: false,
-				optionalMember: false,
-			})
-		)) {
+	context.on('BinaryExpression', (binaryExpression) => {
+		if (
+			!(
+				// We assume the user already follows `unicorn-x/explicit-length-check`. These are allowed in that rule.
+				(
+					(binaryExpression.operator === '>' ||
+						binaryExpression.operator === '!==') &&
+					binaryExpression.right.type === 'Literal' &&
+					binaryExpression.right.raw === '0' &&
+					isMemberExpression(binaryExpression.left, {
+						property: 'length',
+						optional: false,
+					}) &&
+					isMethodCall(binaryExpression.left.object, {
+						method: 'filter',
+						optionalCall: false,
+						optionalMember: false,
+					})
+				)
+			)
+		) {
 			return;
 		}
 
@@ -172,7 +191,7 @@ const create = context => {
 		return {
 			node: filterProperty,
 			messageId: ERROR_ID_ARRAY_FILTER,
-			* fix(fixer) {
+			*fix(fixer) {
 				// `.filter` to `.some`
 				yield fixer.replaceText(filterProperty, 'some');
 
@@ -207,7 +226,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `.some(…)` over `.filter(…).length` check and `.{find,findLast,findIndex,findLastIndex}(…)`.',
+			description:
+				'Prefer `.some(…)` over `.filter(…).length` check and `.{find,findLast,findIndex,findLastIndex}(…)`.',
 			recommended: true,
 		},
 		fixable: 'code',

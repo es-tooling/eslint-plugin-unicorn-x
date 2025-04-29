@@ -6,16 +6,22 @@ const messages = {
 	[MESSAGE_ID]: 'Prefer `Math.{{method}}()` to simplify ternary expressions.',
 };
 
-const isNumberTypeAnnotation = typeAnnotation => {
+const isNumberTypeAnnotation = (typeAnnotation) => {
 	if (typeAnnotation.type === 'TSNumberKeyword') {
 		return true;
 	}
 
-	if (typeAnnotation.type === 'TSTypeAnnotation' && typeAnnotation.typeAnnotation.type === 'TSNumberKeyword') {
+	if (
+		typeAnnotation.type === 'TSTypeAnnotation' &&
+		typeAnnotation.typeAnnotation.type === 'TSNumberKeyword'
+	) {
 		return true;
 	}
 
-	if (typeAnnotation.type === 'TSTypeReference' && typeAnnotation.typeName.name === 'Number') {
+	if (
+		typeAnnotation.type === 'TSTypeReference' &&
+		typeAnnotation.typeName.name === 'Number'
+	) {
 		return true;
 	}
 
@@ -23,7 +29,8 @@ const isNumberTypeAnnotation = typeAnnotation => {
 };
 
 const getExpressionText = (node, sourceCode) => {
-	const expressionNode = node.type === 'TSAsExpression' ? node.expression : node;
+	const expressionNode =
+		node.type === 'TSAsExpression' ? node.expression : node;
 
 	if (node.type === 'TSAsExpression') {
 		return getExpressionText(expressionNode, sourceCode);
@@ -33,7 +40,7 @@ const getExpressionText = (node, sourceCode) => {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	/** @param {import('estree').ConditionalExpression} conditionalExpression */
 	ConditionalExpression(conditionalExpression) {
 		const {test, consequent, alternate} = conditionalExpression;
@@ -45,9 +52,9 @@ const create = context => ({
 		const {operator, left, right} = test;
 
 		const hasBigInt = [left, right].some(
-			node =>
-				isBigIntLiteral(node)
-				|| isCallExpression(node, {
+			(node) =>
+				isBigIntLiteral(node) ||
+				isCallExpression(node, {
 					name: 'BigInt',
 					argumentsLength: 1,
 					optional: false,
@@ -58,7 +65,12 @@ const create = context => ({
 			return;
 		}
 
-		const [leftText, rightText, alternateText, consequentText] = [left, right, alternate, consequent].map(node => getExpressionText(node, context.sourceCode));
+		const [leftText, rightText, alternateText, consequentText] = [
+			left,
+			right,
+			alternate,
+			consequent,
+		].map((node) => getExpressionText(node, context.sourceCode));
 
 		const isGreaterOrEqual = operator === '>' || operator === '>=';
 		const isLessOrEqual = operator === '<' || operator === '<=';
@@ -68,16 +80,24 @@ const create = context => ({
 		// Prefer `Math.min()`
 		if (
 			// `height > 50 ? 50 : height`
-			(isGreaterOrEqual && leftText === alternateText && rightText === consequentText)
+			(isGreaterOrEqual &&
+				leftText === alternateText &&
+				rightText === consequentText) ||
 			// `height < 50 ? height : 50`
-			|| (isLessOrEqual && leftText === consequentText && rightText === alternateText)
+			(isLessOrEqual &&
+				leftText === consequentText &&
+				rightText === alternateText)
 		) {
 			method = 'min';
 		} else if (
 			// `height > 50 ? height : 50`
-			(isGreaterOrEqual && leftText === consequentText && rightText === alternateText)
+			(isGreaterOrEqual &&
+				leftText === consequentText &&
+				rightText === alternateText) ||
 			// `height < 50 ? 50 : height`
-			|| (isLessOrEqual && leftText === alternateText && rightText === consequentText)
+			(isLessOrEqual &&
+				leftText === alternateText &&
+				rightText === consequentText)
 		) {
 			method = 'max';
 		}
@@ -89,7 +109,10 @@ const create = context => ({
 		for (const node of [left, right]) {
 			let expressionNode = node;
 
-			if (expressionNode.typeAnnotation && expressionNode.type === 'TSAsExpression') {
+			if (
+				expressionNode.typeAnnotation &&
+				expressionNode.type === 'TSAsExpression'
+			) {
 				// Ignore if the test is not a number comparison operator
 				if (!isNumberTypeAnnotation(expressionNode.typeAnnotation)) {
 					return;
@@ -100,7 +123,9 @@ const create = context => ({
 
 			// Find variable declaration
 			if (expressionNode.type === 'Identifier') {
-				const variable = context.sourceCode.getScope(expressionNode).variables.find(variable => variable.name === expressionNode.name);
+				const variable = context.sourceCode
+					.getScope(expressionNode)
+					.variables.find((variable) => variable.name === expressionNode.name);
 
 				for (const definition of variable?.defs ?? []) {
 					switch (definition.type) {
@@ -114,7 +139,10 @@ const create = context => ({
 							function foo(a: number) {}
 							```
 							*/
-							if (identifier.typeAnnotation?.type === 'TSTypeAnnotation' && !isNumberTypeAnnotation(identifier.typeAnnotation)) {
+							if (
+								identifier.typeAnnotation?.type === 'TSTypeAnnotation' &&
+								!isNumberTypeAnnotation(identifier.typeAnnotation)
+							) {
 								return;
 							}
 
@@ -125,7 +153,11 @@ const create = context => ({
 							function foo(a = 10) {}
 							```
 							*/
-							if (identifier.parent.type === 'AssignmentPattern' && identifier.parent.right.type === 'Literal' && typeof identifier.parent.right.value !== 'number') {
+							if (
+								identifier.parent.type === 'AssignmentPattern' &&
+								identifier.parent.right.type === 'Literal' &&
+								typeof identifier.parent.right.value !== 'number'
+							) {
 								return;
 							}
 
@@ -143,7 +175,11 @@ const create = context => ({
 							var foo: number
 							```
 							*/
-							if (variableDeclarator.id.typeAnnotation?.type === 'TSTypeAnnotation' && !isNumberTypeAnnotation(variableDeclarator.id.typeAnnotation)) {
+							if (
+								variableDeclarator.id.typeAnnotation?.type ===
+									'TSTypeAnnotation' &&
+								!isNumberTypeAnnotation(variableDeclarator.id.typeAnnotation)
+							) {
 								return;
 							}
 
@@ -154,7 +190,10 @@ const create = context => ({
 							var foo = 10
 							```
 							*/
-							if (variableDeclarator.init?.type === 'Literal' && typeof variableDeclarator.init.value !== 'number') {
+							if (
+								variableDeclarator.init?.type === 'Literal' &&
+								typeof variableDeclarator.init.value !== 'number'
+							) {
 								return;
 							}
 
@@ -172,16 +211,23 @@ const create = context => ({
 			messageId: MESSAGE_ID,
 			data: {method},
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			* fix(fixer) {
+			*fix(fixer) {
 				const {sourceCode} = context;
 
-				yield * fixSpaceAroundKeyword(fixer, conditionalExpression, sourceCode);
+				yield* fixSpaceAroundKeyword(fixer, conditionalExpression, sourceCode);
 
 				const argumentsText = [left, right]
-					.map(node => node.type === 'SequenceExpression' ? `(${sourceCode.getText(node)})` : sourceCode.getText(node))
+					.map((node) =>
+						node.type === 'SequenceExpression'
+							? `(${sourceCode.getText(node)})`
+							: sourceCode.getText(node),
+					)
 					.join(', ');
 
-				yield fixer.replaceText(conditionalExpression, `Math.${method}(${argumentsText})`);
+				yield fixer.replaceText(
+					conditionalExpression,
+					`Math.${method}(${argumentsText})`,
+				);
 			},
 		};
 	},
@@ -193,7 +239,8 @@ const config = {
 	meta: {
 		type: 'problem',
 		docs: {
-			description: 'Prefer `Math.min()` and `Math.max()` over ternaries for simple comparisons.',
+			description:
+				'Prefer `Math.min()` and `Math.max()` over ternaries for simple comparisons.',
 			recommended: true,
 		},
 		fixable: 'code',

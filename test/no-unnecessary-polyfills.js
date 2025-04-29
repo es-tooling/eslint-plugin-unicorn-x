@@ -64,17 +64,32 @@ test({
 		{
 			code: 'require("core-js-pure/features/array/from")',
 			options: [{targets: 'node >7'}],
-			errors: [{message: 'All polyfilled features imported from `core-js-pure/features/array/from` are available as built-ins. Use the built-ins instead.'}],
+			errors: [
+				{
+					message:
+						'All polyfilled features imported from `core-js-pure/features/array/from` are available as built-ins. Use the built-ins instead.',
+				},
+			],
 		},
 		{
 			code: 'require("core-js/features/array/from")',
 			options: [{targets: 'node >7'}],
-			errors: [{message: 'All polyfilled features imported from `core-js/features/array/from` are available as built-ins. Use the built-ins instead.'}],
+			errors: [
+				{
+					message:
+						'All polyfilled features imported from `core-js/features/array/from` are available as built-ins. Use the built-ins instead.',
+				},
+			],
 		},
 		{
 			code: 'require("core-js/features/typed-array")',
 			options: [{targets: 'node >16'}],
-			errors: [{message: 'All polyfilled features imported from `core-js/features/typed-array` are available as built-ins. Use the built-ins instead.'}],
+			errors: [
+				{
+					message:
+						'All polyfilled features imported from `core-js/features/typed-array` are available as built-ins. Use the built-ins instead.',
+				},
+			],
 		},
 		{
 			code: 'require("es6-symbol")',
@@ -95,13 +110,11 @@ test({
 			code: 'require("string.prototype.padstart")',
 			options: [{targets: 'node >8'}],
 			errors: [{message: 'Use built-in instead.'}],
-
 		},
 		{
 			code: 'require("p-finally")',
 			options: [{targets: 'node >10.4'}],
 			errors: [{message: 'Use built-in instead.'}],
-
 		},
 		{
 			code: 'require("promise-polyfill")',

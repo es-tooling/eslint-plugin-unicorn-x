@@ -1,5 +1,8 @@
 import {hasSideEffect, isSemicolonToken} from '@eslint-community/eslint-utils';
-import {getCallExpressionTokens, getCallExpressionArgumentsText} from './utils/index.js';
+import {
+	getCallExpressionTokens,
+	getCallExpressionArgumentsText,
+} from './utils/index.js';
 import isSameReference from './utils/is-same-reference.js';
 import {isNodeMatches} from './utils/is-node-matches.js';
 import getPreviousNode from './utils/get-previous-node.js';
@@ -12,11 +15,11 @@ const messages = {
 	[SUGGESTION]: 'Merge with previous one.',
 };
 
-const isArrayPushCall = node =>
-	node
-	&& node.parent.type === 'ExpressionStatement'
-	&& node.parent.expression === node
-	&& isMethodCall(node, {
+const isArrayPushCall = (node) =>
+	node &&
+	node.parent.type === 'ExpressionStatement' &&
+	node.parent.expression === node &&
+	isMethodCall(node, {
 		method: 'push',
 		optionalCall: false,
 		optionalMember: false,
@@ -75,33 +78,40 @@ function create(context) {
 				messageId: ERROR,
 			};
 
-			const fix = function * (fixer) {
+			const fix = function* (fixer) {
 				if (secondCallArguments.length > 0) {
 					const text = getCallExpressionArgumentsText(sourceCode, secondCall);
 
-					const {
-						trailingCommaToken,
-						closingParenthesisToken,
-					} = getCallExpressionTokens(sourceCode, firstCall);
+					const {trailingCommaToken, closingParenthesisToken} =
+						getCallExpressionTokens(sourceCode, firstCall);
 
-					yield (
-						trailingCommaToken
-							? fixer.insertTextAfter(trailingCommaToken, ` ${text}`)
-							: fixer.insertTextBefore(closingParenthesisToken, firstCall.arguments.length > 0 ? `, ${text}` : text)
-					);
+					yield trailingCommaToken
+						? fixer.insertTextAfter(trailingCommaToken, ` ${text}`)
+						: fixer.insertTextBefore(
+								closingParenthesisToken,
+								firstCall.arguments.length > 0 ? `, ${text}` : text,
+							);
 				}
 
 				const firstExpression = firstCall.parent;
 				const secondExpression = secondCall.parent;
-				const shouldKeepSemicolon = !isSemicolonToken(sourceCode.getLastToken(firstExpression))
-					&& isSemicolonToken(sourceCode.getLastToken(secondExpression));
+				const shouldKeepSemicolon =
+					!isSemicolonToken(sourceCode.getLastToken(firstExpression)) &&
+					isSemicolonToken(sourceCode.getLastToken(secondExpression));
 				const [, start] = sourceCode.getRange(firstExpression);
 				const [, end] = sourceCode.getRange(secondExpression);
 
-				yield fixer.replaceTextRange([start, end], shouldKeepSemicolon ? ';' : '');
+				yield fixer.replaceTextRange(
+					[start, end],
+					shouldKeepSemicolon ? ';' : '',
+				);
 			};
 
-			if (secondCallArguments.some(element => hasSideEffect(element, sourceCode))) {
+			if (
+				secondCallArguments.some((element) =>
+					hasSideEffect(element, sourceCode),
+				)
+			) {
 				problem.suggest = [
 					{
 						messageId: SUGGESTION,

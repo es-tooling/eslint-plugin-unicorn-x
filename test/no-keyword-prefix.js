@@ -227,7 +227,7 @@ test({
 			errors: [errorNew],
 		},
 		{
-			code: 'function foo({ newBar = \'default value\' }) {};',
+			code: "function foo({ newBar = 'default value' }) {};",
 			errors: [errorNew],
 		},
 		{

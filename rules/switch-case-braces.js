@@ -12,16 +12,21 @@ const messages = {
 	[MESSAGE_ID_UNNECESSARY_BRACES]: 'Unnecessary braces in case clause.',
 };
 
-function * removeBraces(fixer, node, sourceCode) {
+function* removeBraces(fixer, node, sourceCode) {
 	const [blockStatement] = node.consequent;
 	const openingBraceToken = sourceCode.getFirstToken(blockStatement);
-	yield * replaceNodeOrTokenAndSpacesBefore(openingBraceToken, '', fixer, sourceCode);
+	yield* replaceNodeOrTokenAndSpacesBefore(
+		openingBraceToken,
+		'',
+		fixer,
+		sourceCode,
+	);
 
 	const closingBraceToken = sourceCode.getLastToken(blockStatement);
 	yield fixer.remove(closingBraceToken);
 }
 
-function * addBraces(fixer, node, sourceCode) {
+function* addBraces(fixer, node, sourceCode) {
 	const colonToken = sourceCode.getTokenAfter(
 		node.test || sourceCode.getFirstToken(node),
 		isColonToken,
@@ -34,7 +39,7 @@ function * addBraces(fixer, node, sourceCode) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const isBracesRequired = context.options[0] !== 'avoid';
 	const {sourceCode} = context;
 
@@ -46,47 +51,45 @@ const create = context => {
 			}
 
 			if (
-				consequent.length === 1
-				&& consequent[0].type === 'BlockStatement'
-				&& consequent[0].body.length === 0
+				consequent.length === 1 &&
+				consequent[0].type === 'BlockStatement' &&
+				consequent[0].body.length === 0
 			) {
 				return {
 					node,
 					loc: sourceCode.getLoc(sourceCode.getFirstToken(consequent[0])),
 					messageId: MESSAGE_ID_EMPTY_CLAUSE,
-					fix: fixer => removeBraces(fixer, node, sourceCode),
+					fix: (fixer) => removeBraces(fixer, node, sourceCode),
 				};
 			}
 
 			if (
-				isBracesRequired
-				&& !(
-					consequent.length === 1
-					&& consequent[0].type === 'BlockStatement'
-				)
+				isBracesRequired &&
+				!(consequent.length === 1 && consequent[0].type === 'BlockStatement')
 			) {
 				return {
 					node,
 					loc: getSwitchCaseHeadLocation(node, sourceCode),
 					messageId: MESSAGE_ID_MISSING_BRACES,
-					fix: fixer => addBraces(fixer, node, sourceCode),
+					fix: (fixer) => addBraces(fixer, node, sourceCode),
 				};
 			}
 
 			if (
-				!isBracesRequired
-				&& consequent.length === 1
-				&& consequent[0].type === 'BlockStatement'
-				&& consequent[0].body.every(node =>
-					node.type !== 'VariableDeclaration'
-					&& node.type !== 'FunctionDeclaration',
+				!isBracesRequired &&
+				consequent.length === 1 &&
+				consequent[0].type === 'BlockStatement' &&
+				consequent[0].body.every(
+					(node) =>
+						node.type !== 'VariableDeclaration' &&
+						node.type !== 'FunctionDeclaration',
 				)
 			) {
 				return {
 					node,
 					loc: sourceCode.getLoc(sourceCode.getFirstToken(consequent[0])),
 					messageId: MESSAGE_ID_UNNECESSARY_BRACES,
-					fix: fixer => removeBraces(fixer, node, sourceCode),
+					fix: (fixer) => removeBraces(fixer, node, sourceCode),
 				};
 			}
 		},

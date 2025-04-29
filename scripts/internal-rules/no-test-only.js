@@ -13,36 +13,42 @@ const config = {
 			MemberExpression(node) {
 				if (
 					!(
-						!node.computed
-						&& !node.optional
-						&& node.object.type === 'Identifier'
-						&& node.object.name === 'test'
-						&& node.property.type === 'Identifier'
-						&& node.property.name === 'only'
+						!node.computed &&
+						!node.optional &&
+						node.object.type === 'Identifier' &&
+						node.object.name === 'test' &&
+						node.property.type === 'Identifier' &&
+						node.property.name === 'only'
 					)
 				) {
 					return;
 				}
 
-				const isTaggedTemplateExpression = node.parent.type === 'TaggedTemplateExpression' && node.parent.tag === node;
-				const isCallee = !isTaggedTemplateExpression
-					&& node.parent.type === 'CallExpression'
-					&& node.parent.callee === node
-					&& !node.parent.optional
-					&& node.parent.arguments.length === 1;
+				const isTaggedTemplateExpression =
+					node.parent.type === 'TaggedTemplateExpression' &&
+					node.parent.tag === node;
+				const isCallee =
+					!isTaggedTemplateExpression &&
+					node.parent.type === 'CallExpression' &&
+					node.parent.callee === node &&
+					!node.parent.optional &&
+					node.parent.arguments.length === 1;
 
 				const problem = {node, messageId};
 
 				if (isTaggedTemplateExpression) {
-					problem.fix = fixer => fixer.remove(node);
+					problem.fix = (fixer) => fixer.remove(node);
 				}
 
 				if (isCallee) {
-					problem.fix = function * (fixer) {
+					problem.fix = function* (fixer) {
 						const {sourceCode} = context;
 						const openingParenToken = sourceCode.getTokenAfter(node);
 						const closingParenToken = sourceCode.getLastToken(node.parent);
-						if (openingParenToken.value !== '(' || closingParenToken.value !== ')') {
+						if (
+							openingParenToken.value !== '(' ||
+							closingParenToken.value !== ')'
+						) {
 							return;
 						}
 
@@ -68,7 +74,8 @@ const config = {
 	meta: {
 		fixable: 'code',
 		messages: {
-			[messageId]: '`test.only` should only be used for debugging purposes. Please remove it before committing.',
+			[messageId]:
+				'`test.only` should only be used for debugging purposes. Please remove it before committing.',
 		},
 	},
 };

@@ -6,54 +6,54 @@ import {isMethodCall} from './ast/index.js';
 
 const MESSAGE_ID = 'catch-error-name';
 const messages = {
-	[MESSAGE_ID]: 'The catch parameter `{{originalName}}` should be named `{{fixedName}}`.',
+	[MESSAGE_ID]:
+		'The catch parameter `{{originalName}}` should be named `{{fixedName}}`.',
 };
 
 // - `promise.then(…, foo => {})`
 // - `promise.then(…, function(foo) {})`
 // - `promise.catch(foo => {})`
 // - `promise.catch(function(foo) {})`
-const isPromiseCatchParameter = node =>
-	(node.parent.type === 'FunctionExpression' || node.parent.type === 'ArrowFunctionExpression')
-	&& node.parent.params[0] === node
-	&& (
+const isPromiseCatchParameter = (node) =>
+	(node.parent.type === 'FunctionExpression' ||
+		node.parent.type === 'ArrowFunctionExpression') &&
+	node.parent.params[0] === node &&
+	(isMethodCall(node.parent.parent, {
+		method: 'then',
+		argumentsLength: 2,
+		optionalCall: false,
+		optionalMember: false,
+	}) ||
 		isMethodCall(node.parent.parent, {
-			method: 'then',
-			argumentsLength: 2,
-			optionalCall: false,
-			optionalMember: false,
-		})
-		|| isMethodCall(node.parent.parent, {
 			method: 'catch',
 			argumentsLength: 1,
 			optionalCall: false,
 			optionalMember: false,
-		})
-	)
-	&& node.parent.parent.arguments.at(-1) === node.parent;
+		})) &&
+	node.parent.parent.arguments.at(-1) === node.parent;
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const options = {
 		name: 'error',
 		ignore: [],
 		...context.options[0],
 	};
 	const {name: expectedName} = options;
-	const ignore = options.ignore.map(
-		pattern => isRegExp(pattern) ? pattern : new RegExp(pattern, 'u'),
+	const ignore = options.ignore.map((pattern) =>
+		isRegExp(pattern) ? pattern : new RegExp(pattern, 'u'),
 	);
-	const isNameAllowed = name =>
-		name === expectedName
-		|| ignore.some(regexp => regexp.test(name))
-		|| name.endsWith(expectedName)
-		|| name.endsWith(expectedName.charAt(0).toUpperCase() + expectedName.slice(1));
+	const isNameAllowed = (name) =>
+		name === expectedName ||
+		ignore.some((regexp) => regexp.test(name)) ||
+		name.endsWith(expectedName) ||
+		name.endsWith(expectedName.charAt(0).toUpperCase() + expectedName.slice(1));
 
 	return {
 		Identifier(node) {
 			if (
-				!(node.parent.type === 'CatchClause' && node.parent.param === node)
-				&& !isPromiseCatchParameter(node)
+				!(node.parent.type === 'CatchClause' && node.parent.param === node) &&
+				!isPromiseCatchParameter(node)
 			) {
 				return;
 			}
@@ -61,8 +61,8 @@ const create = context => {
 			const originalName = node.name;
 
 			if (
-				isNameAllowed(originalName)
-				|| isNameAllowed(originalName.replaceAll(/_+$/g, ''))
+				isNameAllowed(originalName) ||
+				isNameAllowed(originalName.replaceAll(/_+$/g, ''))
 			) {
 				return;
 			}
@@ -97,7 +97,7 @@ const create = context => {
 			};
 
 			if (fixedName) {
-				problem.fix = fixer => renameVariable(variable, fixedName, fixer);
+				problem.fix = (fixer) => renameVariable(variable, fixedName, fixer);
 			}
 
 			return problem;

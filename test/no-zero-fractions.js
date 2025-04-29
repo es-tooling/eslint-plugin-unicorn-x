@@ -41,7 +41,7 @@ test.snapshot({
 			'123_000.123_000',
 			'123_000.000_400',
 		]
-			.flatMap(number => [
+			.flatMap((number) => [
 				number,
 				`${number}e1`,
 				`${number}e+1`,
@@ -55,11 +55,8 @@ test.snapshot({
 				`${number}E-10`,
 				`${number}E-10_10`,
 			])
-			.flatMap(number => [
-				`+${number}`,
-				`-${number}`,
-			])
-			.map(number => `${number};`),
+			.flatMap((number) => [`+${number}`, `-${number}`])
+			.map((number) => `${number};`),
 		'1.00.toFixed(2)',
 		'1.00 .toFixed(2)',
 		'(1.00).toFixed(2)',

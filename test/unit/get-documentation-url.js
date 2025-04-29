@@ -5,7 +5,7 @@ import packageJson from '../../package.json' with {type: 'json'};
 
 const filename = url.fileURLToPath(import.meta.url).replace(/\.js$/, '.js');
 
-test('returns the URL of the a named rule\'s documentation', () => {
+test("returns the URL of the a named rule's documentation", () => {
 	const url = `https://github.com/es-tooling/eslint-plugin-unicorn-x/blob/v${packageJson.version}/docs/rules/foo.md`;
 	assert.strictEqual(getDocumentationUrl('foo.js'), url);
 });

@@ -433,7 +433,7 @@ test.snapshot({
 			'const a = () => foo.forEach(element => bar(element))',
 			'const a = () => foo.forEach(element => bar(element));',
 			'const a = () => void foo.forEach(element => bar(element));',
-		].flatMap(code => [code, code.replace('.forEach', '?.forEach')]),
+		].flatMap((code) => [code, code.replace('.forEach', '?.forEach')]),
 
 		// Should not fix to invalid code
 		'1?.forEach((a, b) => call(a, b))',
@@ -474,11 +474,13 @@ test.snapshot({
 			'[[element]] = bar',
 			'[[element = a]] = bar',
 			'[[a = element]] = bar',
-		].map(code => outdent`
-			foo.forEach(element => {
-				${code};
-			});
-		`),
+		].map(
+			(code) => outdent`
+				foo.forEach(element => {
+					${code};
+				});
+			`,
+		),
 		outdent`
 			foo.forEach(element => {
 				[

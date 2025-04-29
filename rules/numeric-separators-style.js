@@ -35,7 +35,11 @@ function addSeparatorFromLeft(value, options) {
 
 function formatNumber(value, options) {
 	const {integer, dot, fractional} = numeric.parseFloatNumber(value);
-	return addSeparator(integer, options) + dot + addSeparatorFromLeft(fractional, options);
+	return (
+		addSeparator(integer, options) +
+		dot +
+		addSeparatorFromLeft(fractional, options)
+	);
 }
 
 function format(value, {prefix, data}, options) {
@@ -45,14 +49,14 @@ function format(value, {prefix, data}, options) {
 		return prefix + addSeparator(data, formatOption);
 	}
 
-	const {
-		number,
-		mark,
-		sign,
-		power,
-	} = numeric.parseNumber(value);
+	const {number, mark, sign, power} = numeric.parseNumber(value);
 
-	return formatNumber(number, formatOption) + mark + sign + addSeparator(power, options['']);
+	return (
+		formatNumber(number, formatOption) +
+		mark +
+		sign +
+		addSeparator(power, options[''])
+	);
 }
 
 const defaultOptions = {
@@ -61,14 +65,8 @@ const defaultOptions = {
 	hexadecimal: {minimumDigits: 0, groupLength: 2},
 	number: {minimumDigits: 5, groupLength: 3},
 };
-const create = context => {
-	const {
-		onlyIfContainsSeparator,
-		binary,
-		octal,
-		hexadecimal,
-		number,
-	} = {
+const create = (context) => {
+	const {onlyIfContainsSeparator, binary, octal, hexadecimal, number} = {
 		onlyIfContainsSeparator: false,
 		...context.options[0],
 	};
@@ -118,13 +116,14 @@ const create = context => {
 				return;
 			}
 
-			const formatted = format(strippedNumber, {prefix, data}, options) + suffix;
+			const formatted =
+				format(strippedNumber, {prefix, data}, options) + suffix;
 
 			if (raw !== formatted) {
 				return {
 					node,
 					messageId: MESSAGE_ID,
-					fix: fixer => fixer.replaceText(node, formatted),
+					fix: (fixer) => fixer.replaceText(node, formatted),
 				};
 			}
 		},
@@ -149,18 +148,23 @@ const formatOptionsSchema = () => ({
 	},
 });
 
-const schema = [{
-	type: 'object',
-	additionalProperties: false,
-	properties: {
-		...Object.fromEntries(
-			Object.entries(defaultOptions).map(([type]) => [type, formatOptionsSchema()]),
-		),
-		onlyIfContainsSeparator: {
-			type: 'boolean',
+const schema = [
+	{
+		type: 'object',
+		additionalProperties: false,
+		properties: {
+			...Object.fromEntries(
+				Object.entries(defaultOptions).map(([type]) => [
+					type,
+					formatOptionsSchema(),
+				]),
+			),
+			onlyIfContainsSeparator: {
+				type: 'boolean',
+			},
 		},
 	},
-}];
+];
 
 /** @type {import('eslint').Rule.RuleModule} */
 const config = {
@@ -168,7 +172,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Enforce the style of numeric separators by correctly grouping digits.',
+			description:
+				'Enforce the style of numeric separators by correctly grouping digits.',
 			recommended: true,
 		},
 		fixable: 'code',

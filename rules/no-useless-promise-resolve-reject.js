@@ -4,8 +4,10 @@ import {isFunction, isMethodCall} from './ast/index.js';
 const MESSAGE_ID_RESOLVE = 'resolve';
 const MESSAGE_ID_REJECT = 'reject';
 const messages = {
-	[MESSAGE_ID_RESOLVE]: 'Prefer `{{type}} value` over `{{type}} Promise.resolve(value)`.',
-	[MESSAGE_ID_REJECT]: 'Prefer `throw error` over `{{type}} Promise.reject(error)`.',
+	[MESSAGE_ID_RESOLVE]:
+		'Prefer `{{type}} value` over `{{type}} Promise.resolve(value)`.',
+	[MESSAGE_ID_REJECT]:
+		'Prefer `throw error` over `{{type}} Promise.reject(error)`.',
 };
 
 function getFunctionNode(node) {
@@ -30,32 +32,31 @@ function getFunctionNode(node) {
 
 function isPromiseCallback(node) {
 	if (
-		node.parent.type === 'CallExpression'
-		&& node.parent.callee.type === 'MemberExpression'
-		&& !node.parent.callee.computed
-		&& node.parent.callee.property.type === 'Identifier'
+		node.parent.type === 'CallExpression' &&
+		node.parent.callee.type === 'MemberExpression' &&
+		!node.parent.callee.computed &&
+		node.parent.callee.property.type === 'Identifier'
 	) {
-		const {callee: {property}, arguments: arguments_} = node.parent;
+		const {
+			callee: {property},
+			arguments: arguments_,
+		} = node.parent;
 
 		if (
-			arguments_.length === 1
-			&& (
-				property.name === 'then'
-				|| property.name === 'catch'
-				|| property.name === 'finally'
-			)
-			&& arguments_[0] === node
+			arguments_.length === 1 &&
+			(property.name === 'then' ||
+				property.name === 'catch' ||
+				property.name === 'finally') &&
+			arguments_[0] === node
 		) {
 			return true;
 		}
 
 		if (
-			arguments_.length === 2
-			&& property.name === 'then'
-			&& (
-				arguments_[0] === node
-				|| (arguments_[0].type !== 'SpreadElement' && arguments_[1] === node)
-			)
+			arguments_.length === 2 &&
+			property.name === 'then' &&
+			(arguments_[0] === node ||
+				(arguments_[0].type !== 'SpreadElement' && arguments_[1] === node))
 		) {
 			return true;
 		}
@@ -82,7 +83,11 @@ function fix(callExpression, isInTryStatement, sourceCode) {
 		return;
 	}
 
-	const {callee, parent, arguments: [errorOrValue]} = callExpression;
+	const {
+		callee,
+		parent,
+		arguments: [errorOrValue],
+	} = callExpression;
 	if (errorOrValue?.type === 'SpreadElement') {
 		return;
 	}
@@ -90,11 +95,9 @@ function fix(callExpression, isInTryStatement, sourceCode) {
 	const isReject = callee.property.name === 'reject';
 	const isYieldExpression = parent.type === 'YieldExpression';
 	if (
-		isReject
-		&& (
-			isInTryStatement
-			|| (isYieldExpression && parent.parent.type !== 'ExpressionStatement')
-		)
+		isReject &&
+		(isInTryStatement ||
+			(isYieldExpression && parent.parent.type !== 'ExpressionStatement'))
 	) {
 		return;
 	}
@@ -131,7 +134,6 @@ function fix(callExpression, isInTryStatement, sourceCode) {
 				);
 			}
 		} else {
-			// eslint-disable-next-line no-lonely-if
 			if (isYieldExpression) {
 				text = `yield${text ? ' ' : ''}${text}`;
 			} else if (parent.type === 'ReturnStatement') {
@@ -154,38 +156,36 @@ function fix(callExpression, isInTryStatement, sourceCode) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
 		CallExpression(callExpression) {
-			if (!(
-				isMethodCall(callExpression, {
-					object: 'Promise',
-					methods: ['resolve', 'reject'],
-					optionalCall: false,
-					optionalMember: false,
-				})
-				&& (
-					(
-						callExpression.parent.type === 'ArrowFunctionExpression'
-						&& callExpression.parent.body === callExpression
-					)
-					|| (
-						callExpression.parent.type === 'ReturnStatement'
-						&& callExpression.parent.argument === callExpression
-					)
-					|| (
-						callExpression.parent.type === 'YieldExpression'
-						&& !callExpression.parent.delegate && callExpression.parent.argument === callExpression
-					)
+			if (
+				!(
+					isMethodCall(callExpression, {
+						object: 'Promise',
+						methods: ['resolve', 'reject'],
+						optionalCall: false,
+						optionalMember: false,
+					}) &&
+					((callExpression.parent.type === 'ArrowFunctionExpression' &&
+						callExpression.parent.body === callExpression) ||
+						(callExpression.parent.type === 'ReturnStatement' &&
+							callExpression.parent.argument === callExpression) ||
+						(callExpression.parent.type === 'YieldExpression' &&
+							!callExpression.parent.delegate &&
+							callExpression.parent.argument === callExpression))
 				)
-			)) {
+			) {
 				return;
 			}
 
 			const {functionNode, isInTryStatement} = getFunctionNode(callExpression);
-			if (!functionNode || !(functionNode.async || isPromiseCallback(functionNode))) {
+			if (
+				!functionNode ||
+				!(functionNode.async || isPromiseCallback(functionNode))
+			) {
 				return;
 			}
 
@@ -203,7 +203,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Disallow returning/yielding `Promise.resolve/reject()` in async functions or promise callbacks',
+			description:
+				'Disallow returning/yielding `Promise.resolve/reject()` in async functions or promise callbacks',
 			recommended: true,
 		},
 		fixable: 'code',

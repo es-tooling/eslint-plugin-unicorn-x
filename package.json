@@ -29,6 +29,7 @@
 		"integration": "node ./test/integration/test.js",
 		"lint": "run-p --continue-on-error lint:*",
 		"lint:eslint-docs": "npm run fix:eslint-docs -- --check",
+		"lint:format": "prettier --check test rules configs scripts",
 		"lint:js": "eslint",
 		"lint:markdown": "markdownlint \"**/*.md\"",
 		"lint:package-json": "npmPkgJsonLint .",

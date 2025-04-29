@@ -101,7 +101,7 @@ test.snapshot({
 			'...[1]',
 			'...["1"]',
 			'...[1, "1"]',
-		].map(argumentText => `const array = new Array(${argumentText})`),
+		].map((argumentText) => `const array = new Array(${argumentText})`),
 		outdent`
 			const foo = []
 			new Array(...bar).forEach(baz)

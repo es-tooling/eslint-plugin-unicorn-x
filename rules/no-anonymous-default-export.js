@@ -1,5 +1,9 @@
 import path from 'node:path';
-import {getFunctionHeadLocation, getFunctionNameWithKind, isOpeningParenToken} from '@eslint-community/eslint-utils';
+import {
+	getFunctionHeadLocation,
+	getFunctionNameWithKind,
+	isOpeningParenToken,
+} from '@eslint-community/eslint-utils';
 import helperValidatorIdentifier from '@babel/helper-validator-identifier';
 import getClassHeadLocation from './utils/get-class-head-location.js';
 import {camelCase, upperFirst} from 'scule';
@@ -16,18 +20,15 @@ const messages = {
 	[MESSAGE_ID_SUGGESTION]: 'Name it as `{{name}}`.',
 };
 
-const isClassKeywordToken = token => token.type === 'Keyword' && token.value === 'class';
-const isAnonymousClassOrFunction = node =>
-	(
-		(
-			node.type === 'FunctionDeclaration'
-			|| node.type === 'FunctionExpression'
-			|| node.type === 'ClassDeclaration'
-			|| node.type === 'ClassExpression'
-		)
-		&& !node.id
-	)
-	|| node.type === 'ArrowFunctionExpression';
+const isClassKeywordToken = (token) =>
+	token.type === 'Keyword' && token.value === 'class';
+const isAnonymousClassOrFunction = (node) =>
+	((node.type === 'FunctionDeclaration' ||
+		node.type === 'FunctionExpression' ||
+		node.type === 'ClassDeclaration' ||
+		node.type === 'ClassExpression') &&
+		!node.id) ||
+	node.type === 'ArrowFunctionExpression';
 
 function getSuggestionName(node, filename, sourceCode) {
 	if (filename === '<input>' || filename === '<text>') {
@@ -41,7 +42,10 @@ function getSuggestionName(node, filename, sourceCode) {
 		return;
 	}
 
-	name = node.type === 'ClassDeclaration' || node.type === 'ClassExpression' ? upperFirst(name) : name;
+	name =
+		node.type === 'ClassDeclaration' || node.type === 'ClassExpression'
+			? upperFirst(name)
+			: name;
 	name = getAvailableVariableName(name, getScopes(sourceCode.getScope(node)));
 
 	return name;
@@ -64,7 +68,9 @@ function addName(fixer, node, name, sourceCode) {
 				node,
 				isOpeningParenToken,
 			);
-			const characterBefore = sourceCode.text.charAt(sourceCode.getRange(openingParenthesisToken)[0] - 1);
+			const characterBefore = sourceCode.text.charAt(
+				sourceCode.getRange(openingParenthesisToken)[0] - 1,
+			);
 			return fixer.insertTextBefore(
 				openingParenthesisToken,
 				`${characterBefore === ' ' ? '' : ' '}${name} `,
@@ -72,16 +78,25 @@ function addName(fixer, node, name, sourceCode) {
 		}
 
 		case 'ArrowFunctionExpression': {
-			const [exportDeclarationStart, exportDeclarationEnd]
-				= sourceCode.getRange(
+			const [exportDeclarationStart, exportDeclarationEnd] =
+				sourceCode.getRange(
 					node.parent.type === 'ExportDefaultDeclaration'
 						? node.parent
 						: node.parent.parent,
 				);
-			const [arrowFunctionStart, arrowFunctionEnd] = getParenthesizedRange(node, sourceCode);
+			const [arrowFunctionStart, arrowFunctionEnd] = getParenthesizedRange(
+				node,
+				sourceCode,
+			);
 
-			let textBefore = sourceCode.text.slice(exportDeclarationStart, arrowFunctionStart);
-			let textAfter = sourceCode.text.slice(arrowFunctionEnd, exportDeclarationEnd);
+			let textBefore = sourceCode.text.slice(
+				exportDeclarationStart,
+				arrowFunctionStart,
+			);
+			let textAfter = sourceCode.text.slice(
+				arrowFunctionEnd,
+				exportDeclarationEnd,
+			);
 
 			textBefore = `\n${textBefore}`;
 			if (!/\s$/.test(textBefore)) {
@@ -97,10 +112,7 @@ function addName(fixer, node, name, sourceCode) {
 					[exportDeclarationStart, arrowFunctionStart],
 					`const ${name} = `,
 				),
-				fixer.replaceTextRange(
-					[arrowFunctionEnd, exportDeclarationEnd],
-					';',
-				),
+				fixer.replaceTextRange([arrowFunctionEnd, exportDeclarationEnd], ';'),
 				fixer.insertTextAfterRange(
 					[exportDeclarationEnd, exportDeclarationEnd],
 					`${textBefore}${name}${textAfter}`,
@@ -148,7 +160,7 @@ function getProblem(node, context) {
 			data: {
 				name: suggestionName,
 			},
-			fix: fixer => addName(fixer, node, suggestionName, sourceCode),
+			fix: (fixer) => addName(fixer, node, suggestionName, sourceCode),
 		},
 	];
 
@@ -156,8 +168,8 @@ function getProblem(node, context) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	context.on('ExportDefaultDeclaration', node => {
+const create = (context) => {
+	context.on('ExportDefaultDeclaration', (node) => {
 		if (!isAnonymousClassOrFunction(node.declaration)) {
 			return;
 		}
@@ -165,24 +177,20 @@ const create = context => {
 		return getProblem(node.declaration, context);
 	});
 
-	context.on('AssignmentExpression', node => {
+	context.on('AssignmentExpression', (node) => {
 		if (
-			!isAnonymousClassOrFunction(node.right)
-			|| !(
-				node.parent.type === 'ExpressionStatement'
-				&& node.parent.expression === node
-			)
-			|| !(
+			!isAnonymousClassOrFunction(node.right) ||
+			!(
+				node.parent.type === 'ExpressionStatement' &&
+				node.parent.expression === node
+			) ||
+			!(
 				isMemberExpression(node.left, {
 					object: 'module',
 					property: 'exports',
 					computed: false,
 					optional: false,
-				})
-				|| (
-					node.left.type === 'Identifier',
-					node.left.name === 'exports'
-				)
+				}) || (node.left.type === 'Identifier', node.left.name === 'exports')
 			)
 		) {
 			return;
@@ -198,7 +206,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Disallow anonymous functions and classes as the default export.',
+			description:
+				'Disallow anonymous functions and classes as the default export.',
 			recommended: true,
 		},
 		hasSuggestions: true,

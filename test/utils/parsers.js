@@ -52,11 +52,10 @@ const vueParser = {
 };
 
 const parsers = Object.fromEntries(
-	[
-		babelParser,
-		typescriptParser,
-		vueParser,
-	].map(parser => [parser.name, parser]),
+	[babelParser, typescriptParser, vueParser].map((parser) => [
+		parser.name,
+		parser,
+	]),
 );
 
 export default parsers;

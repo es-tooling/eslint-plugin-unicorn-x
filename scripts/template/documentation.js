@@ -1,4 +1,5 @@
-const template = () => `
+const template = () =>
+	`
 <!-- end auto-generated rule header -->
 <!-- Do not manually modify this header. Run: \`npm run fix:eslint-docs\` -->
 

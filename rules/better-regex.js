@@ -11,7 +11,7 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sortCharacterClasses} = context.options[0] || {};
 
 	const ignoreList = [];
@@ -36,7 +36,9 @@ const create = context => {
 			let optimized = original;
 
 			try {
-				optimized = regexpTree.optimize(original, undefined, {blacklist: ignoreList}).toString();
+				optimized = regexpTree
+					.optimize(original, undefined, {blacklist: ignoreList})
+					.toString();
 			} catch (error) {
 				return {
 					node,
@@ -62,21 +64,19 @@ const create = context => {
 			};
 
 			if (
-				node.parent.type === 'MemberExpression'
-				&& node.parent.object === node
-				&& !node.parent.optional
-				&& !node.parent.computed
-				&& node.parent.property.type === 'Identifier'
-				&& (
-					node.parent.property.name === 'toString'
-					|| node.parent.property.name === 'source'
-				)
+				node.parent.type === 'MemberExpression' &&
+				node.parent.object === node &&
+				!node.parent.optional &&
+				!node.parent.computed &&
+				node.parent.property.type === 'Identifier' &&
+				(node.parent.property.name === 'toString' ||
+					node.parent.property.name === 'source')
 			) {
 				return problem;
 			}
 
 			return Object.assign(problem, {
-				fix: fixer => fixer.replaceText(node, optimized),
+				fix: (fixer) => fixer.replaceText(node, optimized),
 			});
 		},
 		NewExpression(node) {
@@ -91,9 +91,7 @@ const create = context => {
 			}
 
 			const oldPattern = patternNode.value;
-			const flags = isStringLiteral(flagsNode)
-				? flagsNode.value
-				: '';
+			const flags = isStringLiteral(flagsNode) ? flagsNode.value : '';
 
 			const newPattern = cleanRegexp(oldPattern, flags);
 
@@ -105,10 +103,11 @@ const create = context => {
 						original: oldPattern,
 						optimized: newPattern,
 					},
-					fix: fixer => fixer.replaceText(
-						patternNode,
-						escapeString(newPattern, patternNode.raw.charAt(0)),
-					),
+					fix: (fixer) =>
+						fixer.replaceText(
+							patternNode,
+							escapeString(newPattern, patternNode.raw.charAt(0)),
+						),
 				};
 			}
 		},
@@ -133,7 +132,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Improve regexes by making them shorter, consistent, and safer.',
+			description:
+				'Improve regexes by making them shorter, consistent, and safer.',
 			recommended: false,
 		},
 		fixable: 'code',

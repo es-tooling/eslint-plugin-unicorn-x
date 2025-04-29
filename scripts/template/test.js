@@ -1,4 +1,5 @@
-const template = () => `
+const template = () =>
+	`
 import outdent from 'outdent';
 import {getTester} from './utils/test.js';
 

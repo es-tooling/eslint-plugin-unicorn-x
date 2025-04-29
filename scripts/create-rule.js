@@ -68,24 +68,20 @@ async function getData() {
 			name: 'fixableType',
 			message: 'Is it fixable?',
 			choices: ['Code', 'Whitespace', 'No'],
-			result: value => value === 'No' ? false : value.toLowerCase(),
+			result: (value) => (value === 'No' ? false : value.toLowerCase()),
 		},
 		{
 			type: 'select',
 			name: 'type',
 			message: 'Type:',
-			choices: [
-				'problem',
-				'suggestion',
-				'layout',
-			],
+			choices: ['problem', 'suggestion', 'layout'],
 		},
 		{
 			type: 'select',
 			name: 'hasSuggestions',
 			message: 'Does it provides suggestions?',
 			choices: ['Yes', 'No'],
-			result: value => value === 'Yes',
+			result: (value) => value === 'Yes',
 		},
 	];
 
@@ -114,21 +110,13 @@ await renderTemplate({
 	data,
 });
 
-const filesToOpen = [
-	`docs/rules/${id}.md`,
-	`rules/${id}.js`,
-	`test/${id}.js`,
-];
+const filesToOpen = [`docs/rules/${id}.md`, `rules/${id}.js`, `test/${id}.js`];
 try {
 	await openEditor(filesToOpen);
 } catch {
 	// https://github.com/sindresorhus/open-editor/issues/15
 	try {
-		await x('code', [
-			'--new-window',
-			'.',
-			...filesToOpen,
-		], {cwd: ROOT});
+		await x('code', ['--new-window', '.', ...filesToOpen], {cwd: ROOT});
 	} catch {
 		// do nothing
 	}

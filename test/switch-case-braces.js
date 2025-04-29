@@ -145,7 +145,7 @@ test.snapshot({
 				break;
 			}
 		`,
-	].map(code => ({code, options: ['avoid']})),
+	].map((code) => ({code, options: ['avoid']})),
 	invalid: [
 		outdent`
 			switch(foo) {
@@ -189,5 +189,5 @@ test.snapshot({
 				}}}
 			}
 		`,
-	].map(code => ({code, options: ['avoid']})),
+	].map((code) => ({code, options: ['avoid']})),
 });

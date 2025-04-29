@@ -13,8 +13,8 @@ test.snapshot({
 				'use strict';
 				const x = 0;
 			`,
-			';;\'use strict\';',
-			'{\'use strict\';}',
+			";;'use strict';",
+			"{'use strict';}",
 			'("use strict")',
 			'`use strict`',
 			'({})',
@@ -29,17 +29,16 @@ test.snapshot({
 			'null',
 			'[]',
 			'(() => {})()',
-		].map(code => ({code, filename: 'example.js'})),
+		].map((code) => ({code, filename: 'example.js'})),
 		'',
-		...[
-			'md',
-			'vue',
-			'svelte',
-		].map(extension => ({code: '', filename: `example.${extension}`})),
-		...[
-			'd.ts',
-			'ts',
-		].map(extension => ({code: '/// <reference types="example" />', filename: `example.${extension}`})),
+		...['md', 'vue', 'svelte'].map((extension) => ({
+			code: '',
+			filename: `example.${extension}`,
+		})),
+		...['d.ts', 'ts'].map((extension) => ({
+			code: '/// <reference types="example" />',
+			filename: `example.${extension}`,
+		})),
 	],
 	invalid: [
 		...[
@@ -56,8 +55,8 @@ test.snapshot({
 			'// comment',
 			'/* comment */',
 			'#!/usr/bin/env node',
-			'\'use asm\';',
-			'\'use strict\';',
+			"'use asm';",
+			"'use strict';",
 			'"use strict"',
 			'""',
 			';',
@@ -65,24 +64,17 @@ test.snapshot({
 			'{}',
 			'{;;}',
 			'{{}}',
-		].map(code => ({code, filename: 'example.js'})),
-		...[
-			'mjs',
-			'cJs',
-			'ts',
-			'tsx',
-			'jsx',
-			'MTS',
-			'cts',
-		].map(extension => ({code: '{}', filename: `example.${extension}`})),
+		].map((code) => ({code, filename: 'example.js'})),
+		...['mjs', 'cJs', 'ts', 'tsx', 'jsx', 'MTS', 'cts'].map((extension) => ({
+			code: '{}',
+			filename: `example.${extension}`,
+		})),
 	],
 });
 
 // Test for https://github.com/sindresorhus/eslint-plugin-unicorn/issues/2175
 test.typescript({
-	valid: [
-		{code: '(() => {})();', filename: 'example.ts'},
-	],
+	valid: [{code: '(() => {})();', filename: 'example.ts'}],
 	invalid: [
 		{code: '"";', filename: 'example.ts', errors: 1},
 		{code: '"use strict";', filename: 'example.ts', errors: 1},

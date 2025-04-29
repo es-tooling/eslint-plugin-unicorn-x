@@ -12,7 +12,7 @@ import {extendFixRange} from './fix/index.js';
 
 const messageId = 'prefer-ternary';
 
-const isTernary = node => node?.type === 'ConditionalExpression';
+const isTernary = (node) => node?.type === 'ConditionalExpression';
 
 function getNodeBody(node) {
 	/* c8 ignore next 3 */
@@ -35,23 +35,24 @@ function getNodeBody(node) {
 }
 
 // eslint-disable-next-line internal/no-restricted-property-access -- Need fix
-const isSingleLineNode = node => node.loc.start.line === node.loc.end.line;
+const isSingleLineNode = (node) => node.loc.start.line === node.loc.end.line;
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const onlySingleLine = context.options[0] === 'only-single-line';
 	const {sourceCode} = context;
 	const scopeToNamesGeneratedByFixer = new WeakMap();
-	const isSafeName = (name, scopes) => scopes.every(scope => {
-		const generatedNames = scopeToNamesGeneratedByFixer.get(scope);
-		return !generatedNames || !generatedNames.has(name);
-	});
+	const isSafeName = (name, scopes) =>
+		scopes.every((scope) => {
+			const generatedNames = scopeToNamesGeneratedByFixer.get(scope);
+			return !generatedNames || !generatedNames.has(name);
+		});
 
-	const getText = node => {
+	const getText = (node) => {
 		let text = getParenthesizedText(node, sourceCode);
 		if (
-			!isParenthesized(node, sourceCode)
-			&& shouldAddParenthesesToConditionalExpressionChild(node)
+			!isParenthesized(node, sourceCode) &&
+			shouldAddParenthesesToConditionalExpressionChild(node)
 		) {
 			text = `(${text})`;
 		}
@@ -60,18 +61,9 @@ const create = context => {
 	};
 
 	function merge(options, mergeOptions) {
-		const {
-			before = '',
-			after = ';',
-			consequent,
-			alternate,
-			node,
-		} = options;
+		const {before = '', after = ';', consequent, alternate, node} = options;
 
-		const {
-			checkThrowStatement,
-			returnFalseIfNotMergeable,
-		} = {
+		const {checkThrowStatement, returnFalseIfNotMergeable} = {
 			checkThrowStatement: false,
 			returnFalseIfNotMergeable: false,
 			...mergeOptions,
@@ -84,38 +76,40 @@ const create = context => {
 		const {type, argument, delegate, left, right, operator} = consequent;
 
 		if (
-			type === 'ReturnStatement'
-			&& !isTernary(argument)
-			&& !isTernary(alternate.argument)
+			type === 'ReturnStatement' &&
+			!isTernary(argument) &&
+			!isTernary(alternate.argument)
 		) {
 			return merge({
 				before: `${before}return `,
 				after,
 				consequent: argument === null ? 'undefined' : argument,
-				alternate: alternate.argument === null ? 'undefined' : alternate.argument,
+				alternate:
+					alternate.argument === null ? 'undefined' : alternate.argument,
 				node,
 			});
 		}
 
 		if (
-			type === 'YieldExpression'
-			&& delegate === alternate.delegate
-			&& !isTernary(argument)
-			&& !isTernary(alternate.argument)
+			type === 'YieldExpression' &&
+			delegate === alternate.delegate &&
+			!isTernary(argument) &&
+			!isTernary(alternate.argument)
 		) {
 			return merge({
 				before: `${before}yield${delegate ? '*' : ''} (`,
 				after: `)${after}`,
 				consequent: argument === null ? 'undefined' : argument,
-				alternate: alternate.argument === null ? 'undefined' : alternate.argument,
+				alternate:
+					alternate.argument === null ? 'undefined' : alternate.argument,
 				node,
 			});
 		}
 
 		if (
-			type === 'AwaitExpression'
-			&& !isTernary(argument)
-			&& !isTernary(alternate.argument)
+			type === 'AwaitExpression' &&
+			!isTernary(argument) &&
+			!isTernary(alternate.argument)
 		) {
 			return merge({
 				before: `${before}await (`,
@@ -127,10 +121,10 @@ const create = context => {
 		}
 
 		if (
-			checkThrowStatement
-			&& type === 'ThrowStatement'
-			&& !isTernary(argument)
-			&& !isTernary(alternate.argument)
+			checkThrowStatement &&
+			type === 'ThrowStatement' &&
+			!isTernary(argument) &&
+			!isTernary(alternate.argument)
 		) {
 			// `ThrowStatement` don't check nested
 
@@ -147,13 +141,13 @@ const create = context => {
 		}
 
 		if (
-			type === 'AssignmentExpression'
-			&& operator === alternate.operator
-			&& !isTernary(left)
-			&& !isTernary(alternate.left)
-			&& !isTernary(right)
-			&& !isTernary(alternate.right)
-			&& isSameReference(left, alternate.left)
+			type === 'AssignmentExpression' &&
+			operator === alternate.operator &&
+			!isTernary(left) &&
+			!isTernary(alternate.left) &&
+			!isTernary(right) &&
+			!isTernary(alternate.right) &&
+			isSameReference(left, alternate.left)
 		) {
 			return merge({
 				before: `${before}${sourceCode.getText(left)} ${operator} `,
@@ -170,10 +164,11 @@ const create = context => {
 	return {
 		IfStatement(node) {
 			if (
-				(node.parent.type === 'IfStatement' && node.parent.alternate === node)
-				|| node.test.type === 'ConditionalExpression'
-				|| !node.consequent
-				|| !node.alternate
+				(node.parent.type === 'IfStatement' &&
+					node.parent.alternate === node) ||
+				node.test.type === 'ConditionalExpression' ||
+				!node.consequent ||
+				!node.alternate
 			) {
 				return;
 			}
@@ -182,16 +177,21 @@ const create = context => {
 			const alternate = getNodeBody(node.alternate);
 
 			if (
-				onlySingleLine
-				&& [consequent, alternate, node.test].some(node => !isSingleLineNode(node))
+				onlySingleLine &&
+				[consequent, alternate, node.test].some(
+					(node) => !isSingleLineNode(node),
+				)
 			) {
 				return;
 			}
 
-			const result = merge({node, consequent, alternate}, {
-				checkThrowStatement: true,
-				returnFalseIfNotMergeable: true,
-			});
+			const result = merge(
+				{node, consequent, alternate},
+				{
+					checkThrowStatement: true,
+					returnFalseIfNotMergeable: true,
+				},
+			);
 
 			if (!result) {
 				return;
@@ -205,21 +205,27 @@ const create = context => {
 			}
 
 			const scope = sourceCode.getScope(node);
-			problem.fix = function * (fixer) {
+			problem.fix = function* (fixer) {
 				const testText = getText(node.test);
-				const consequentText = typeof result.consequent === 'string'
-					? result.consequent
-					: getText(result.consequent);
-				const alternateText = typeof result.alternate === 'string'
-					? result.alternate
-					: getText(result.alternate);
+				const consequentText =
+					typeof result.consequent === 'string'
+						? result.consequent
+						: getText(result.consequent);
+				const alternateText =
+					typeof result.alternate === 'string'
+						? result.alternate
+						: getText(result.alternate);
 
 				let {type, before, after} = result;
 
 				let generateNewVariables = false;
 				if (type === 'ThrowStatement') {
 					const scopes = getScopes(scope);
-					const errorName = getAvailableVariableName('error', scopes, isSafeName);
+					const errorName = getAvailableVariableName(
+						'error',
+						scopes,
+						isSafeName,
+					);
 
 					for (const scope of scopes) {
 						if (!scopeToNamesGeneratedByFixer.has(scope)) {
@@ -243,7 +249,11 @@ const create = context => {
 
 				let fixed = `${before}${testText} ? ${consequentText} : ${alternateText}${after}`;
 				const tokenBefore = sourceCode.getTokenBefore(node);
-				const shouldAddSemicolonBefore = needsSemicolon(tokenBefore, sourceCode, fixed);
+				const shouldAddSemicolonBefore = needsSemicolon(
+					tokenBefore,
+					sourceCode,
+					fixed,
+				);
 				if (shouldAddSemicolonBefore) {
 					fixed = `;${fixed}`;
 				}
@@ -251,7 +261,7 @@ const create = context => {
 				yield fixer.replaceText(node, fixed);
 
 				if (generateNewVariables) {
-					yield * extendFixRange(fixer, sourceCode.getRange(sourceCode.ast));
+					yield* extendFixRange(fixer, sourceCode.getRange(sourceCode.ast));
 				}
 			};
 
@@ -272,14 +282,16 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer ternary expressions over simple `if-else` statements.',
+			description:
+				'Prefer ternary expressions over simple `if-else` statements.',
 			recommended: true,
 		},
 		fixable: 'code',
 		schema,
 		defaultOptions: ['always'],
 		messages: {
-			[messageId]: 'This `if` statement can be replaced by a ternary expression.',
+			[messageId]:
+				'This `if` statement can be replaced by a ternary expression.',
 		},
 	},
 };

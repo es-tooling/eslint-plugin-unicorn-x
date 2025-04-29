@@ -8,16 +8,17 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	context.on('CallExpression', callExpression => {
-		if (!(
-			isMethodCall(callExpression, {
-				method: 'flat',
-				argumentsLength: 1,
-				optionalCall: false,
-			})
-			&& isLiteral(callExpression.arguments[0], 1)
-		)) {
+const create = (context) => {
+	context.on('CallExpression', (callExpression) => {
+		if (
+			!(
+				isMethodCall(callExpression, {
+					method: 'flat',
+					argumentsLength: 1,
+					optionalCall: false,
+				}) && isLiteral(callExpression.arguments[0], 1)
+			)
+		) {
 			return;
 		}
 
@@ -27,7 +28,7 @@ const create = context => {
 			node: numberOne,
 			messageId: MESSAGE_ID,
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			fix: fixer => removeArgument(fixer, numberOne, context.sourceCode),
+			fix: (fixer) => removeArgument(fixer, numberOne, context.sourceCode),
 		};
 	});
 };
@@ -38,7 +39,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Disallow using `1` as the `depth` argument of `Array#flat()`.',
+			description:
+				'Disallow using `1` as the `depth` argument of `Array#flat()`.',
 			recommended: true,
 		},
 		fixable: 'code',

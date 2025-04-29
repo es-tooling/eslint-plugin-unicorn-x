@@ -1,6 +1,10 @@
 import {isSemicolonToken} from '@eslint-community/eslint-utils';
 
-export default function * addParenthesizesToReturnOrThrowExpression(fixer, node, sourceCode) {
+export default function* addParenthesizesToReturnOrThrowExpression(
+	fixer,
+	node,
+	sourceCode,
+) {
 	if (node.type !== 'ReturnStatement' && node.type !== 'ThrowStatement') {
 		return;
 	}

@@ -4,7 +4,7 @@ import {isCallOrNewExpression} from './ast/index.js';
 const MESSAGE_ID = 'consistentDestructuring';
 const MESSAGE_ID_SUGGEST = 'consistentDestructuringSuggest';
 
-const isSimpleExpression = expression => {
+const isSimpleExpression = (expression) => {
 	while (expression) {
 		if (expression.computed) {
 			return false;
@@ -17,8 +17,9 @@ const isSimpleExpression = expression => {
 		expression = expression.object;
 	}
 
-	return expression.type === 'Identifier'
-		|| expression.type === 'ThisExpression';
+	return (
+		expression.type === 'Identifier' || expression.type === 'ThisExpression'
+	);
 };
 
 const isChildInParentScope = (child, parent) => {
@@ -34,19 +35,21 @@ const isChildInParentScope = (child, parent) => {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 	const declarations = new Map();
 
 	return {
 		VariableDeclarator(node) {
-			if (!(
-				node.id.type === 'ObjectPattern'
-				&& node.init
-				&& node.init.type !== 'Literal'
-				// Ignore any complex expressions (e.g. arrays, functions)
-				&& isSimpleExpression(node.init)
-			)) {
+			if (
+				!(
+					node.id.type === 'ObjectPattern' &&
+					node.init &&
+					node.init.type !== 'Literal' &&
+					// Ignore any complex expressions (e.g. arrays, functions)
+					isSimpleExpression(node.init)
+				)
+			) {
 				return;
 			}
 
@@ -58,12 +61,9 @@ const create = context => {
 		},
 		MemberExpression(node) {
 			if (
-				node.computed
-				|| (
-					isCallOrNewExpression(node.parent)
-					&& node.parent.callee === node
-				)
-				|| isLeftHandSide(node)
+				node.computed ||
+				(isCallOrNewExpression(node.parent) && node.parent.callee === node) ||
+				isLeftHandSide(node)
 			) {
 				return;
 			}
@@ -82,10 +82,11 @@ const create = context => {
 				return;
 			}
 
-			const destructurings = objectPattern.properties.filter(property =>
-				property.type === 'Property'
-				&& property.key.type === 'Identifier'
-				&& property.value.type === 'Identifier',
+			const destructurings = objectPattern.properties.filter(
+				(property) =>
+					property.type === 'Property' &&
+					property.key.type === 'Identifier' &&
+					property.value.type === 'Identifier',
 			);
 			const lastProperty = objectPattern.properties.at(-1);
 
@@ -95,8 +96,8 @@ const create = context => {
 			const member = sourceCode.getText(node.property);
 
 			// Member might already be destructured
-			const destructuredMember = destructurings.find(property =>
-				property.key.name === member,
+			const destructuredMember = destructurings.find(
+				(property) => property.key.name === member,
 			);
 
 			if (!destructuredMember) {
@@ -119,30 +120,34 @@ const create = context => {
 				};
 			}
 
-			const newMember = destructuredMember ? destructuredMember.value.name : member;
+			const newMember = destructuredMember
+				? destructuredMember.value.name
+				: member;
 
 			return {
 				node,
 				messageId: MESSAGE_ID,
-				suggest: [{
-					messageId: MESSAGE_ID_SUGGEST,
-					data: {
-						expression,
-						property: newMember,
-					},
-					* fix(fixer) {
-						const {properties} = objectPattern;
-						const lastProperty = properties.at(-1);
+				suggest: [
+					{
+						messageId: MESSAGE_ID_SUGGEST,
+						data: {
+							expression,
+							property: newMember,
+						},
+						*fix(fixer) {
+							const {properties} = objectPattern;
+							const lastProperty = properties.at(-1);
 
-						yield fixer.replaceText(node, newMember);
+							yield fixer.replaceText(node, newMember);
 
-						if (!destructuredMember) {
-							yield lastProperty
-								? fixer.insertTextAfter(lastProperty, `, ${newMember}`)
-								: fixer.replaceText(objectPattern, `{${newMember}}`);
-						}
+							if (!destructuredMember) {
+								yield lastProperty
+									? fixer.insertTextAfter(lastProperty, `, ${newMember}`)
+									: fixer.replaceText(objectPattern, `{${newMember}}`);
+							}
+						},
 					},
-				}],
+				],
 			};
 		},
 	};
@@ -161,7 +166,8 @@ const config = {
 		hasSuggestions: true,
 		messages: {
 			[MESSAGE_ID]: 'Use destructured variables over properties.',
-			[MESSAGE_ID_SUGGEST]: 'Replace `{{expression}}` with destructured property `{{property}}`.',
+			[MESSAGE_ID_SUGGEST]:
+				'Replace `{{expression}}` with destructured property `{{property}}`.',
 		},
 	},
 };

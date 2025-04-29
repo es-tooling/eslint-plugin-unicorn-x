@@ -5,8 +5,7 @@ const {test} = getTester(import.meta);
 
 // `await`ed
 test.snapshot({
-	valid: [
-	],
+	valid: [],
 	invalid: [
 		'await Promise.race([(0, promise)])',
 		'async function * foo() {await Promise.race([yield promise])}',

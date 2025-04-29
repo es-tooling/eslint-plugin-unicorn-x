@@ -8,16 +8,23 @@ let ruleFiles;
 
 beforeAll(async () => {
 	const files = await fsAsync.readdir('rules');
-	ruleFiles = files.filter(file => path.extname(file) === '.js' && path.basename(file) !== 'index.js');
+	ruleFiles = files.filter(
+		(file) =>
+			path.extname(file) === '.js' && path.basename(file) !== 'index.js',
+	);
 });
 
-const ignoredRules = [
-	'no-nested-ternary',
-	'no-negated-condition',
-];
+const ignoredRules = ['no-nested-ternary', 'no-negated-condition'];
 
 const deprecatedRules = Object.entries(eslintPluginUnicorn.rules)
-	.filter(([, {meta: {deprecated}}]) => deprecated)
+	.filter(
+		([
+			,
+			{
+				meta: {deprecated},
+			},
+		]) => deprecated,
+	)
 	.map(([ruleId]) => ruleId);
 
 const RULES_WITHOUT_EXAMPLES_SECTION = new Set([
@@ -39,7 +46,10 @@ const RULES_WITHOUT_EXAMPLES_SECTION = new Set([
 test('Every rule is defined in index file in alphabetical order', () => {
 	for (const file of ruleFiles) {
 		const name = path.basename(file, '.js');
-		assert.ok(eslintPluginUnicorn.rules[name], `'${name}' is not exported in 'index.js'`);
+		assert.ok(
+			eslintPluginUnicorn.rules[name],
+			`'${name}' is not exported in 'index.js'`,
+		);
 		if (!deprecatedRules.includes(name)) {
 			assert.ok(
 				eslintPluginUnicorn.configs.recommended.rules[`unicorn-x/${name}`],
@@ -47,8 +57,14 @@ test('Every rule is defined in index file in alphabetical order', () => {
 			);
 		}
 
-		assert.ok(fs.existsSync(path.join('docs/rules', `${name}.md`)), `There is no documentation for '${name}'`);
-		assert.ok(fs.existsSync(path.join('test', file.replace(/\.js$/, '.js'))), `There are no tests for '${name}'`);
+		assert.ok(
+			fs.existsSync(path.join('docs/rules', `${name}.md`)),
+			`There is no documentation for '${name}'`,
+		);
+		assert.ok(
+			fs.existsSync(path.join('test', file.replace(/\.js$/, '.js'))),
+			`There are no tests for '${name}'`,
+		);
 	}
 
 	assert.strictEqual(
@@ -57,12 +73,16 @@ test('Every rule is defined in index file in alphabetical order', () => {
 		'There are more exported rules than rule files.',
 	);
 	assert.strictEqual(
-		Object.keys(eslintPluginUnicorn.configs.recommended.rules).length - deprecatedRules.length - ignoredRules.length,
+		Object.keys(eslintPluginUnicorn.configs.recommended.rules).length -
+			deprecatedRules.length -
+			ignoredRules.length,
 		ruleFiles.length - deprecatedRules.length,
 		'There are more exported rules in the recommended config than rule files.',
 	);
 	assert.strictEqual(
-		Object.keys(eslintPluginUnicorn.configs.all.rules).length - deprecatedRules.length - ignoredRules.length,
+		Object.keys(eslintPluginUnicorn.configs.all.rules).length -
+			deprecatedRules.length -
+			ignoredRules.length,
 		ruleFiles.length - deprecatedRules.length,
 		'There are more rules than those exported in the all config.',
 	);
@@ -98,20 +118,48 @@ test('Every rule has valid meta.type', () => {
 		const name = path.basename(file, '.js');
 		const rule = eslintPluginUnicorn.rules[name];
 
-		assert.isTrue(rule.meta !== null && rule.meta !== undefined, `${name} has no meta`);
-		assert.strictEqual(typeof rule.meta.type, 'string', `${name} meta.type is not string`);
-		assert.isTrue(validTypes.includes(rule.meta.type), `${name} meta.type is not one of [${validTypes.join(', ')}]`);
+		assert.isTrue(
+			rule.meta !== null && rule.meta !== undefined,
+			`${name} has no meta`,
+		);
+		assert.strictEqual(
+			typeof rule.meta.type,
+			'string',
+			`${name} meta.type is not string`,
+		);
+		assert.isTrue(
+			validTypes.includes(rule.meta.type),
+			`${name} meta.type is not one of [${validTypes.join(', ')}]`,
+		);
 	}
 });
 
 test('Every deprecated rules listed in docs/deleted-and-deprecated-rules.md', async () => {
-	const content = await fsAsync.readFile('docs/deleted-and-deprecated-rules.md', 'utf8');
+	const content = await fsAsync.readFile(
+		'docs/deleted-and-deprecated-rules.md',
+		'utf8',
+	);
 	for (const name of deprecatedRules) {
 		const rule = eslintPluginUnicorn.rules[name];
-		assert.strictEqual(typeof rule.create, 'function', `${name} create is not function`);
-		assert.deepEqual(rule.create(), {}, `${name} create should return empty object`);
-		assert.strictEqual(typeof rule.meta.deprecated.message, 'string', `${name} meta.deprecated.message should be string`);
-		assert.isTrue(Array.isArray(rule.meta.deprecated.replacedBy), `${name} meta.deprecated.replacedBy should be array`);
+		assert.strictEqual(
+			typeof rule.create,
+			'function',
+			`${name} create is not function`,
+		);
+		assert.deepEqual(
+			rule.create(),
+			{},
+			`${name} create should return empty object`,
+		);
+		assert.strictEqual(
+			typeof rule.meta.deprecated.message,
+			'string',
+			`${name} meta.deprecated.message should be string`,
+		);
+		assert.isTrue(
+			Array.isArray(rule.meta.deprecated.replacedBy),
+			`${name} meta.deprecated.replacedBy should be array`,
+		);
 		assert.isTrue(content.includes(`\n### ${name}\n`));
 		assert.isFalse(content.includes(`\n### ~${name}~\n`));
 	}
@@ -123,7 +171,10 @@ test('Every rule file has the appropriate contents', () => {
 		const rulePath = path.join('rules', `${ruleName}.js`);
 		const ruleContents = fs.readFileSync(rulePath, 'utf8');
 
-		assert.isTrue(ruleContents.includes('/** @type {import(\'eslint\').Rule.RuleModule} */'), `${ruleName} includes jsdoc comment for rule type`);
+		assert.isTrue(
+			ruleContents.includes("/** @type {import('eslint').Rule.RuleModule} */"),
+			`${ruleName} includes jsdoc comment for rule type`,
+		);
 	}
 });
 
@@ -205,13 +256,26 @@ test('rule.meta.docs.recommended should be synchronized with presets', () => {
 		}
 
 		const {recommended} = rule.meta.docs;
-		assert.strictEqual(typeof recommended, 'boolean', `meta.docs.recommended in '${name}' rule should be a boolean.`);
+		assert.strictEqual(
+			typeof recommended,
+			'boolean',
+			`meta.docs.recommended in '${name}' rule should be a boolean.`,
+		);
 
-		const severity = eslintPluginUnicorn.configs.recommended.rules[`unicorn-x/${name}`];
+		const severity =
+			eslintPluginUnicorn.configs.recommended.rules[`unicorn-x/${name}`];
 		if (recommended) {
-			assert.strictEqual(severity, 'error', `'${name}' rule should set to 'error'.`);
+			assert.strictEqual(
+				severity,
+				'error',
+				`'${name}' rule should set to 'error'.`,
+			);
 		} else {
-			assert.strictEqual(severity, 'off', `'${name}' rule should set to 'off'.`);
+			assert.strictEqual(
+				severity,
+				'off',
+				`'${name}' rule should set to 'off'.`,
+			);
 		}
 	}
 });

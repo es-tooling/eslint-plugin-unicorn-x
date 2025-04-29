@@ -91,9 +91,7 @@ export default [
 		'https://github.com/qix-/color-convert',
 		{
 			repository: 'https://github.com/prettier/prettier',
-			ignore: [
-				'tests/**',
-			],
+			ignore: ['tests/**'],
 		},
 		{
 			repository: 'https://github.com/puppeteer/puppeteer',
@@ -109,9 +107,7 @@ export default [
 				// Global return
 				'utils/fetch_devices.js',
 			],
-			babelPlugins: [
-				'importAssertions',
-			],
+			babelPlugins: ['importAssertions'],
 		},
 		'https://github.com/ReactTraining/react-router',
 		// #902
@@ -129,10 +125,7 @@ export default [
 	[
 		{
 			repository: 'https://github.com/eslint/eslint',
-			ignore: [
-				'tests/fixtures',
-				'tests/performance',
-			],
+			ignore: ['tests/fixtures', 'tests/performance'],
 		},
 		'https://github.com/element-plus/element-plus',
 		'https://github.com/tusen-ai/naive-ui',
@@ -150,17 +143,12 @@ export default [
 		'https://github.com/zloirock/core-js',
 		{
 			repository: 'https://github.com/rollup/rollup',
-			ignore: [
-				'test/**',
-				'scripts/perf.js',
-			],
+			ignore: ['test/**', 'scripts/perf.js'],
 		},
 		{
 			repository: 'https://github.com/rust-lang/crates.io',
 			ignore: [],
-			babelPlugins: [
-				['decorators', {decoratorsBeforeExport: true}],
-			],
+			babelPlugins: [['decorators', {decoratorsBeforeExport: true}]],
 		},
 	],
 	{
@@ -228,6 +216,9 @@ export default [
 	},
 ].flatMap((projectOrProjects, index) =>
 	Array.isArray(projectOrProjects)
-		? projectOrProjects.map(project => ({...normalizeProject(project), group: index}))
+		? projectOrProjects.map((project) => ({
+				...normalizeProject(project),
+				group: index,
+			}))
 		: [{...normalizeProject(projectOrProjects), group: index}],
 );

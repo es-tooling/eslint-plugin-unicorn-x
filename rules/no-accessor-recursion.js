@@ -1,6 +1,7 @@
 const MESSAGE_ID_ERROR = 'no-accessor-recursion/error';
 const messages = {
-	[MESSAGE_ID_ERROR]: 'Disallow recursive access to `this` within {{kind}}ters.',
+	[MESSAGE_ID_ERROR]:
+		'Disallow recursive access to `this` within {{kind}}ters.',
 };
 
 /**
@@ -16,32 +17,36 @@ const getClosestFunctionScope = (sourceCode, node) => {
 			return;
 		}
 
-		if (scope.type === 'function' && scope.block.type !== 'ArrowFunctionExpression') {
+		if (
+			scope.type === 'function' &&
+			scope.block.type !== 'ArrowFunctionExpression'
+		) {
 			return scope;
 		}
 	}
 };
 
 /** @param {import('estree').Identifier | import('estree').PrivateIdentifier} node */
-const isIdentifier = node => node.type === 'Identifier' || node.type === 'PrivateIdentifier';
+const isIdentifier = (node) =>
+	node.type === 'Identifier' || node.type === 'PrivateIdentifier';
 
 /** @param {import('estree').ThisExpression} node */
-const isDotNotationAccess = node =>
-	node.parent.type === 'MemberExpression'
-	&& node.parent.object === node
-	&& !node.parent.computed
-	&& isIdentifier(node.parent.property);
+const isDotNotationAccess = (node) =>
+	node.parent.type === 'MemberExpression' &&
+	node.parent.object === node &&
+	!node.parent.computed &&
+	isIdentifier(node.parent.property);
 
 /**
 Check if a property is a valid getter or setter.
 
 @param {import('estree').Property | import('estree').MethodDefinition} property
 */
-const isValidProperty = property =>
-	['Property', 'MethodDefinition'].includes(property?.type)
-	&& !property.computed
-	&& ['set', 'get'].includes(property.kind)
-	&& isIdentifier(property.key);
+const isValidProperty = (property) =>
+	['Property', 'MethodDefinition'].includes(property?.type) &&
+	!property.computed &&
+	['set', 'get'].includes(property.kind) &&
+	isIdentifier(property.key);
 
 /**
 Check if two property keys are the same.
@@ -49,7 +54,8 @@ Check if two property keys are the same.
 @param {import('estree').Property['key']} keyLeft
 @param {import('estree').Property['key']} keyRight
 */
-const isSameKey = (keyLeft, keyRight) => ['type', 'name'].every(key => keyLeft[key] === keyRight[key]);
+const isSameKey = (keyLeft, keyRight) =>
+	['type', 'name'].every((key) => keyLeft[key] === keyRight[key]);
 
 /**
 Check if `this` is accessed recursively within a getter or setter.
@@ -58,8 +64,7 @@ Check if `this` is accessed recursively within a getter or setter.
 @param {import('estree').Property | import('estree').MethodDefinition} property
 */
 const isMemberAccess = (node, property) =>
-	isDotNotationAccess(node)
-	&& isSameKey(node.parent.property, property.key);
+	isDotNotationAccess(node) && isSameKey(node.parent.property, property.key);
 
 /**
 Check if `this` is accessed recursively within a destructuring assignment.
@@ -68,18 +73,19 @@ Check if `this` is accessed recursively within a destructuring assignment.
 @param {import('estree').Property | import('estree').MethodDefinition} property
 */
 const isRecursiveDestructuringAccess = (node, property) =>
-	node.parent.type === 'VariableDeclarator'
-	&& node.parent.init === node
-	&& node.parent.id.type === 'ObjectPattern'
-	&& node.parent.id.properties.some(declaratorProperty =>
-		declaratorProperty.type === 'Property'
-		&& !declaratorProperty.computed
-		&& isSameKey(declaratorProperty.key, property.key),
+	node.parent.type === 'VariableDeclarator' &&
+	node.parent.init === node &&
+	node.parent.id.type === 'ObjectPattern' &&
+	node.parent.id.properties.some(
+		(declaratorProperty) =>
+			declaratorProperty.type === 'Property' &&
+			!declaratorProperty.computed &&
+			isSameKey(declaratorProperty.key, property.key),
 	);
 
 const isPropertyRead = (thisExpression, property) =>
-	isMemberAccess(thisExpression, property)
-	|| isRecursiveDestructuringAccess(thisExpression, property);
+	isMemberAccess(thisExpression, property) ||
+	isRecursiveDestructuringAccess(thisExpression, property);
 
 const isPropertyWrite = (thisExpression, property) => {
 	if (!isMemberAccess(thisExpression, property)) {
@@ -94,26 +100,25 @@ const isPropertyWrite = (thisExpression, property) => {
 		// `this.foo = …`
 		// `[this.foo = …] = …`
 		// `({property: this.foo = …] = …)`
-		(
-			(parent.type === 'AssignmentExpression' || parent.type === 'AssignmentPattern')
-			&& parent.left === memberExpression
-		)
+		((parent.type === 'AssignmentExpression' ||
+			parent.type === 'AssignmentPattern') &&
+			parent.left === memberExpression) ||
 		// `++ this.foo`
-		|| (parent.type === 'UpdateExpression' && parent.argument === memberExpression)
+		(parent.type === 'UpdateExpression' &&
+			parent.argument === memberExpression) ||
 		// `[this.foo] = …`
-		|| (parent.type === 'ArrayPattern' && parent.elements.includes(memberExpression))
+		(parent.type === 'ArrayPattern' &&
+			parent.elements.includes(memberExpression)) ||
 		// `({property: this.foo} = …)`
-		|| (
-			parent.type === 'Property'
-			&& parent.value === memberExpression
-			&& parent.parent.type === 'ObjectPattern'
-			&& parent.parent.properties.includes(memberExpression.parent)
-		)
+		(parent.type === 'Property' &&
+			parent.value === memberExpression &&
+			parent.parent.type === 'ObjectPattern' &&
+			parent.parent.properties.includes(memberExpression.parent))
 	);
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
@@ -133,11 +138,22 @@ const create = context => {
 			}
 
 			if (property.kind === 'get' && isPropertyRead(thisExpression, property)) {
-				return {node: thisExpression.parent, messageId: MESSAGE_ID_ERROR, data: {kind: property.kind}};
+				return {
+					node: thisExpression.parent,
+					messageId: MESSAGE_ID_ERROR,
+					data: {kind: property.kind},
+				};
 			}
 
-			if (property.kind === 'set' && isPropertyWrite(thisExpression, property)) {
-				return {node: thisExpression.parent, messageId: MESSAGE_ID_ERROR, data: {kind: property.kind}};
+			if (
+				property.kind === 'set' &&
+				isPropertyWrite(thisExpression, property)
+			) {
+				return {
+					node: thisExpression.parent,
+					messageId: MESSAGE_ID_ERROR,
+					data: {kind: property.kind},
+				};
 			}
 		},
 	};
@@ -149,7 +165,8 @@ const config = {
 	meta: {
 		type: 'problem',
 		docs: {
-			description: 'Disallow recursive access to `this` within getters and setters.',
+			description:
+				'Disallow recursive access to `this` within getters and setters.',
 			recommended: true,
 		},
 		defaultOptions: [],

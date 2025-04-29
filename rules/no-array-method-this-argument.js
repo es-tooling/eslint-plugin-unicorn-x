@@ -11,8 +11,10 @@ const ERROR_STATIC_METHOD = 'error-static-method';
 const SUGGESTION_BIND = 'suggestion-bind';
 const SUGGESTION_REMOVE = 'suggestion-remove';
 const messages = {
-	[ERROR_PROTOTYPE_METHOD]: 'Do not use the `this` argument in `Array#{{method}}()`.',
-	[ERROR_STATIC_METHOD]: 'Do not use the `this` argument in `Array.{{method}}()`.',
+	[ERROR_PROTOTYPE_METHOD]:
+		'Do not use the `this` argument in `Array#{{method}}()`.',
+	[ERROR_STATIC_METHOD]:
+		'Do not use the `this` argument in `Array.{{method}}()`.',
 	[SUGGESTION_REMOVE]: 'Remove this argument.',
 	[SUGGESTION_BIND]: 'Use a bound function.',
 };
@@ -72,11 +74,11 @@ const ignored = [
 ];
 
 function removeThisArgument(thisArgumentNode, sourceCode) {
-	return fixer => removeArgument(fixer, thisArgumentNode, sourceCode);
+	return (fixer) => removeArgument(fixer, thisArgumentNode, sourceCode);
 }
 
 function useBoundFunction(callbackNode, thisArgumentNode, sourceCode) {
-	return function * (fixer) {
+	return function* (fixer) {
 		yield removeThisArgument(thisArgumentNode, sourceCode)(fixer);
 
 		const callbackParentheses = getParentheses(callbackNode, sourceCode);
@@ -85,8 +87,8 @@ function useBoundFunction(callbackNode, thisArgumentNode, sourceCode) {
 			? callbackParentheses.at(-1)
 			: callbackNode;
 		if (
-			!isParenthesized
-			&& shouldAddParenthesesToMemberExpressionObject(callbackNode, sourceCode)
+			!isParenthesized &&
+			shouldAddParenthesesToMemberExpressionObject(callbackNode, sourceCode)
 		) {
 			yield fixer.insertTextBefore(callbackLastToken, '(');
 			yield fixer.insertTextAfter(callbackLastToken, ')');
@@ -94,7 +96,10 @@ function useBoundFunction(callbackNode, thisArgumentNode, sourceCode) {
 
 		const thisArgumentText = getParenthesizedText(thisArgumentNode, sourceCode);
 		// `thisArgument` was a argument, no need add extra parentheses
-		yield fixer.insertTextAfter(callbackLastToken, `.bind(${thisArgumentText})`);
+		yield fixer.insertTextAfter(
+			callbackLastToken,
+			`.bind(${thisArgumentText})`,
+		);
 	};
 }
 
@@ -115,7 +120,10 @@ function getProblem({
 
 	const isArrowCallback = callbackNode.type === 'ArrowFunctionExpression';
 	if (isArrowCallback) {
-		const thisArgumentHasSideEffect = hasSideEffect(thisArgumentNode, sourceCode);
+		const thisArgumentHasSideEffect = hasSideEffect(
+			thisArgumentNode,
+			sourceCode,
+		);
 		if (thisArgumentHasSideEffect) {
 			problem.suggest = [
 				{
@@ -145,11 +153,11 @@ function getProblem({
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	// Prototype methods
-	context.on('CallExpression', callExpression => {
+	context.on('CallExpression', (callExpression) => {
 		if (
 			!isMethodCall(callExpression, {
 				methods: [
@@ -167,9 +175,9 @@ const create = context => {
 				argumentsLength: 2,
 				optionalCall: false,
 				optionalMember: false,
-			})
-			|| isNodeMatches(callExpression.callee, ignored)
-			|| isNodeValueNotFunction(callExpression.arguments[0])
+			}) ||
+			isNodeMatches(callExpression.callee, ignored) ||
+			isNodeValueNotFunction(callExpression.arguments[0])
 		) {
 			return;
 		}
@@ -184,7 +192,7 @@ const create = context => {
 	});
 
 	// `Array.from()` and `Array.fromAsync()`
-	context.on('CallExpression', callExpression => {
+	context.on('CallExpression', (callExpression) => {
 		if (
 			!isMethodCall(callExpression, {
 				object: 'Array',
@@ -192,8 +200,8 @@ const create = context => {
 				argumentsLength: 3,
 				optionalCall: false,
 				optionalMember: false,
-			})
-			|| isNodeValueNotFunction(callExpression.arguments[1])
+			}) ||
+			isNodeValueNotFunction(callExpression.arguments[1])
 		) {
 			return;
 		}

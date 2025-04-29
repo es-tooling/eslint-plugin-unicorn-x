@@ -23,18 +23,15 @@ const mostLikelyNotNodeTypes = new Set([
 	'ThisExpression',
 ]);
 
-const isNodeValueNotFunction = node => (
-	impossibleNodeTypes.has(node.type)
-	|| mostLikelyNotNodeTypes.has(node.type)
-	|| isUndefined(node)
-	|| (
-		isCallExpression(node)
-		&& !(isMethodCall(node, {
+const isNodeValueNotFunction = (node) =>
+	impossibleNodeTypes.has(node.type) ||
+	mostLikelyNotNodeTypes.has(node.type) ||
+	isUndefined(node) ||
+	(isCallExpression(node) &&
+		!isMethodCall(node, {
 			method: 'bind',
 			optionalCall: false,
 			optionalMember: false,
-		}))
-	)
-);
+		}));
 
 export default isNodeValueNotFunction;

@@ -39,15 +39,15 @@ const createError = (name, suggestionOutput) => {
 	const suggestions = safe
 		? undefined
 		: [
-			{
-				messageId: MESSAGE_ID_SUGGESTION,
-				data: {
-					description: name,
-					property: name,
+				{
+					messageId: MESSAGE_ID_SUGGESTION,
+					data: {
+						description: name,
+						property: name,
+					},
+					output: suggestionOutput,
 				},
-				output: suggestionOutput,
-			},
-		];
+			];
 
 	return {
 		...error,
@@ -59,9 +59,7 @@ const invalidMethodTest = ({code, output, name, suggestionOutput}) => {
 	const {safe} = methods[name];
 	const test = {
 		code,
-		errors: [
-			createError(name, suggestionOutput),
-		],
+		errors: [createError(name, suggestionOutput)],
 	};
 	if (safe) {
 		test.output = output;
@@ -79,20 +77,26 @@ test({
 		'Number.isFinite(10);',
 
 		// Shadowed
-		...Object.entries(methods).map(([name, {code}]) => outdent`
-			const ${name} = function() {};
-			${code}
-		`),
-		...Object.entries(methods).map(([name, {code}]) => outdent`
-			const {${name}} = Number;
-			${code}
-		`),
-		...Object.entries(methods).map(([name, {code}]) => outdent`
-			const ${name} = function() {};
-			function inner() {
-				return ${code}
-			}
-		`),
+		...Object.entries(methods).map(
+			([name, {code}]) => outdent`
+				const ${name} = function() {};
+				${code}
+			`,
+		),
+		...Object.entries(methods).map(
+			([name, {code}]) => outdent`
+				const {${name}} = Number;
+				${code}
+			`,
+		),
+		...Object.entries(methods).map(
+			([name, {code}]) => outdent`
+				const ${name} = function() {};
+				function inner() {
+					return ${code}
+				}
+			`,
+		),
 
 		// Not read
 		'global.isFinite = Number.isFinite;',
@@ -348,9 +352,7 @@ test({
 });
 
 test.babel({
-	valid: [
-		'class Foo2 {NaN = 1}',
-	],
+	valid: ['class Foo2 {NaN = 1}'],
 	invalid: [
 		{
 			code: 'class Foo2 {[NaN] = 1}',
@@ -427,8 +429,12 @@ test.snapshot({
 		withCheckInfinity('const foo = -(-Infinity);'),
 		withCheckInfinity('const foo = 1 - Infinity;'),
 		withCheckInfinity('const foo = 1 - -Infinity;'),
-		withCheckInfinity('const isPositiveZero = value => value === 0 && 1 / value === Infinity;'),
-		withCheckInfinity('const isNegativeZero = value => value === 0 && 1 / value === -Infinity;'),
+		withCheckInfinity(
+			'const isPositiveZero = value => value === 0 && 1 / value === Infinity;',
+		),
+		withCheckInfinity(
+			'const isNegativeZero = value => value === 0 && 1 / value === -Infinity;',
+		),
 		'const {a = NaN} = {};',
 		'const {[NaN]: a = NaN} = {};',
 		'const [a = NaN] = [];',

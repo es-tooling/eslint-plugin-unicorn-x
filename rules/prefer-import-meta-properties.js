@@ -13,7 +13,7 @@ const messages = {
 	[ERROR_FILENAME]: 'Do not construct filename using `fileURLToPath()`.',
 };
 
-const isParentLiteral = node => {
+const isParentLiteral = (node) => {
 	if (node?.type !== 'Literal') {
 		return false;
 	}
@@ -21,12 +21,15 @@ const isParentLiteral = node => {
 	return node.value === '.' || node.value === './';
 };
 
-const isImportMeta = node =>
-	node.type === 'MetaProperty'
-	&& node.meta.name === 'import'
-	&& node.property.name === 'meta';
+const isImportMeta = (node) =>
+	node.type === 'MetaProperty' &&
+	node.meta.name === 'import' &&
+	node.property.name === 'meta';
 
-function isNodeBuiltinModuleFunctionCall(node, {modules, functionName, sourceCode}) {
+function isNodeBuiltinModuleFunctionCall(
+	node,
+	{modules, functionName, sourceCode},
+) {
 	if (!isCallExpression(node, {optional: false, argumentsLength: 1})) {
 		return false;
 	}
@@ -38,10 +41,16 @@ function isNodeBuiltinModuleFunctionCall(node, {modules, functionName, sourceCod
 	/** @param {import('estree').Expression} node */
 	function checkExpression(node, checkKind) {
 		if (node.type === 'MemberExpression') {
-			if (!(
-				checkKind === 'property'
-				&& isMemberExpression(node, {property: functionName, computed: false, optional: false})
-			)) {
+			if (
+				!(
+					checkKind === 'property' &&
+					isMemberExpression(node, {
+						property: functionName,
+						computed: false,
+						optional: false,
+					})
+				)
+			) {
 				return false;
 			}
 
@@ -61,8 +70,7 @@ function isNodeBuiltinModuleFunctionCall(node, {modules, functionName, sourceCod
 					argumentsLength: 1,
 					optionalMember: false,
 					optionalCall: false,
-				})
-				&& isModuleLiteral(node.arguments[0])
+				}) && isModuleLiteral(node.arguments[0])
 			);
 		}
 
@@ -93,8 +101,10 @@ function isNodeBuiltinModuleFunctionCall(node, {modules, functionName, sourceCod
 
 			const specifier = define.node;
 			return checkKind === 'module'
-				? (specifier?.type === 'ImportDefaultSpecifier' || specifier?.type === 'ImportNamespaceSpecifier')
-				: (specifier?.type === 'ImportSpecifier' && specifier.imported.name === functionName);
+				? specifier?.type === 'ImportDefaultSpecifier' ||
+						specifier?.type === 'ImportNamespaceSpecifier'
+				: specifier?.type === 'ImportSpecifier' &&
+						specifier.imported.name === functionName;
 		}
 
 		return define.type === 'Variable' && checkPattern(define.name, checkKind);
@@ -106,10 +116,10 @@ function isNodeBuiltinModuleFunctionCall(node, {modules, functionName, sourceCod
 		const {parent} = node;
 		if (parent.type === 'VariableDeclarator') {
 			if (
-				!parent.init
-				|| parent.id !== node
-				|| parent.parent.type !== 'VariableDeclaration'
-				|| parent.parent.kind !== 'const'
+				!parent.init ||
+				parent.id !== node ||
+				parent.parent.type !== 'VariableDeclaration' ||
+				parent.parent.kind !== 'const'
 			) {
 				return false;
 			}
@@ -118,13 +128,15 @@ function isNodeBuiltinModuleFunctionCall(node, {modules, functionName, sourceCod
 		}
 
 		if (parent.type === 'Property') {
-			if (!(
-				checkKind === 'property'
-				&& parent.value === node
-				&& !parent.computed
-				&& parent.key.type === 'Identifier'
-				&& parent.key.name === functionName
-			)) {
+			if (
+				!(
+					checkKind === 'property' &&
+					parent.value === node &&
+					!parent.computed &&
+					parent.key.type === 'Identifier' &&
+					parent.key.name === functionName
+				)
+			) {
 				return false;
 			}
 
@@ -165,18 +177,20 @@ function isPathDirnameCall(node, sourceCode) {
 function create(context) {
 	const {sourceCode} = context;
 
-	context.on('MetaProperty', function * (node) {
+	context.on('MetaProperty', function* (node) {
 		if (!isImportMeta(node)) {
 			return;
 		}
 
 		/** @type {import('estree').Node} */
 		const memberExpression = node.parent;
-		if (!isMemberExpression(memberExpression, {
-			properties: ['url', 'filename'],
-			computed: false,
-			optional: false,
-		})) {
+		if (
+			!isMemberExpression(memberExpression, {
+				properties: ['url', 'filename'],
+				computed: false,
+				optional: false,
+			})
+		) {
 			return;
 		}
 
@@ -184,10 +198,10 @@ function create(context) {
 		if (propertyName === 'url') {
 			// `url.fileURLToPath(import.meta.url)`
 			if (
-				isUrlFileURLToPathCall(memberExpression.parent, sourceCode)
-				&& memberExpression.parent.arguments[0] === memberExpression
+				isUrlFileURLToPathCall(memberExpression.parent, sourceCode) &&
+				memberExpression.parent.arguments[0] === memberExpression
 			) {
-				yield * iterateProblemsFromFilename(memberExpression.parent, {
+				yield* iterateProblemsFromFilename(memberExpression.parent, {
 					reportFilenameNode: true,
 				});
 				return;
@@ -196,19 +210,25 @@ function create(context) {
 			// `new URL(import.meta.url)`
 			// `new URL('.', import.meta.url)`
 			// `new URL('./', import.meta.url)`
-			if (isNewExpression(memberExpression.parent, {name: 'URL', minimumArguments: 1, maximumArguments: 2})) {
+			if (
+				isNewExpression(memberExpression.parent, {
+					name: 'URL',
+					minimumArguments: 1,
+					maximumArguments: 2,
+				})
+			) {
 				const newUrl = memberExpression.parent;
 				const urlParent = newUrl.parent;
 
 				// `new URL(import.meta.url)`
 				if (
-					newUrl.arguments.length === 1
-					&& newUrl.arguments[0] === memberExpression
+					newUrl.arguments.length === 1 &&
+					newUrl.arguments[0] === memberExpression &&
 					// `url.fileURLToPath(new URL(import.meta.url))`
-					&& isUrlFileURLToPathCall(urlParent, sourceCode)
-					&& urlParent.arguments[0] === newUrl
+					isUrlFileURLToPathCall(urlParent, sourceCode) &&
+					urlParent.arguments[0] === newUrl
 				) {
-					yield * iterateProblemsFromFilename(urlParent, {
+					yield* iterateProblemsFromFilename(urlParent, {
 						reportFilenameNode: true,
 					});
 					return;
@@ -217,11 +237,11 @@ function create(context) {
 				// `url.fileURLToPath(new URL(".", import.meta.url))`
 				// `url.fileURLToPath(new URL("./", import.meta.url))`
 				if (
-					newUrl.arguments.length === 2
-					&& isParentLiteral(newUrl.arguments[0])
-					&& newUrl.arguments[1] === memberExpression
-					&& isUrlFileURLToPathCall(urlParent, sourceCode)
-					&& urlParent.arguments[0] === newUrl
+					newUrl.arguments.length === 2 &&
+					isParentLiteral(newUrl.arguments[0]) &&
+					newUrl.arguments[1] === memberExpression &&
+					isUrlFileURLToPathCall(urlParent, sourceCode) &&
+					urlParent.arguments[0] === newUrl
 				) {
 					yield getProblem(urlParent, 'dirname');
 				}
@@ -231,7 +251,7 @@ function create(context) {
 		}
 
 		if (propertyName === 'filename') {
-			yield * iterateProblemsFromFilename(memberExpression);
+			yield* iterateProblemsFromFilename(memberExpression);
 		}
 
 		/**
@@ -239,14 +259,17 @@ function create(context) {
 		would be used to convert it to a dirname.
 		@param { import('estree').Expression} node
 		*/
-		function * iterateProblemsFromFilename(node, {reportFilenameNode = false} = {}) {
+		function* iterateProblemsFromFilename(
+			node,
+			{reportFilenameNode = false} = {},
+		) {
 			/** @type {{parent: import('estree').Node}} */
 			const {parent} = node;
 
 			// `path.dirname(filename)`
 			if (
-				isPathDirnameCall(parent, sourceCode)
-				&& parent.arguments[0] === node
+				isPathDirnameCall(parent, sourceCode) &&
+				parent.arguments[0] === node
 			) {
 				yield getProblem(parent, 'dirname');
 				return;
@@ -257,11 +280,11 @@ function create(context) {
 			}
 
 			if (
-				parent.type !== 'VariableDeclarator'
-				|| parent.init !== node
-				|| parent.id.type !== 'Identifier'
-				|| parent.parent.type !== 'VariableDeclaration'
-				|| parent.parent.kind !== 'const'
+				parent.type !== 'VariableDeclarator' ||
+				parent.init !== node ||
+				parent.id.type !== 'Identifier' ||
+				parent.parent.type !== 'VariableDeclaration' ||
+				parent.parent.kind !== 'const'
 			) {
 				return;
 			}
@@ -280,8 +303,8 @@ function create(context) {
 				/** @type {{parent: import('estree').Node}} */
 				const {parent} = reference.identifier;
 				if (
-					isPathDirnameCall(parent, sourceCode)
-					&& parent.arguments[0] === reference.identifier
+					isPathDirnameCall(parent, sourceCode) &&
+					parent.arguments[0] === reference.identifier
 				) {
 					// Report `path.dirname(identifier)`
 					yield getProblem(parent, 'dirname');
@@ -297,7 +320,7 @@ function create(context) {
 			return {
 				node,
 				messageId: name === 'dirname' ? ERROR_DIRNAME : ERROR_FILENAME,
-				fix: fixer => fixer.replaceText(node, `import.meta.${name}`),
+				fix: (fixer) => fixer.replaceText(node, `import.meta.${name}`),
 			};
 		}
 	});
@@ -309,7 +332,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `import.meta.{dirname,filename}` over legacy techniques for getting file paths.',
+			description:
+				'Prefer `import.meta.{dirname,filename}` over legacy techniques for getting file paths.',
 			recommended: false,
 		},
 		fixable: 'code',

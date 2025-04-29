@@ -28,8 +28,8 @@ test.snapshot({
 		// Not replace
 		'foo.methodNotReplace(/a/g, bar);',
 		// `callee.property` is not a `Identifier`
-		'foo[\'replace\'](/a/g, bar)',
-		'foo[\'replaceAll\'](/a/g, bar)',
+		"foo['replace'](/a/g, bar)",
+		"foo['replaceAll'](/a/g, bar)",
 		// More or less argument(s)
 		'foo.replace(/a/g, bar, extra);',
 		'foo.replaceAll(/a/g, bar, extra);',

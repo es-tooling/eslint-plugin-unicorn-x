@@ -53,7 +53,7 @@ test.snapshot({
 		`,
 		'import {promises} from "fs";',
 		'export {default as promises} from "fs";',
-		'import {promises} from \'fs\';',
+		"import {promises} from 'fs';",
 		outdent`
 			async function foo() {
 				const fs = await import("fs/promises");
@@ -88,7 +88,7 @@ test.snapshot({
 	],
 	invalid: [
 		'const {promises} = require("fs")',
-		'const fs = require(\'fs/promises\')',
+		"const fs = require('fs/promises')",
 	],
 });
 
@@ -110,15 +110,11 @@ test.snapshot({
 			const fs = getBuiltinModule("fs");
 		`,
 	],
-	invalid: [
-		'const fs = process.getBuiltinModule("fs")',
-	],
+	invalid: ['const fs = process.getBuiltinModule("fs")'],
 });
 
 test.babel({
-	valid: [
-		'export fs from "node:fs";',
-	],
+	valid: ['export fs from "node:fs";'],
 	invalid: [
 		{
 			code: 'export fs from "fs";',
@@ -126,8 +122,8 @@ test.babel({
 			errors: 1,
 		},
 		{
-			code: 'await import(\'assert/strict\')',
-			output: 'await import(\'node:assert/strict\')',
+			code: "await import('assert/strict')",
+			output: "await import('node:assert/strict')",
 			errors: 1,
 		},
 	],

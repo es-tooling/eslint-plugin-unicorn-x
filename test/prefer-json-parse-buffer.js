@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
 import outdent from 'outdent';
 import {getTester} from './utils/test.js';
 

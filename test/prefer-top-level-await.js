@@ -244,4 +244,3 @@ test.babel({
 	],
 	invalid: [],
 });
-

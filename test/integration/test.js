@@ -14,14 +14,19 @@ import allProjects from './projects.js';
 import runEslint from './run-eslint.js';
 
 if (isCI) {
-	const CI_CONFIG_FILE = new URL('../../.github/workflows/main.yml', import.meta.url);
+	const CI_CONFIG_FILE = new URL(
+		'../../.github/workflows/main.yml',
+		import.meta.url,
+	);
 	const content = fs.readFileSync(CI_CONFIG_FILE, 'utf8');
 	const config = YAML.parse(content).jobs.integration.strategy.matrix.group;
 
-	const expected = [...new Set(allProjects.map(project => String(project.group + 1)))];
+	const expected = [
+		...new Set(allProjects.map((project) => String(project.group + 1))),
+	];
 	if (
-		config.length !== expected.length
-		|| expected.some((group, index) => config[index] !== group)
+		config.length !== expected.length ||
+		expected.some((group, index) => config[index] !== group)
 	) {
 		throw new Error(outdent`
 			Expect 'jobs.integration.strategy.matrix.group' in '/.github/workflows/main.yml' to be:
@@ -31,9 +36,7 @@ if (isCI) {
 }
 
 const {
-	values: {
-		group,
-	},
+	values: {group},
 	positionals: projectsArguments,
 } = parseArgs({
 	options: {
@@ -44,16 +47,17 @@ const {
 	allowPositionals: true,
 });
 
-let projects = projectsArguments.length === 0
-	? allProjects
-	: allProjects.filter(({name}) => projectsArguments.includes(name));
+let projects =
+	projectsArguments.length === 0
+		? allProjects
+		: allProjects.filter(({name}) => projectsArguments.includes(name));
 
 if (isCI && !group) {
 	throw new Error('"--group" is required');
 }
 
 if (group) {
-	projects = projects.filter(project => String(project.group + 1) === group);
+	projects = projects.filter((project) => String(project.group + 1) === group);
 }
 
 if (projects.length === 0) {
@@ -61,45 +65,51 @@ if (projects.length === 0) {
 	process.exit(0);
 }
 
-const getBranch = memoize(async dirname => {
+const getBranch = memoize(async (dirname) => {
 	const {stdout} = await x('git', ['branch', '--show-current'], {cwd: dirname});
 	return stdout;
 });
 
-const execute = project => new Listr(
-	[
-		{
-			title: 'Cloning',
-			skip: () => fs.existsSync(project.location) ? 'Project already downloaded.' : false,
-			task: () => x('git', [
-				'clone',
-				project.repository,
-				'--single-branch',
-				'--depth',
-				'1',
-				project.location,
-			], {nodeOptions: {stdout: 'inherit', stderr: 'inherit'}}),
-		},
-		{
-			title: 'Running eslint',
-			task: () => runEslint(project),
-		},
-	].map(({title, task, skip}) => ({
-		title: `${project.name} / ${title}`,
-		skip,
-		task,
-	})),
-	{exitOnError: false},
-);
+const execute = (project) =>
+	new Listr(
+		[
+			{
+				title: 'Cloning',
+				skip: () =>
+					fs.existsSync(project.location)
+						? 'Project already downloaded.'
+						: false,
+				task: () =>
+					x(
+						'git',
+						[
+							'clone',
+							project.repository,
+							'--single-branch',
+							'--depth',
+							'1',
+							project.location,
+						],
+						{nodeOptions: {stdout: 'inherit', stderr: 'inherit'}},
+					),
+			},
+			{
+				title: 'Running eslint',
+				task: () => runEslint(project),
+			},
+		].map(({title, task, skip}) => ({
+			title: `${project.name} / ${title}`,
+			skip,
+			task,
+		})),
+		{exitOnError: false},
+	);
 
 async function printEslintError(eslintError) {
 	const {message, project} = eslintError;
 
 	console.log();
-	console.error(
-		styleText.red.bold.underline(`[${project.name}]`),
-		message,
-	);
+	console.error(styleText.red.bold.underline(`[${project.name}]`), message);
 
 	project.branch ??= await getBranch(project.location);
 	for (const error of eslintError.errors) {
@@ -133,14 +143,16 @@ async function printListrError(listrError) {
 			continue;
 		}
 
-		// eslint-disable-next-line no-await-in-loop
 		await printEslintError(error);
 	}
 }
 
 try {
 	await new Listr(
-		projects.map(project => ({title: project.name, task: () => execute(project)})),
+		projects.map((project) => ({
+			title: project.name,
+			task: () => execute(project),
+		})),
 		{
 			renderer: isCI ? 'verbose' : 'default',
 			concurrent: true,

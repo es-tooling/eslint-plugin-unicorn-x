@@ -1,4 +1,8 @@
-import {findVariable, getStaticValue, getPropertyName} from '@eslint-community/eslint-utils';
+import {
+	findVariable,
+	getStaticValue,
+	getPropertyName,
+} from '@eslint-community/eslint-utils';
 import {isMethodCall} from './ast/index.js';
 import {removeArgument} from './fix/index.js';
 
@@ -7,7 +11,7 @@ const messages = {
 	[MESSAGE_ID]: 'Prefer reading the JSON file as a buffer.',
 };
 
-const getAwaitExpressionArgument = node => {
+const getAwaitExpressionArgument = (node) => {
 	while (node.type === 'AwaitExpression') {
 		node = node.argument;
 	}
@@ -40,8 +44,8 @@ function getIdentifierDeclaration(node, scope) {
 	const [identifier] = identifiers;
 
 	if (
-		identifier.parent.type !== 'VariableDeclarator'
-		|| identifier.parent.id !== identifier
+		identifier.parent.type !== 'VariableDeclarator' ||
+		identifier.parent.id !== identifier
 	) {
 		return;
 	}
@@ -52,7 +56,7 @@ function getIdentifierDeclaration(node, scope) {
 const isUtf8EncodingStringNode = (node, scope) =>
 	isUtf8EncodingString(getStaticValue(node, scope)?.value);
 
-const isUtf8EncodingString = value => {
+const isUtf8EncodingString = (value) => {
 	if (typeof value !== 'string') {
 		return false;
 	}
@@ -65,11 +69,11 @@ const isUtf8EncodingString = value => {
 
 function isUtf8Encoding(node, scope) {
 	if (
-		node.type === 'ObjectExpression'
-		&& node.properties.length === 1
-		&& node.properties[0].type === 'Property'
-		&& getPropertyName(node.properties[0], scope) === 'encoding'
-		&& isUtf8EncodingStringNode(node.properties[0].value, scope)
+		node.type === 'ObjectExpression' &&
+		node.properties.length === 1 &&
+		node.properties[0].type === 'Property' &&
+		getPropertyName(node.properties[0], scope) === 'encoding' &&
+		isUtf8EncodingStringNode(node.properties[0].value, scope)
 	) {
 		return true;
 	}
@@ -85,9 +89,9 @@ function isUtf8Encoding(node, scope) {
 
 	const {value} = staticValue;
 	if (
-		typeof value === 'object'
-		&& Object.keys(value).length === 1
-		&& isUtf8EncodingString(value.encoding)
+		typeof value === 'object' &&
+		Object.keys(value).length === 1 &&
+		isUtf8EncodingString(value.encoding)
 	) {
 		return true;
 	}
@@ -96,15 +100,17 @@ function isUtf8Encoding(node, scope) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(callExpression) {
-		if (!(isMethodCall(callExpression, {
-			object: 'JSON',
-			method: 'parse',
-			argumentsLength: 1,
-			optionalCall: false,
-			optionalMember: false,
-		}))) {
+		if (
+			!isMethodCall(callExpression, {
+				object: 'JSON',
+				method: 'parse',
+				argumentsLength: 1,
+				optionalCall: false,
+				optionalMember: false,
+			})
+		) {
 			return;
 		}
 
@@ -114,13 +120,13 @@ const create = context => ({
 		node = getIdentifierDeclaration(node, scope);
 		if (
 			!(
-				node
-				&& node.type === 'CallExpression'
-				&& !node.optional
-				&& node.arguments.length === 2
-				&& !node.arguments.some(node => node.type === 'SpreadElement')
-				&& node.callee.type === 'MemberExpression'
-				&& !node.callee.optional
+				node &&
+				node.type === 'CallExpression' &&
+				!node.optional &&
+				node.arguments.length === 2 &&
+				!node.arguments.some((node) => node.type === 'SpreadElement') &&
+				node.callee.type === 'MemberExpression' &&
+				!node.callee.optional
 			)
 		) {
 			return;
@@ -139,7 +145,7 @@ const create = context => ({
 		return {
 			node: charsetNode,
 			messageId: MESSAGE_ID,
-			fix: fixer => removeArgument(fixer, charsetNode, sourceCode),
+			fix: (fixer) => removeArgument(fixer, charsetNode, sourceCode),
 		};
 	},
 });

@@ -7,13 +7,15 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(callExpression) {
-		if (!isMethodCall(callExpression, {
-			method: 'flat',
-			argumentsLength: 1,
-			optionalCall: false,
-		})) {
+		if (
+			!isMethodCall(callExpression, {
+				method: 'flat',
+				argumentsLength: 1,
+				optionalCall: false,
+			})
+		) {
 			return;
 		}
 
@@ -24,11 +26,14 @@ const create = context => ({
 		}
 
 		const {sourceCode} = context;
-		const {
-			openingParenthesisToken,
-			closingParenthesisToken,
-		} = getCallExpressionTokens(sourceCode, callExpression);
-		if (sourceCode.commentsExistBetween(openingParenthesisToken, closingParenthesisToken)) {
+		const {openingParenthesisToken, closingParenthesisToken} =
+			getCallExpressionTokens(sourceCode, callExpression);
+		if (
+			sourceCode.commentsExistBetween(
+				openingParenthesisToken,
+				closingParenthesisToken,
+			)
+		) {
 			return;
 		}
 
@@ -45,7 +50,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Disallow a magic number as the `depth` argument in `Array#flat(…).`',
+			description:
+				'Disallow a magic number as the `depth` argument in `Array#flat(…).`',
 			recommended: true,
 		},
 		messages,

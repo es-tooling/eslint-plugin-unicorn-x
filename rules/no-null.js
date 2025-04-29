@@ -9,11 +9,13 @@ const messages = {
 	[SUGGESTION_REMOVE_MESSAGE_ID]: 'Remove `null`.',
 };
 
-const isLooseEqual = node => node.type === 'BinaryExpression' && ['==', '!='].includes(node.operator);
-const isStrictEqual = node => node.type === 'BinaryExpression' && ['===', '!=='].includes(node.operator);
+const isLooseEqual = (node) =>
+	node.type === 'BinaryExpression' && ['==', '!='].includes(node.operator);
+const isStrictEqual = (node) =>
+	node.type === 'BinaryExpression' && ['===', '!=='].includes(node.operator);
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {checkStrictEquality} = {
 		checkStrictEquality: false,
 		...context.options[0],
@@ -23,51 +25,43 @@ const create = context => {
 		Literal(node) {
 			if (
 				// eslint-disable-next-line unicorn-x/no-null
-				!isLiteral(node, null)
-				|| (!checkStrictEquality && isStrictEqual(node.parent))
+				!isLiteral(node, null) ||
+				(!checkStrictEquality && isStrictEqual(node.parent)) ||
 				// `Object.create(null)`, `Object.create(null, foo)`
-				|| (
-					isMethodCall(node.parent, {
-						object: 'Object',
-						method: 'create',
-						minimumArguments: 1,
-						maximumArguments: 2,
-						optionalCall: false,
-						optionalMember: false,
-					})
-					&& node.parent.arguments[0] === node
-				)
+				(isMethodCall(node.parent, {
+					object: 'Object',
+					method: 'create',
+					minimumArguments: 1,
+					maximumArguments: 2,
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+					node.parent.arguments[0] === node) ||
 				// `useRef(null)`
-				|| (
-					isCallExpression(node.parent, {
-						name: 'useRef',
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					})
-					&& node.parent.arguments[0] === node
-				)
+				(isCallExpression(node.parent, {
+					name: 'useRef',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+					node.parent.arguments[0] === node) ||
 				// `React.useRef(null)`
-				|| (
-					isMethodCall(node.parent, {
-						object: 'React',
-						method: 'useRef',
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					})
-					&& node.parent.arguments[0] === node
-				)
+				(isMethodCall(node.parent, {
+					object: 'React',
+					method: 'useRef',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+					node.parent.arguments[0] === node) ||
 				// `foo.insertBefore(bar, null)`
-				|| (
-					isMethodCall(node.parent, {
-						method: 'insertBefore',
-						argumentsLength: 2,
-						optionalCall: false,
-						optionalMember: false,
-					})
-					&& node.parent.arguments[1] === node
-				)
+				(isMethodCall(node.parent, {
+					method: 'insertBefore',
+					argumentsLength: 2,
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+					node.parent.arguments[1] === node)
 			) {
 				return;
 			}
@@ -79,7 +73,7 @@ const create = context => {
 				messageId: ERROR_MESSAGE_ID,
 			};
 
-			const useUndefinedFix = fixer => fixer.replaceText(node, 'undefined');
+			const useUndefinedFix = (fixer) => fixer.replaceText(node, 'undefined');
 
 			if (isLooseEqual(parent)) {
 				problem.fix = useUndefinedFix;
@@ -95,21 +89,25 @@ const create = context => {
 				problem.suggest = [
 					{
 						messageId: SUGGESTION_REMOVE_MESSAGE_ID,
-						fix: fixer => fixer.remove(node),
+						fix: (fixer) => fixer.remove(node),
 					},
 					useUndefinedSuggestion,
 				];
 				return problem;
 			}
 
-			if (parent.type === 'VariableDeclarator' && parent.init === node && parent.parent.kind !== 'const') {
+			if (
+				parent.type === 'VariableDeclarator' &&
+				parent.init === node &&
+				parent.parent.kind !== 'const'
+			) {
 				const {sourceCode} = context;
 				const [, start] = sourceCode.getRange(parent.id);
 				const [, end] = sourceCode.getRange(node);
 				problem.suggest = [
 					{
 						messageId: SUGGESTION_REMOVE_MESSAGE_ID,
-						fix: fixer => fixer.removeRange([start, end]),
+						fix: (fixer) => fixer.removeRange([start, end]),
 					},
 					useUndefinedSuggestion,
 				];

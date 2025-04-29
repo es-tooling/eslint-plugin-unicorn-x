@@ -7,20 +7,24 @@ const invalidTestCase = ({code, suggestions}) => {
 	if (!suggestions) {
 		return {
 			code,
-			errors: [{
-				messageId: 'preferDefaultParameters',
-			}],
+			errors: [
+				{
+					messageId: 'preferDefaultParameters',
+				},
+			],
 		};
 	}
 
 	return {
 		code,
-		errors: suggestions.map(suggestion => ({
+		errors: suggestions.map((suggestion) => ({
 			messageId: 'preferDefaultParameters',
-			suggestions: [{
-				messageId: 'preferDefaultParametersSuggest',
-				output: suggestion,
-			}],
+			suggestions: [
+				{
+					messageId: 'preferDefaultParametersSuggest',
+					output: suggestion,
+				},
+			],
 		})),
 	};
 };
@@ -32,11 +36,11 @@ test({
 		'function abc({ bar = 123 } = { bar }) { }',
 		'function abc(foo = fooDefault) { }',
 		'function abc(foo = {}) { }',
-		'function abc(foo = \'bar\') { }',
+		"function abc(foo = 'bar') { }",
 		'function abc({ bar = 123 } = {}) { }',
-		'const abc = (foo = \'bar\') => { };',
-		'foo = foo || \'bar\';',
-		'const bar = foo || \'bar\';',
+		"const abc = (foo = 'bar') => { };",
+		"foo = foo || 'bar';",
+		"const bar = foo || 'bar';",
 		'const abc = function(foo = { bar: 123 }) { }',
 		'const abc = function({ bar } = { bar: 123 }) { }',
 		'const abc = function({ bar = 123 } = {}) { }',
@@ -248,10 +252,12 @@ test({
 					foo = foo || 123;
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 123) {
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = 123) {
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -259,10 +265,12 @@ test({
 					foo = foo || true;
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = true) {
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = true) {
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -271,11 +279,13 @@ test({
 					console.log(foo);
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 123) {
-					console.log(foo);
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = 123) {
+						console.log(foo);
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -283,10 +293,12 @@ test({
 					const bar = foo || 'bar';
 				}
 			`,
-			suggestions: [outdent`
-				function abc(bar = 'bar') {
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(bar = 'bar') {
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -294,10 +306,12 @@ test({
 					let bar = foo || 'bar';
 				}
 			`,
-			suggestions: [outdent`
-				function abc(bar = 'bar') {
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(bar = 'bar') {
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -305,10 +319,12 @@ test({
 					foo = foo || 123;
 				}
 			`,
-			suggestions: [outdent`
-				const abc = function(foo = 123) {
-				}
-			`],
+			suggestions: [
+				outdent`
+					const abc = function(foo = 123) {
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -316,10 +332,12 @@ test({
 					foo = foo || 'bar';
 				};
 			`,
-			suggestions: [outdent`
-				const abc = (foo = 'bar') => {
-				};
-			`],
+			suggestions: [
+				outdent`
+					const abc = (foo = 'bar') => {
+					};
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -327,10 +345,12 @@ test({
 					foo = foo || 'bar';
 				};
 			`,
-			suggestions: [outdent`
-				const abc = (foo = 'bar') => {
-				};
-			`],
+			suggestions: [
+				outdent`
+					const abc = (foo = 'bar') => {
+					};
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -338,10 +358,12 @@ test({
 					const bar = foo || 'bar';
 				};
 			`,
-			suggestions: [outdent`
-				const abc = (bar = 'bar') => {
-				};
-			`],
+			suggestions: [
+				outdent`
+					const abc = (bar = 'bar') => {
+					};
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -351,12 +373,14 @@ test({
 					baz();
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 'bar') {
-					bar();
-					baz();
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = 'bar') {
+						bar();
+						baz();
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -364,10 +388,12 @@ test({
 					foo = foo ?? 123;
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 123) {
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = 123) {
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -376,11 +402,13 @@ test({
 					console.log(bar);
 				}
 			`,
-			suggestions: [outdent`
-				function abc(bar = 'bar') {
-					console.log(bar);
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(bar = 'bar') {
+						console.log(bar);
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -389,11 +417,13 @@ test({
 					console.log(bar);
 				}
 			`,
-			suggestions: [outdent`
-				const abc = function(bar = 'bar') {
-					console.log(bar);
-				}
-			`],
+			suggestions: [
+				outdent`
+					const abc = function(bar = 'bar') {
+						console.log(bar);
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -403,12 +433,14 @@ test({
 					}
 				};
 			`,
-			suggestions: [outdent`
-				foo = {
-					abc(foo = 123) {
-					}
-				};
-			`],
+			suggestions: [
+				outdent`
+					foo = {
+						abc(foo = 123) {
+						}
+					};
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -419,13 +451,15 @@ test({
 					def(foo) { }
 				};
 			`,
-			suggestions: [outdent`
-				foo = {
-					abc(foo = 123) {
-					},
-					def(foo) { }
-				};
-			`],
+			suggestions: [
+				outdent`
+					foo = {
+						abc(foo = 123) {
+						},
+						def(foo) { }
+					};
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -435,12 +469,14 @@ test({
 					}
 				}
 			`,
-			suggestions: [outdent`
-				class Foo {
-					abc(foo = 123) {
+			suggestions: [
+				outdent`
+					class Foo {
+						abc(foo = 123) {
+						}
 					}
-				}
-			`],
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -451,26 +487,28 @@ test({
 					def(foo) { }
 				}
 			`,
-			suggestions: [outdent`
-				class Foo {
-					abc(foo = 123) {
+			suggestions: [
+				outdent`
+					class Foo {
+						abc(foo = 123) {
+						}
+						def(foo) { }
 					}
-					def(foo) { }
-				}
-			`],
+				`,
+			],
 		}),
 		// The following tests verify the correct code formatting
 		invalidTestCase({
-			code: 'function abc(foo) { foo = foo || \'bar\'; }',
-			suggestions: ['function abc(foo = \'bar\') { }'],
+			code: "function abc(foo) { foo = foo || 'bar'; }",
+			suggestions: ["function abc(foo = 'bar') { }"],
 		}),
 		invalidTestCase({
-			code: 'function abc(foo) { foo = foo || \'bar\';}',
-			suggestions: ['function abc(foo = \'bar\') { }'],
+			code: "function abc(foo) { foo = foo || 'bar';}",
+			suggestions: ["function abc(foo = 'bar') { }"],
 		}),
 		invalidTestCase({
-			code: 'const abc = function(foo) { foo = foo || \'bar\';}',
-			suggestions: ['const abc = function(foo = \'bar\') { }'],
+			code: "const abc = function(foo) { foo = foo || 'bar';}",
+			suggestions: ["const abc = function(foo = 'bar') { }"],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -478,11 +516,13 @@ test({
 					foo = foo || 'bar'; bar(); baz();
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 'bar') {
-					bar(); baz();
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = 'bar') {
+						bar(); baz();
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -493,19 +533,22 @@ test({
 					}
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 'bar') {
-					function def(bar) {
-						bar = bar || 'foo';
+			suggestions: [
+				outdent`
+					function abc(foo = 'bar') {
+						function def(bar) {
+							bar = bar || 'foo';
+						}
 					}
-				}
-			`, outdent`
-				function abc(foo) {
-					foo = foo || 'bar';
-					function def(bar = 'foo') {
+				`,
+				outdent`
+					function abc(foo) {
+						foo = foo || 'bar';
+						function def(bar = 'foo') {
+						}
 					}
-				}
-			`],
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -520,27 +563,30 @@ test({
 					foo = foo || 'bar';
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo) {
-					foo += 'bar';
-					function def(bar = 'foo') {
+			suggestions: [
+				outdent`
+					function abc(foo) {
+						foo += 'bar';
+						function def(bar = 'foo') {
+						}
+						function ghi(baz) {
+							const bay = baz || 'bar';
+						}
+						foo = foo || 'bar';
 					}
-					function ghi(baz) {
-						const bay = baz || 'bar';
+				`,
+				outdent`
+					function abc(foo) {
+						foo += 'bar';
+						function def(bar) {
+							bar = bar || 'foo';
+						}
+						function ghi(bay = 'bar') {
+						}
+						foo = foo || 'bar';
 					}
-					foo = foo || 'bar';
-				}
-			`, outdent`
-				function abc(foo) {
-					foo += 'bar';
-					function def(bar) {
-						bar = bar || 'foo';
-					}
-					function ghi(bay = 'bar') {
-					}
-					foo = foo || 'bar';
-				}
-			`],
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -553,23 +599,26 @@ test({
 					}
 				};
 			`,
-			suggestions: [outdent`
-				foo = {
-					abc(foo = 123) {
-					},
-					def(foo) {
-						foo = foo || 123;
-					}
-				};
-			`, outdent`
-				foo = {
-					abc(foo) {
-						foo = foo || 123;
-					},
-					def(foo = 123) {
-					}
-				};
-			`],
+			suggestions: [
+				outdent`
+					foo = {
+						abc(foo = 123) {
+						},
+						def(foo) {
+							foo = foo || 123;
+						}
+					};
+				`,
+				outdent`
+					foo = {
+						abc(foo) {
+							foo = foo || 123;
+						},
+						def(foo = 123) {
+						}
+					};
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -582,23 +631,26 @@ test({
 					}
 				}
 			`,
-			suggestions: [outdent`
-				class Foo {
-					abc(foo = 123) {
+			suggestions: [
+				outdent`
+					class Foo {
+						abc(foo = 123) {
+						}
+						def(foo) {
+							foo = foo || 123;
+						}
 					}
-					def(foo) {
-						foo = foo || 123;
+				`,
+				outdent`
+					class Foo {
+						abc(foo) {
+							foo = foo || 123;
+						}
+						def(foo = 123) {
+						}
 					}
-				}
-			`, outdent`
-				class Foo {
-					abc(foo) {
-						foo = foo || 123;
-					}
-					def(foo = 123) {
-					}
-				}
-			`],
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -607,11 +659,13 @@ test({
 					foo = foo || 123;
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 123) {
-					const noSideEffects = 123;
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = 123) {
+						const noSideEffects = 123;
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -623,14 +677,16 @@ test({
 					console.log(foo);
 				}
 			`,
-			suggestions: [outdent`
-				const abc = function(foo = 123) {
-					let bar = true;
-					bar = false;
+			suggestions: [
+				outdent`
+					const abc = function(foo = 123) {
+						let bar = true;
+						bar = false;
 
-					console.log(foo);
-				}
-			`],
+						console.log(foo);
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -639,11 +695,13 @@ test({
 					foo = foo || 123;
 				}
 			`,
-			suggestions: [outdent`
-				function abc(foo = 123) {
-					const bar = function() {};
-				}
-			`],
+			suggestions: [
+				outdent`
+					function abc(foo = 123) {
+						const bar = function() {};
+					}
+				`,
+			],
 		}),
 	],
 });
