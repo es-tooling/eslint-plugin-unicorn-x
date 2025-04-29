@@ -77,7 +77,8 @@ const create = (context) => {
 
 			if (isLooseEqual(parent)) {
 				problem.fix = useUndefinedFix;
-				return problem;
+				context.report(problem);
+				return;
 			}
 
 			const useUndefinedSuggestion = {
@@ -93,7 +94,8 @@ const create = (context) => {
 					},
 					useUndefinedSuggestion,
 				];
-				return problem;
+				context.report(problem);
+				return;
 			}
 
 			if (
@@ -111,11 +113,12 @@ const create = (context) => {
 					},
 					useUndefinedSuggestion,
 				];
-				return problem;
+				context.report(problem);
+				return;
 			}
 
 			problem.suggest = [useUndefinedSuggestion];
-			return problem;
+			context.report(problem);
 		},
 	};
 };
