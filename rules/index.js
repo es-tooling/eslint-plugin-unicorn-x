@@ -133,7 +133,7 @@ import textEncodingIdentifierCase from './text-encoding-identifier-case.js';
 import throwNewError from './throw-new-error.js';
 
 const rules = {
-	'better-regex': createRule(betterRegex, 'better-regex'),
+	'better-regex': createRule(betterRegex, 'better-regex', true),
 	'catch-error-name': createRule(catchErrorName, 'catch-error-name'),
 	'consistent-assert': createRule(consistentAssert, 'consistent-assert'),
 	'consistent-date-clone': createRule(
