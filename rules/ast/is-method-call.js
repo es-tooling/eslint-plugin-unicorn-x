@@ -32,12 +32,10 @@ export default function isMethodCall(node, options) {
 			optional: options.optionalCall,
 		}) &&
 		isMemberExpression(node.callee, {
-			object: options.object,
-			objects: options.objects,
-			computed: options.computed,
-			property: options.method ?? '',
-			properties: options.methods ?? [],
+			objects: options.object ?? options.objects,
+			properties: options.method ?? options.methods,
 			optional: options.optionalMember,
+			computed: options.computed,
 		})
 	);
 }

@@ -12,7 +12,9 @@ const create = () => ({
 	MemberExpression(memberExpression) {
 		if (
 			!isMemberExpression(memberExpression, {
-				property: 'innerText',
+				properties: 'innerText',
+				optional: undefined,
+				computed: undefined,
 			})
 		) {
 			return;

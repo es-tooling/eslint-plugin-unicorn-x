@@ -66,8 +66,9 @@ const create = (context) => {
 		MemberExpression(node) {
 			if (
 				!isMemberExpression(node, {
-					property: 'length',
+					properties: 'length',
 					optional: false,
+					computed: undefined,
 				}) ||
 				node.object.type !== 'ArrayExpression' ||
 				node.object.elements.length !== 1 ||

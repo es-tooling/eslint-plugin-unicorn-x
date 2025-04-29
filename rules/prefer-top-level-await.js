@@ -85,6 +85,7 @@ function create(context) {
 			if (
 				isMemberExpression(node.callee, {
 					properties: promisePrototypeMethods,
+					optional: undefined,
 					computed: false,
 				})
 			) {

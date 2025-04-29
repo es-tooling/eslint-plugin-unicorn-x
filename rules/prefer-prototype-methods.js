@@ -38,7 +38,13 @@ function getConstructorAndMethodName(
 		};
 	}
 
-	if (!isMemberExpression(methodNode, {optional: false})) {
+	if (
+		!isMemberExpression(methodNode, {
+			properties: undefined,
+			optional: false,
+			computed: undefined,
+		})
+	) {
 		return;
 	}
 

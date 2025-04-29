@@ -167,8 +167,9 @@ const create = (context) => {
 					binaryExpression.right.type === 'Literal' &&
 					binaryExpression.right.raw === '0' &&
 					isMemberExpression(binaryExpression.left, {
-						property: 'length',
+						properties: 'length',
 						optional: false,
+						computed: undefined,
 					}) &&
 					isMethodCall(binaryExpression.left.object, {
 						method: 'filter',
