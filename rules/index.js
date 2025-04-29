@@ -239,7 +239,7 @@ const rules = {
 	'no-nested-ternary': createRule(noNestedTernary, 'no-nested-ternary'),
 	'no-new-array': createRule(noNewArray, 'no-new-array'),
 	'no-new-buffer': createRule(noNewBuffer, 'no-new-buffer'),
-	'no-null': createRule(noNull, 'no-null'),
+	'no-null': createRule(noNull, 'no-null', true),
 	'no-object-as-default-parameter': createRule(
 		noObjectAsDefaultParameter,
 		'no-object-as-default-parameter',
