@@ -40,14 +40,15 @@ const create = (context) => {
 					.optimize(original, undefined, {blacklist: ignoreList})
 					.toString();
 			} catch (error) {
-				return {
+				context.report({
 					node,
 					messageId: MESSAGE_ID_PARSE_ERROR,
 					data: {
 						original,
 						error: error.message,
 					},
-				};
+				});
+				return;
 			}
 
 			if (original === optimized) {
@@ -72,10 +73,12 @@ const create = (context) => {
 				(node.parent.property.name === 'toString' ||
 					node.parent.property.name === 'source')
 			) {
-				return problem;
+				context.report(problem);
+				return;
 			}
 
-			return Object.assign(problem, {
+			context.report({
+				...problem,
 				fix: (fixer) => fixer.replaceText(node, optimized),
 			});
 		},
@@ -96,7 +99,7 @@ const create = (context) => {
 			const newPattern = cleanRegexp(oldPattern, flags);
 
 			if (oldPattern !== newPattern) {
-				return {
+				context.report({
 					node,
 					messageId: MESSAGE_ID,
 					data: {
@@ -108,7 +111,7 @@ const create = (context) => {
 							patternNode,
 							escapeString(newPattern, patternNode.raw.charAt(0)),
 						),
-				};
+				});
 			}
 		},
 	};
