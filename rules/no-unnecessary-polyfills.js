@@ -13,11 +13,12 @@ const messages = {
 		'All polyfilled features imported from `{{coreJsModule}}` are available as built-ins. Use the built-ins instead.',
 };
 
-const additionalPolyfillNames = {
-	'es.promise.finally': 'p-finally',
-	'es.object.set-prototype-of': 'setprototypeof',
-	'es.string.code-point-at': 'code-point-at',
-};
+const additionalPolyfillNames = new Map([
+	['es.promise.finally', 'p-finally'],
+	['es.object.set-prototype-of', 'setprototypeof'],
+	['es.string.code-point-at', 'code-point-at'],
+]);
+const additionalPolyfills = new Map();
 const polyfills = Object.keys(compatData).map((feature) => {
 	const [ecmaVersion, constructorName, methodName = ''] = feature.split('.');
 
@@ -28,7 +29,7 @@ const polyfills = Object.keys(compatData).map((feature) => {
 		normalisedMethodName = methodName.replaceAll('-', '');
 	}
 
-	return {
+	const polyfill = {
 		constructorName,
 		feature,
 		methodName,
@@ -36,6 +37,13 @@ const polyfills = Object.keys(compatData).map((feature) => {
 		normalisedConstructorName,
 		normalisedMethodName,
 	};
+	const additionalPolyfill = additionalPolyfillNames.get(feature);
+
+	if (additionalPolyfill !== undefined) {
+		additionalPolyfills.set(additionalPolyfill, polyfill);
+	}
+
+	return polyfill;
 });
 const modulePrefixSuffix = /(^mdn-polyfills\/|polyfill-)|(-polyfill$)/gi;
 const modulePrefixPattern = /^(?<version>[a-z]+)\d*[./-]/i;
@@ -98,20 +106,19 @@ const findPolyfill = (moduleName) => {
 	);
 	const modulePrefix = moduleName.match(modulePrefixPattern);
 
+	for (const [name, polyfill] of additionalPolyfills) {
+		if (moduleNameLower === name) {
+			return polyfill;
+		}
+	}
+
 	for (const polyfill of polyfills) {
 		const {
 			constructorName,
-			feature,
 			methodName,
 			normalisedConstructorName,
 			normalisedMethodName,
 		} = polyfill;
-
-		const additionalName = additionalPolyfillNames[feature];
-
-		if (additionalName !== undefined && moduleNameLower === additionalName) {
-			return polyfill;
-		}
 
 		if (normalisedModuleName !== moduleNameLower) {
 			const methodOrConstructor = methodName || constructorName;
@@ -155,6 +162,50 @@ function getTargets(options, dirname) {
 	return browserslist ?? engines;
 }
 
+function checkNode(node, context, unavailableFeatures) {
+	const importedModule = node.value;
+	if (
+		typeof importedModule !== 'string' ||
+		['.', '/'].includes(importedModule[0])
+	) {
+		return;
+	}
+
+	const coreJsModuleFeatures =
+		coreJsEntries[importedModule.replace('core-js-pure', 'core-js')];
+	const checkFeatures = (features) =>
+		!features.every((feature) => unavailableFeatures.includes(feature));
+
+	if (coreJsModuleFeatures) {
+		if (coreJsModuleFeatures.length > 1) {
+			if (checkFeatures(coreJsModuleFeatures)) {
+				context.report({
+					node,
+					messageId: MESSAGE_ID_CORE_JS,
+					data: {
+						coreJsModule: importedModule,
+					},
+				});
+			}
+		} else if (!unavailableFeatures.includes(coreJsModuleFeatures[0])) {
+			context.report({node, messageId: MESSAGE_ID_POLYFILL});
+		}
+
+		return;
+	}
+
+	const polyfill = findPolyfill(importedModule);
+	if (polyfill) {
+		const [, namespace, method = ''] = polyfill.feature.split('.');
+		const features =
+			coreJsEntries[`core-js/full/${namespace}${method && '/'}${method}`];
+
+		if (features && checkFeatures(features)) {
+			context.report({node, messageId: MESSAGE_ID_POLYFILL});
+		}
+	}
+}
+
 function create(context) {
 	const targets = getTargets(
 		context.options[0],
@@ -172,62 +223,22 @@ function create(context) {
 		return {};
 	}
 
-	const checkFeatures = (features) =>
-		!features.every((feature) => unavailableFeatures.includes(feature));
-
 	return {
-		Literal(node) {
-			if (
-				!(
-					(['ImportDeclaration', 'ImportExpression'].includes(
-						node.parent.type,
-					) &&
-						node.parent.source === node) ||
-					(isStaticRequire(node.parent) && node.parent.arguments[0] === node)
-				)
-			) {
+		'ImportDeclaration, ImportExpression'(node) {
+			if (node.source.type !== 'Literal') {
 				return;
 			}
 
-			const importedModule = node.value;
-			if (
-				typeof importedModule !== 'string' ||
-				['.', '/'].includes(importedModule[0])
-			) {
+			checkNode(node.source, context, unavailableFeatures);
+		},
+		CallExpression(node) {
+			if (!isStaticRequire(node)) {
 				return;
 			}
 
-			const coreJsModuleFeatures =
-				coreJsEntries[importedModule.replace('core-js-pure', 'core-js')];
+			const [argument] = node.arguments;
 
-			if (coreJsModuleFeatures) {
-				if (coreJsModuleFeatures.length > 1) {
-					if (checkFeatures(coreJsModuleFeatures)) {
-						context.report({
-							node,
-							messageId: MESSAGE_ID_CORE_JS,
-							data: {
-								coreJsModule: importedModule,
-							},
-						});
-					}
-				} else if (!unavailableFeatures.includes(coreJsModuleFeatures[0])) {
-					context.report({node, messageId: MESSAGE_ID_POLYFILL});
-				}
-
-				return;
-			}
-
-			const polyfill = findPolyfill(importedModule);
-			if (polyfill) {
-				const [, namespace, method = ''] = polyfill.feature.split('.');
-				const features =
-					coreJsEntries[`core-js/full/${namespace}${method && '/'}${method}`];
-
-				if (features && checkFeatures(features)) {
-					context.report({node, messageId: MESSAGE_ID_POLYFILL});
-				}
-			}
+			checkNode(argument, context, unavailableFeatures);
 		},
 	};
 }
