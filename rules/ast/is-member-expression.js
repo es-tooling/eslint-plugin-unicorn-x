@@ -7,7 +7,7 @@
 		objects?: string[],
 		optional?: boolean,
 		computed?: boolean
-	} | string | string[]
+	}
 } [options]
 @returns {string}
 */
@@ -16,28 +16,11 @@ export default function isMemberExpression(node, options) {
 		return false;
 	}
 
-	if (typeof options === 'string') {
-		options = {properties: [options]};
-	}
-
-	if (Array.isArray(options)) {
-		options = {properties: options};
-	}
-
-	let {property, properties, object, objects, optional, computed} = {
-		property: '',
-		properties: [],
-		object: '',
-		...options,
-	};
-
-	if (property) {
-		properties = [property];
-	}
-
-	if (object) {
-		objects = [object];
-	}
+	const property = options?.property ?? '';
+	const properties = property ? [property] : (options?.properties ?? []);
+	const objects = options?.object ? [options.object] : (options?.objects ?? []);
+	const optional = options?.optional;
+	let computed = options?.computed;
 
 	if (
 		(optional === true && node.optional !== optional) ||
