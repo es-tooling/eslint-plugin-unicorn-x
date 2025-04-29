@@ -100,7 +100,7 @@ const create = (context) => {
 				problem.fix = (fixer) => renameVariable(variable, fixedName, fixer);
 			}
 
-			return problem;
+			context.report(problem);
 		},
 	};
 };
