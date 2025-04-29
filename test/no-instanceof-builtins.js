@@ -67,26 +67,27 @@ const strictStrategyInvalid = [
 
 // Loose strategy
 test.snapshot({
-	valid: [
-		'foo instanceof WebWorker',
-		...strictStrategyInvalid,
-	].map(code => code.replace('foo', 'fooLoose')),
+	valid: ['foo instanceof WebWorker', ...strictStrategyInvalid].map((code) =>
+		code.replace('foo', 'fooLoose'),
+	),
 	invalid: looseStrategyInvalid,
 });
 
 // Strict strategy
 test.snapshot({
 	valid: [],
-	invalid: [...looseStrategyInvalid, ...strictStrategyInvalid].map(code => ({code: code.replace('foo', 'fooStrict'), options: [{strategy: 'strict'}]})),
+	invalid: [...looseStrategyInvalid, ...strictStrategyInvalid].map((code) => ({
+		code: code.replace('foo', 'fooStrict'),
+		options: [{strategy: 'strict'}],
+	})),
 });
 
 // UseErrorIsError option with loose strategy
 test.snapshot({
 	valid: [],
-	invalid: [
-		'fooErr instanceof Error',
-		'(fooErr) instanceof (Error)',
-	].map(code => ({code, options: [{useErrorIsError: true, strategy: 'loose'}]})),
+	invalid: ['fooErr instanceof Error', '(fooErr) instanceof (Error)'].map(
+		(code) => ({code, options: [{useErrorIsError: true, strategy: 'loose'}]}),
+	),
 });
 
 // UseErrorIsError option with strict strategy
@@ -102,7 +103,10 @@ test.snapshot({
 		'err instanceof URIError',
 		'err instanceof InternalError',
 		'err instanceof AggregateError',
-	].map(code => ({code, options: [{useErrorIsError: true, strategy: 'strict'}]})),
+	].map((code) => ({
+		code,
+		options: [{useErrorIsError: true, strategy: 'strict'}],
+	})),
 });
 
 test.snapshot({
@@ -139,7 +143,7 @@ test.snapshot({
 	valid: [
 		'Array.isArray(arr)',
 		'arr instanceof array',
-		'a instanceof \'array\'',
+		"a instanceof 'array'",
 		'a instanceof ArrayA',
 		'a.x[2] instanceof foo()',
 		'Array.isArray([1,2,3]) === true',
@@ -197,6 +201,6 @@ test.snapshot({
 			'<script>const foo = array instanceof Array</script>',
 			'<script>const foo = (( (( array )) instanceof (( Array )) ))</script>',
 			'<script>foo instanceof Function</script>',
-		].map(code => ({code, languageOptions: {parser: parsers.vue}})),
+		].map((code) => ({code, languageOptions: {parser: parsers.vue}})),
 	],
 });

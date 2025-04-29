@@ -3,7 +3,7 @@ import {getTester} from './utils/test.js';
 
 const {test} = getTester(import.meta);
 
-const generateError = name => ({messageId: 'with-name', data: {name}});
+const generateError = (name) => ({messageId: 'with-name', data: {name}});
 
 test({
 	valid: [
@@ -147,7 +147,9 @@ test({
 					// comment
 				}
 				/* comment */
-			`.replace('{SPACE}', ' ').replace('{TAB}', '\t'),
+			`
+				.replace('{SPACE}', ' ')
+				.replace('{TAB}', '\t'),
 			errors: [generateError('unused')],
 		},
 		// Spaces

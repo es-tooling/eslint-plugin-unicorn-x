@@ -1,6 +1,7 @@
 export default function getPreviousNode(node, sourceCode) {
 	const {parent} = node;
-	const visitorKeys = sourceCode.visitorKeys[parent.type] || Object.keys(parent);
+	const visitorKeys =
+		sourceCode.visitorKeys[parent.type] || Object.keys(parent);
 
 	for (const property of visitorKeys) {
 		const value = parent[property];

@@ -6,8 +6,9 @@ Finds the eslint-scope reference in the given scope.
 @returns {Reference|undefined} Returns the found reference or null if none were found.
 */
 function findReference(scope, node) {
-	const references = scope.references
-		.filter(reference => reference.identifier === node);
+	const references = scope.references.filter(
+		(reference) => reference.identifier === node,
+	);
 
 	if (references.length === 1) {
 		return references[0];
@@ -24,8 +25,5 @@ Checks if the given identifier node is shadowed in the given scope.
 export default function isShadowed(scope, node) {
 	const reference = findReference(scope, node);
 
-	return (
-		Boolean(reference?.resolved)
-		&& reference.resolved.defs.length > 0
-	);
+	return Boolean(reference?.resolved) && reference.resolved.defs.length > 0;
 }

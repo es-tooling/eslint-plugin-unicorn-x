@@ -8,7 +8,7 @@ const error = {
 
 const tests = {
 	valid: [
-		'const foo = \'foo\'',
+		"const foo = 'foo'",
 		String.raw`const foo = '\u00b1'`,
 		String.raw`const foo = '\u00b1\u00b1'`,
 		String.raw`const foo = 'foo\u00b1'`,
@@ -188,10 +188,9 @@ const tests = {
 			output: 'const foo = `42\\\\\\u001242\\\\\\u0034`',
 		},
 		{
-			// eslint-disable-next-line no-template-curly-in-string
 			code: 'const foo = `\\xb1${foo}\\xb1${foo}`',
 			errors: [error, error],
-			// eslint-disable-next-line no-template-curly-in-string
+
 			output: 'const foo = `\\u00b1${foo}\\u00b1${foo}`',
 		},
 		{
@@ -214,7 +213,5 @@ test.typescript(avoidTestTitleConflict(tests, 'typescript'));
 
 test.snapshot({
 	valid: [],
-	invalid: [
-		String.raw`const foo = "\xb1"`,
-	],
+	invalid: [String.raw`const foo = "\xb1"`],
 });

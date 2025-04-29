@@ -26,21 +26,23 @@ const create = () => ({
 			suggest: [
 				{
 					messageId: SUGGESTION,
-					fix: fixer => fixer.replaceText(node, 'textContent'),
+					fix: (fixer) => fixer.replaceText(node, 'textContent'),
 				},
 			],
 		};
 	},
 	Identifier(node) {
-		if (!(
-			node.name === 'innerText'
-			&& node.parent.type === 'Property'
-			&& node.parent.key === node
-			&& !node.parent.computed
-			&& node.parent.kind === 'init'
-			&& node.parent.parent.type === 'ObjectPattern'
-			&& node.parent.parent.properties.includes(node.parent)
-		)) {
+		if (
+			!(
+				node.name === 'innerText' &&
+				node.parent.type === 'Property' &&
+				node.parent.key === node &&
+				!node.parent.computed &&
+				node.parent.kind === 'init' &&
+				node.parent.parent.type === 'ObjectPattern' &&
+				node.parent.parent.properties.includes(node.parent)
+			)
+		) {
 			return;
 		}
 
@@ -50,10 +52,11 @@ const create = () => ({
 			suggest: [
 				{
 					messageId: SUGGESTION,
-					fix: fixer => fixer.replaceText(
-						node,
-						node.parent.shorthand ? 'textContent: innerText' : 'textContent',
-					),
+					fix: (fixer) =>
+						fixer.replaceText(
+							node,
+							node.parent.shorthand ? 'textContent: innerText' : 'textContent',
+						),
 				},
 			],
 		};

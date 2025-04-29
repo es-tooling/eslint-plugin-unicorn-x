@@ -169,17 +169,17 @@ test.snapshot({
 		outdent`
 			if (
 				!!!(
-					${zeroCases.filter(code => code !== 'foo.length === 0').join(' &&\n\t\t')}
+					${zeroCases.filter((code) => code !== 'foo.length === 0').join(' &&\n\t\t')}
 				) ||
 				!(
-					${nonZeroCases.filter(code => code !== 'foo.length > 0').join(' ||\n\t\t')}
+					${nonZeroCases.filter((code) => code !== 'foo.length > 0').join(' ||\n\t\t')}
 				)
 			) {}
 		`,
 		{
 			code: outdent`
 				if (
-					${nonZeroCases.filter(code => code !== 'foo.length !== 0').join(' ||\n\t')}
+					${nonZeroCases.filter((code) => code !== 'foo.length !== 0').join(' ||\n\t')}
 				) {}
 			`,
 			options: [{'non-zero': 'not-equal'}],

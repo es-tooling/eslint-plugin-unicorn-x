@@ -7,9 +7,8 @@ The interesting things to test for this rule are whitespace and multiline templa
 
 @param {string} text
 */
-const fixInput = text => dedent(text)
-	.replaceAll('•', ' ')
-	.replaceAll('→→', '\t');
+const fixInput = (text) =>
+	dedent(text).replaceAll('•', ' ').replaceAll('→→', '\t');
 
 const {test} = getTester(import.meta);
 
@@ -45,9 +44,11 @@ test({
 			output: ['dedent`', '  one', '  two', '`'].join('\r\n'),
 		},
 		{
-			options: [{
-				tags: ['customIndentableTag'],
-			}],
+			options: [
+				{
+					tags: ['customIndentableTag'],
+				},
+			],
 			code: fixInput(`
 				foo = customIndentableTag\`
 				••••••••one
@@ -85,9 +86,11 @@ test({
 			`),
 		},
 		{
-			options: [{
-				tags: ['utils.dedent'],
-			}],
+			options: [
+				{
+					tags: ['utils.dedent'],
+				},
+			],
 			code: fixInput(`
 				foo = utils.dedent\`
 				••••••••one
@@ -105,10 +108,12 @@ test({
 			`),
 		},
 		{
-			options: [{
-				tags: ['customIndentableTag'],
-				selectors: [':not(TaggedTemplateExpression) > TemplateLiteral'],
-			}],
+			options: [
+				{
+					tags: ['customIndentableTag'],
+					selectors: [':not(TaggedTemplateExpression) > TemplateLiteral'],
+				},
+			],
 			code: fixInput(`
 				foo = customIndentableTag\`
 				••••••••one1
@@ -327,9 +332,11 @@ test({
 			`),
 		},
 		{
-			options: [{
-				comments: ['please indent me!'],
-			}],
+			options: [
+				{
+					comments: ['please indent me!'],
+				},
+			],
 			code: fixInput(`
 				html = /* please indent me! */ \`
 				••••••••<div>
@@ -347,9 +354,11 @@ test({
 			`),
 		},
 		{
-			options: [{
-				indent: 10,
-			}],
+			options: [
+				{
+					indent: 10,
+				},
+			],
 			code: fixInput(`
 				foo = dedent\`
 				••one
@@ -367,9 +376,11 @@ test({
 			`),
 		},
 		{
-			options: [{
-				indent: '\t\t\t\t',
-			}],
+			options: [
+				{
+					indent: '\t\t\t\t',
+				},
+			],
 			code: fixInput(`
 				foo = dedent\`
 				••one
@@ -387,9 +398,11 @@ test({
 			`),
 		},
 		{
-			options: [{
-				selectors: ['* TemplateLiteral', '* > TemplateLiteral'],
-			}],
+			options: [
+				{
+					selectors: ['* TemplateLiteral', '* > TemplateLiteral'],
+				},
+			],
 			code: fixInput(`
 				foo = \`
 				one
@@ -408,10 +421,12 @@ test({
 			`),
 		},
 		{
-			options: [{
-				selectors: ['* > TemplateLiteral'],
-				comments: ['indentme'],
-			}],
+			options: [
+				{
+					selectors: ['* > TemplateLiteral'],
+					comments: ['indentme'],
+				},
+			],
 			code: fixInput(`
 				foo = /* INDENTME */ \`
 				one
@@ -430,9 +445,11 @@ test({
 			`),
 		},
 		{
-			options: [{
-				functions: ['customDedentFunction1', 'utils.customDedentFunction2'],
-			}],
+			options: [
+				{
+					functions: ['customDedentFunction1', 'utils.customDedentFunction2'],
+				},
+			],
 			code: fixInput(`
 				foo = customDedentFunction1(\`
 				••••••••one
@@ -559,10 +576,12 @@ test({
 			}
 		`),
 		{
-			options: [{
-				tags: ['somethingOtherThanDedent'],
-				functions: ['somethingOtherThanStripIndent'],
-			}],
+			options: [
+				{
+					tags: ['somethingOtherThanDedent'],
+					functions: ['somethingOtherThanStripIndent'],
+				},
+			],
 			code: fixInput(`
 				foo = stripIndent(\`
 				••••••••one
@@ -578,9 +597,11 @@ test({
 		},
 		'stripIndent(foo)',
 		{
-			options: [{
-				selectors: ['TemplateElement'],
-			}],
+			options: [
+				{
+					selectors: ['TemplateElement'],
+				},
+			],
 			// Bad selector; no template literal match
 			code: fixInput(`
 				foo = \`
@@ -592,9 +613,11 @@ test({
 		},
 		'``',
 		{
-			options: [{
-				comments: [],
-			}],
+			options: [
+				{
+					comments: [],
+				},
+			],
 			code: fixInput(`
 				foo = /* indent */ \`
 				••••••one
@@ -682,7 +705,5 @@ test.snapshot({
 			\`)
 		`,
 	],
-	invalid: [
-		`expect(foo).toMatchInlineSnapshot(${INVALID_SNAPSHOT})`,
-	],
+	invalid: [`expect(foo).toMatchInlineSnapshot(${INVALID_SNAPSHOT})`],
 });

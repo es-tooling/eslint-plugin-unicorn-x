@@ -117,9 +117,7 @@ test.snapshot({
 
 // `.slice()` with 2 arguments, and `endIndex` is 1 greater than `startIndex`
 test.snapshot({
-	valid: [
-		'array.slice(-9.1, -8.1)[0]',
-	],
+	valid: ['array.slice(-9.1, -8.1)[0]'],
 	invalid: [
 		'array.slice(-9, -8)[0]',
 		'array.slice(-9, -0o10)[0]',
@@ -152,11 +150,7 @@ test.snapshot({
 
 // Functions to get last element
 test.snapshot({
-	valid: [
-		'new _.last(array)',
-		'_.last(array, 2)',
-		'_.last(...array)',
-	],
+	valid: ['new _.last(array)', '_.last(array, 2)', '_.last(...array)'],
 	invalid: [
 		'_.last(array)',
 		'lodash.last(array)',
@@ -186,10 +180,11 @@ test.snapshot({
 });
 
 // `checkAllIndexAccess` option
-const setCheckAllIndexAccessTrue = cases => cases.map(testCase => {
-	testCase = typeof testCase === 'string' ? {code: testCase} : testCase;
-	return {...testCase, options: [{checkAllIndexAccess: true}]};
-});
+const setCheckAllIndexAccessTrue = (cases) =>
+	cases.map((testCase) => {
+		testCase = typeof testCase === 'string' ? {code: testCase} : testCase;
+		return {...testCase, options: [{checkAllIndexAccess: true}]};
+	});
 test.snapshot({
 	valid: setCheckAllIndexAccessTrue([
 		'++array[1]',

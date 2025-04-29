@@ -49,7 +49,7 @@ test.snapshot({
 		'await null',
 		'await 0n',
 		'await 1n',
-		// eslint-disable-next-line no-template-curly-in-string
+
 		'await `${Promise.resolve()}`',
 		'await !Promise.resolve()',
 		'await void Promise.resolve()',

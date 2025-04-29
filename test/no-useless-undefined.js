@@ -219,9 +219,11 @@ test({
 				{
 					messageId,
 					// The second `undefined`
-					line: 4, column: 2,
+					line: 4,
+					column: 2,
 					// The last `undefined`
-					endLine: 7, endColumn: 11,
+					endLine: 7,
+					endColumn: 11,
 				},
 			],
 		},
@@ -497,17 +499,12 @@ test.snapshot({
 		'const f = {method(foo: Type = undefined){}}',
 		'const f = class {method(foo: Type = undefined){}}',
 		'function f(foo = undefined) {}',
-		...[
-			undefined,
-			'foo.js',
-			'foo.ts',
-			'foo.MTs',
-			'foo.cts',
-			'foo.tsx',
-		].map(filename => ({
-			code: 'function f(foo = undefined) {}',
-			filename,
-		})),
+		...[undefined, 'foo.js', 'foo.ts', 'foo.MTs', 'foo.cts', 'foo.tsx'].map(
+			(filename) => ({
+				code: 'function f(foo = undefined) {}',
+				filename,
+			}),
+		),
 		{
 			code: 'function a({foo} = undefined) {}',
 			filename: 'foo.ts',

@@ -8,28 +8,30 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(node) {
-		if (!(
-			// `foo.join()`
-			isMethodCall(node, {
-				method: 'join',
-				argumentsLength: 0,
-				optionalCall: false,
-			})
-			// `[].join.call(foo)` and `Array.prototype.join.call(foo)`
-			|| (
-				isMethodCall(node, {
-					method: 'call',
-					argumentsLength: 1,
-					optionalCall: false,
-					optionalMember: false,
-				})
-				&& isArrayPrototypeProperty(node.callee.object, {
-					property: 'join',
-				})
+		if (
+			!(
+				// `foo.join()`
+				(
+					isMethodCall(node, {
+						method: 'join',
+						argumentsLength: 0,
+						optionalCall: false,
+					}) ||
+					// `[].join.call(foo)` and `Array.prototype.join.call(foo)`
+					(isMethodCall(node, {
+						method: 'call',
+						argumentsLength: 1,
+						optionalCall: false,
+						optionalMember: false,
+					}) &&
+						isArrayPrototypeProperty(node.callee.object, {
+							property: 'join',
+						}))
+				)
 			)
-		)) {
+		) {
 			return;
 		}
 
@@ -38,12 +40,15 @@ const create = context => ({
 		const isPrototypeMethod = node.arguments.length === 1;
 		return {
 			loc: {
-				start: sourceCode.getLoc(penultimateToken)[isPrototypeMethod ? 'end' : 'start'],
+				start:
+					sourceCode.getLoc(penultimateToken)[
+						isPrototypeMethod ? 'end' : 'start'
+					],
 				end: sourceCode.getLoc(lastToken).end,
 			},
 			messageId: MESSAGE_ID,
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			fix: fixer => appendArgument(fixer, node, '\',\'', sourceCode),
+			fix: (fixer) => appendArgument(fixer, node, "','", sourceCode),
 		};
 	},
 });

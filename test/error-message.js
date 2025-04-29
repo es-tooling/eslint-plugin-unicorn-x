@@ -5,9 +5,9 @@ const {test} = getTester(import.meta);
 
 test.snapshot({
 	valid: [
-		'throw new Error(\'error\')',
-		'throw new TypeError(\'error\')',
-		'throw new MyCustomError(\'error\')',
+		"throw new Error('error')",
+		"throw new TypeError('error')",
+		"throw new MyCustomError('error')",
 		'throw new MyCustomError()',
 		'throw generateError()',
 		'throw foo()',
@@ -39,7 +39,7 @@ test.snapshot({
 	invalid: [
 		'throw new Error()',
 		'throw Error()',
-		'throw new Error(\'\')',
+		"throw new Error('')",
 		'throw new Error(``)',
 		outdent`
 			const err = new Error();

@@ -20,10 +20,11 @@ const checkForReplaceChildOrInsertBefore = (context, node) => {
 	const preferredMethod = disallowedMethods.get(method);
 
 	const fix = isValueNotUsable(node)
-		? fixer => fixer.replaceText(
-			node,
-			`${oldChildNode}.${preferredMethod}(${newChildNode})`,
-		)
+		? (fixer) =>
+				fixer.replaceText(
+					node,
+					`${oldChildNode}.${preferredMethod}(${newChildNode})`,
+				)
 		: undefined;
 
 	return {
@@ -62,13 +63,15 @@ const checkForInsertAdjacentTextOrInsertAdjacentElement = (context, node) => {
 	const content = sourceCode.getText(contentNode);
 	const reference = sourceCode.getText(node.callee.object);
 
-	const fix = method === 'insertAdjacentElement' && !isValueNotUsable(node)
-		? undefined
-		// TODO: make a better fix, don't touch reference
-		: fixer => fixer.replaceText(
-			node,
-			`${reference}.${preferredMethod}(${content})`,
-		);
+	const fix =
+		method === 'insertAdjacentElement' && !isValueNotUsable(node)
+			? undefined
+			: // TODO: make a better fix, don't touch reference
+				(fixer) =>
+					fixer.replaceText(
+						node,
+						`${reference}.${preferredMethod}(${content})`,
+					);
 
 	return {
 		node,
@@ -85,41 +88,41 @@ const checkForInsertAdjacentTextOrInsertAdjacentElement = (context, node) => {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	context.on('CallExpression', node => {
+const create = (context) => {
+	context.on('CallExpression', (node) => {
 		if (
 			isMethodCall(node, {
 				methods: ['replaceChild', 'insertBefore'],
 				argumentsLength: 2,
 				optionalCall: false,
 				optionalMember: false,
-			})
+			}) &&
 			// We only allow Identifier for now
-			&& node.arguments.every(node => node.type === 'Identifier' && node.name !== 'undefined')
+			node.arguments.every(
+				(node) => node.type === 'Identifier' && node.name !== 'undefined',
+			) &&
 			// This check makes sure that only the first method of chained methods with same identifier name e.g: parentNode.insertBefore(alfa, beta).insertBefore(charlie, delta); gets reported
-			&& node.callee.object.type === 'Identifier'
+			node.callee.object.type === 'Identifier'
 		) {
 			return checkForReplaceChildOrInsertBefore(context, node);
 		}
 	});
 
-	context.on('CallExpression', node => {
+	context.on('CallExpression', (node) => {
 		if (
 			isMethodCall(node, {
 				methods: ['insertAdjacentText', 'insertAdjacentElement'],
 				argumentsLength: 2,
 				optionalCall: false,
 				optionalMember: false,
-			})
+			}) &&
 			// Position argument should be `string`
-			&& node.arguments[0].type === 'Literal'
+			node.arguments[0].type === 'Literal' &&
 			// TODO: remove this limits on second argument
-			&& (
-				node.arguments[1].type === 'Literal'
-				|| node.arguments[1].type === 'Identifier'
-			)
+			(node.arguments[1].type === 'Literal' ||
+				node.arguments[1].type === 'Identifier') &&
 			// TODO: remove this limits on callee
-			&& node.callee.object.type === 'Identifier'
+			node.callee.object.type === 'Identifier'
 		) {
 			return checkForInsertAdjacentTextOrInsertAdjacentElement(context, node);
 		}
@@ -132,7 +135,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `.before()` over `.insertBefore()`, `.replaceWith()` over `.replaceChild()`, prefer one of `.before()`, `.after()`, `.append()` or `.prepend()` over `insertAdjacentText()` and `insertAdjacentElement()`.',
+			description:
+				'Prefer `.before()` over `.insertBefore()`, `.replaceWith()` over `.replaceChild()`, prefer one of `.before()`, `.after()`, `.append()` or `.prepend()` over `insertAdjacentText()` and `insertAdjacentElement()`.',
 			recommended: true,
 		},
 		fixable: 'code',

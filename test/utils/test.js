@@ -3,7 +3,11 @@ import url from 'node:url';
 import {RuleTester} from 'eslint';
 import SnapshotRuleTester from './snapshot-rule-tester.js';
 import parsers from './parsers.js';
-import {DEFAULT_LANGUAGE_OPTIONS, normalizeLanguageOptions, mergeLanguageOptions} from './language-options.js';
+import {
+	DEFAULT_LANGUAGE_OPTIONS,
+	normalizeLanguageOptions,
+	mergeLanguageOptions,
+} from './language-options.js';
 import rules from '../../rules/index.js';
 
 function normalizeTestCase(testCase, shouldNormalizeLanguageOptions = true) {
@@ -12,7 +16,10 @@ function normalizeTestCase(testCase, shouldNormalizeLanguageOptions = true) {
 	}
 
 	if (shouldNormalizeLanguageOptions && testCase.languageOptions) {
-		testCase = {...testCase, languageOptions: normalizeLanguageOptions(testCase.languageOptions)};
+		testCase = {
+			...testCase,
+			languageOptions: normalizeLanguageOptions(testCase.languageOptions),
+		};
 	}
 
 	return testCase;
@@ -26,7 +33,11 @@ function normalizeInvalidTest(test, rule) {
 		throw new Error('Remove output if your test do not fix code.');
 	}
 
-	if (Array.isArray(errors) && errors.some(error => error.suggestions) && rule.meta.hasSuggestions !== true) {
+	if (
+		Array.isArray(errors) &&
+		errors.some((error) => error.suggestions) &&
+		rule.meta.hasSuggestions !== true
+	) {
 		// This check will no longer be necessary if this change lands in ESLint 8: https://github.com/eslint/eslint/issues/14312
 		throw new Error('Rule with suggestion is missing `meta.hasSuggestions`.');
 	}
@@ -41,7 +52,7 @@ function normalizeInvalidTest(test, rule) {
 }
 
 // https://github.com/tc39/proposal-array-is-template-object
-const isTemplateObject = value => Array.isArray(value?.raw);
+const isTemplateObject = (value) => Array.isArray(value?.raw);
 // https://github.com/tc39/proposal-string-cooked
 const cooked = (raw, ...substitutions) => String.raw({raw}, ...substitutions);
 
@@ -60,7 +71,13 @@ function only(...arguments_) {
 	only('code');
 	only({code: 'code'});
 	*/
-	return {...normalizeTestCase(arguments_[0], /* shouldNormalizeLanguageOptions */ false), only: true};
+	return {
+		...normalizeTestCase(
+			arguments_[0],
+			/* shouldNormalizeLanguageOptions */ false,
+		),
+		only: true,
+	};
 }
 
 class Tester {
@@ -74,32 +91,36 @@ class Tester {
 
 		let {testerOptions = {}, valid, invalid} = tests;
 
-		valid = valid.map(testCase => normalizeTestCase(testCase));
-		invalid = invalid.map(testCase => normalizeInvalidTest(normalizeTestCase(testCase), rule));
+		valid = valid.map((testCase) => normalizeTestCase(testCase));
+		invalid = invalid.map((testCase) =>
+			normalizeInvalidTest(normalizeTestCase(testCase), rule),
+		);
 
 		const testConfig = {
 			...testerOptions,
-			languageOptions: mergeLanguageOptions(DEFAULT_LANGUAGE_OPTIONS, testerOptions.languageOptions),
+			languageOptions: mergeLanguageOptions(
+				DEFAULT_LANGUAGE_OPTIONS,
+				testerOptions.languageOptions,
+			),
 		};
 
 		const tester = new RuleTester(testConfig);
 
-		return tester.run(
-			ruleId,
-			rule,
-			{valid, invalid},
-		);
+		return tester.run(ruleId, rule, {valid, invalid});
 	}
 
 	snapshot(tests) {
 		let {testerOptions = {}, valid, invalid} = tests;
 
-		valid = valid.map(testCase => normalizeTestCase(testCase));
-		invalid = invalid.map(testCase => normalizeTestCase(testCase));
+		valid = valid.map((testCase) => normalizeTestCase(testCase));
+		invalid = invalid.map((testCase) => normalizeTestCase(testCase));
 
 		const testConfig = {
 			...testerOptions,
-			languageOptions: mergeLanguageOptions(DEFAULT_LANGUAGE_OPTIONS, testerOptions.languageOptions),
+			languageOptions: mergeLanguageOptions(
+				DEFAULT_LANGUAGE_OPTIONS,
+				testerOptions.languageOptions,
+			),
 		};
 
 		const tester = new SnapshotRuleTester(testConfig);
@@ -142,7 +163,10 @@ function getTester(importMeta) {
 }
 
 const addComment = (testCase, comment) => {
-	testCase = normalizeTestCase(testCase, /* shouldNormalizeLanguageOptions */ false);
+	testCase = normalizeTestCase(
+		testCase,
+		/* shouldNormalizeLanguageOptions */ false,
+	);
 	const {code, output} = testCase;
 	const fixedTest = {
 		...testCase,
@@ -159,13 +183,10 @@ const avoidTestTitleConflict = (tests, comment) => {
 	const {valid, invalid} = tests;
 	return {
 		...tests,
-		valid: valid.map(testCase => addComment(testCase, comment)),
-		invalid: invalid.map(testCase => addComment(testCase, comment)),
+		valid: valid.map((testCase) => addComment(testCase, comment)),
+		invalid: invalid.map((testCase) => addComment(testCase, comment)),
 	};
 };
 
-export {
-	getTester,
-	avoidTestTitleConflict,
-};
+export {getTester, avoidTestTitleConflict};
 export {default as parsers} from './parsers.js';

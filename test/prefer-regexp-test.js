@@ -199,23 +199,23 @@ test({
 	].map(({code, output}) =>
 		supportsUnicodeSets
 			? {
-				code,
-				output,
-				errors: 1,
-			}
+					code,
+					output,
+					errors: 1,
+				}
 			: {
-				code,
-				errors: [
-					{
-						message: 'Prefer `.test(…)` over `.exec(…)`.',
-						suggestions: [
-							{
-								desc: 'Switch to `RegExp#test(…)`.',
-								output,
-							},
-						],
-					},
-				],
-			},
+					code,
+					errors: [
+						{
+							message: 'Prefer `.test(…)` over `.exec(…)`.',
+							suggestions: [
+								{
+									desc: 'Switch to `RegExp#test(…)`.',
+									output,
+								},
+							],
+						},
+					],
+				},
 	),
 });

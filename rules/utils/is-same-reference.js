@@ -55,7 +55,7 @@ function getStaticPropertyName(node) {
 			break;
 		}
 
-			// No default
+		// No default
 	}
 
 	if (property) {
@@ -82,10 +82,10 @@ function equalLiteralValue(left, right) {
 	// RegExp literal.
 	if (left.regex || right.regex) {
 		return Boolean(
-			left.regex
-			&& right.regex
-			&& left.regex.pattern === right.regex.pattern
-			&& left.regex.flags === right.regex.flags,
+			left.regex &&
+				right.regex &&
+				left.regex.pattern === right.regex.pattern &&
+				left.regex.flags === right.regex.flags,
 		);
 	}
 
@@ -146,8 +146,8 @@ export default function isSameReference(left, right) {
 			// `x.y = x["y"]`
 			if (nameA !== undefined) {
 				return (
-					isSameReference(left.object, right.object)
-					&& nameA === getStaticPropertyName(right)
+					isSameReference(left.object, right.object) &&
+					nameA === getStaticPropertyName(right)
 				);
 			}
 
@@ -157,9 +157,9 @@ export default function isSameReference(left, right) {
 			`x.y = x.y`
 			*/
 			return (
-				left.computed === right.computed
-				&& isSameReference(left.object, right.object)
-				&& isSameReference(left.property, right.property)
+				left.computed === right.computed &&
+				isSameReference(left.object, right.object) &&
+				isSameReference(left.property, right.property)
 			);
 		}
 

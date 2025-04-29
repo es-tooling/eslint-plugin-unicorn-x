@@ -1,6 +1,14 @@
 import helperValidatorIdentifier from '@babel/helper-validator-identifier';
-import {escapeString, hasOptionalChainElement, isValueNotUsable} from './utils/index.js';
-import {isMethodCall, isStringLiteral, isExpressionStatement} from './ast/index.js';
+import {
+	escapeString,
+	hasOptionalChainElement,
+	isValueNotUsable,
+} from './utils/index.js';
+import {
+	isMethodCall,
+	isStringLiteral,
+	isExpressionStatement,
+} from './ast/index.js';
 
 const {isIdentifierName} = helperValidatorIdentifier;
 const MESSAGE_ID = 'prefer-dom-node-dataset';
@@ -8,14 +16,18 @@ const messages = {
 	[MESSAGE_ID]: 'Prefer `.dataset` over `{{method}}(…)`.',
 };
 
-const dashToCamelCase = string => string.replaceAll(/-[a-z]/g, s => s[1].toUpperCase());
+const dashToCamelCase = (string) =>
+	string.replaceAll(/-[a-z]/g, (s) => s[1].toUpperCase());
 
 function getFix(callExpression, context) {
 	const method = callExpression.callee.property.name;
 
 	// `foo?.bar = ''` is invalid
 	// TODO: Remove this restriction if https://github.com/nicolo-ribaudo/ecma262/pull/4 get merged
-	if (method === 'setAttribute' && hasOptionalChainElement(callExpression.callee)) {
+	if (
+		method === 'setAttribute' &&
+		hasOptionalChainElement(callExpression.callee)
+	) {
 		return;
 	}
 
@@ -24,11 +36,14 @@ function getFix(callExpression, context) {
 		return;
 	}
 
-	if (method === 'removeAttribute' && !isExpressionStatement(callExpression.parent)) {
+	if (
+		method === 'removeAttribute' &&
+		!isExpressionStatement(callExpression.parent)
+	) {
 		return;
 	}
 
-	return fixer => {
+	return (fixer) => {
 		const [nameNode] = callExpression.arguments;
 		const name = dashToCamelCase(nameNode.value.toLowerCase().slice(5));
 		const {sourceCode} = context;
@@ -38,7 +53,9 @@ function getFix(callExpression, context) {
 			case 'setAttribute':
 			case 'getAttribute':
 			case 'removeAttribute': {
-				text = isIdentifierName(name) ? `.${name}` : `[${escapeString(name, nameNode.raw.charAt(0))}]`;
+				text = isIdentifierName(name)
+					? `.${name}`
+					: `[${escapeString(name, nameNode.raw.charAt(0))}]`;
 				text = `${datasetText}${text}`;
 				if (method === 'setAttribute') {
 					text += ` = ${sourceCode.getText(callExpression.arguments[1])}`;
@@ -65,25 +82,25 @@ function getFix(callExpression, context) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(callExpression) {
-		if (!(
-			(
-				isMethodCall(callExpression, {
+		if (
+			!(
+				(isMethodCall(callExpression, {
 					method: 'setAttribute',
 					argumentsLength: 2,
 					optionalCall: false,
 					optionalMember: false,
-				})
-				|| isMethodCall(callExpression, {
-					methods: ['getAttribute', 'removeAttribute', 'hasAttribute'],
-					argumentsLength: 1,
-					optionalCall: false,
-					optionalMember: false,
-				})
+				}) ||
+					isMethodCall(callExpression, {
+						methods: ['getAttribute', 'removeAttribute', 'hasAttribute'],
+						argumentsLength: 1,
+						optionalCall: false,
+						optionalMember: false,
+					})) &&
+				isStringLiteral(callExpression.arguments[0])
 			)
-			&& isStringLiteral(callExpression.arguments[0])
-		)) {
+		) {
 			return;
 		}
 
@@ -91,9 +108,9 @@ const create = context => ({
 		// Playwright's `Locator#getAttribute()` returns a promise.
 		// https://playwright.dev/docs/api/class-locator#locator-get-attribute
 		if (
-			callExpression.parent.type === 'AwaitExpression'
-			&& callExpression.parent.argument === callExpression
-			&& method === 'getAttribute'
+			callExpression.parent.type === 'AwaitExpression' &&
+			callExpression.parent.argument === callExpression &&
+			method === 'getAttribute'
 		) {
 			return;
 		}
@@ -119,7 +136,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer using `.dataset` on DOM elements over calling attribute methods.',
+			description:
+				'Prefer using `.dataset` on DOM elements over calling attribute methods.',
 			recommended: true,
 		},
 		fixable: 'code',

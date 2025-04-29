@@ -2,15 +2,15 @@ import {isStaticRequire, isMethodCall, isLiteral} from './ast/index.js';
 
 const MESSAGE_ID = 'no-process-exit';
 const messages = {
-	[MESSAGE_ID]: 'Only use `process.exit()` in CLI apps. Throw an error instead.',
+	[MESSAGE_ID]:
+		'Only use `process.exit()` in CLI apps. Throw an error instead.',
 };
 
-const isWorkerThreads = node =>
-	isLiteral(node, 'node:worker_threads')
-	|| isLiteral(node, 'worker_threads');
+const isWorkerThreads = (node) =>
+	isLiteral(node, 'node:worker_threads') || isLiteral(node, 'worker_threads');
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const startsWithHashBang = context.sourceCode.lines[0].indexOf('#!') === 0;
 
 	if (startsWithHashBang) {
@@ -24,48 +24,50 @@ const create = context => {
 	const problemNodes = [];
 
 	// `require('worker_threads')`
-	context.on('CallExpression', callExpression => {
+	context.on('CallExpression', (callExpression) => {
 		if (
-			isStaticRequire(callExpression)
-			&& isWorkerThreads(callExpression.arguments[0])
+			isStaticRequire(callExpression) &&
+			isWorkerThreads(callExpression.arguments[0])
 		) {
 			requiredWorkerThreadsModule = true;
 		}
 	});
 
 	// `import workerThreads from 'worker_threads'`
-	context.on('ImportDeclaration', importDeclaration => {
+	context.on('ImportDeclaration', (importDeclaration) => {
 		if (
-			importDeclaration.source.type === 'Literal'
-			&& isWorkerThreads(importDeclaration.source)
+			importDeclaration.source.type === 'Literal' &&
+			isWorkerThreads(importDeclaration.source)
 		) {
 			requiredWorkerThreadsModule = true;
 		}
 	});
 
 	// Check `process.on` / `process.once` call
-	context.on('CallExpression', node => {
-		if (isMethodCall(node, {
-			object: 'process',
-			methods: ['on', 'once'],
-			minimumArguments: 1,
-			optionalCall: false,
-			optionalMember: false,
-		})) {
+	context.on('CallExpression', (node) => {
+		if (
+			isMethodCall(node, {
+				object: 'process',
+				methods: ['on', 'once'],
+				minimumArguments: 1,
+				optionalCall: false,
+				optionalMember: false,
+			})
+		) {
 			processEventHandler = node;
 		}
 	});
-	context.onExit('CallExpression', node => {
+	context.onExit('CallExpression', (node) => {
 		if (node === processEventHandler) {
 			processEventHandler = undefined;
 		}
 	});
 
 	// Check `process.exit` call
-	context.on('CallExpression', node => {
+	context.on('CallExpression', (node) => {
 		if (
-			!processEventHandler
-			&& isMethodCall(node, {
+			!processEventHandler &&
+			isMethodCall(node, {
 				object: 'process',
 				method: 'exit',
 				optionalCall: false,
@@ -76,7 +78,7 @@ const create = context => {
 		}
 	});
 
-	context.onExit('Program', function * () {
+	context.onExit('Program', function* () {
 		if (requiredWorkerThreadsModule) {
 			return;
 		}

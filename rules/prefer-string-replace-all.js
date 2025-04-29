@@ -7,7 +7,8 @@ const {parse: parseRegExp} = regjsparser;
 const MESSAGE_ID_USE_REPLACE_ALL = 'method';
 const MESSAGE_ID_USE_STRING = 'pattern';
 const messages = {
-	[MESSAGE_ID_USE_REPLACE_ALL]: 'Prefer `String#replaceAll()` over `String#replace()`.',
+	[MESSAGE_ID_USE_REPLACE_ALL]:
+		'Prefer `String#replaceAll()` over `String#replace()`.',
 	[MESSAGE_ID_USE_STRING]: 'This pattern can be replaced with {{replacement}}.',
 };
 
@@ -35,12 +36,12 @@ function getPatternReplacement(node) {
 	}
 
 	const parts = tree.type === 'alternative' ? tree.body : [tree];
-	if (parts.some(part => part.type !== 'value')) {
+	if (parts.some((part) => part.type !== 'value')) {
 		return;
 	}
 
 	// TODO: Preserve escape
-	const string = String.fromCodePoint(...parts.map(part => part.codePoint));
+	const string = String.fromCodePoint(...parts.map((part) => part.codePoint));
 
 	return escapeString(string);
 }
@@ -51,10 +52,10 @@ const isRegExpWithGlobalFlag = (node, scope) => {
 	}
 
 	if (
-		isNewExpression(node, {name: 'RegExp'})
-		&& node.arguments[0]?.type !== 'SpreadElement'
-		&& node.arguments[1]?.type === 'Literal'
-		&& typeof node.arguments[1].value === 'string'
+		isNewExpression(node, {name: 'RegExp'}) &&
+		node.arguments[0]?.type !== 'SpreadElement' &&
+		node.arguments[1]?.type === 'Literal' &&
+		typeof node.arguments[1].value === 'string'
 	) {
 		return node.arguments[1].value.includes('g');
 	}
@@ -68,20 +69,21 @@ const isRegExpWithGlobalFlag = (node, scope) => {
 
 	const {value} = staticResult;
 	return (
-		Object.prototype.toString.call(value) === '[object RegExp]'
-		&& value.global
+		Object.prototype.toString.call(value) === '[object RegExp]' && value.global
 	);
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(node) {
-		if (!isMethodCall(node, {
-			methods: ['replace', 'replaceAll'],
-			argumentsLength: 2,
-			optionalCall: false,
-			optionalMember: false,
-		})) {
+		if (
+			!isMethodCall(node, {
+				methods: ['replace', 'replaceAll'],
+				argumentsLength: 2,
+				optionalCall: false,
+				optionalMember: false,
+			})
+		) {
 			return;
 		}
 
@@ -90,7 +92,9 @@ const create = context => ({
 			callee: {property},
 		} = node;
 
-		if (!isRegExpWithGlobalFlag(pattern, context.sourceCode.getScope(pattern))) {
+		if (
+			!isRegExpWithGlobalFlag(pattern, context.sourceCode.getScope(pattern))
+		) {
 			return;
 		}
 
@@ -107,10 +111,13 @@ const create = context => ({
 				messageId: MESSAGE_ID_USE_STRING,
 				data: {
 					// Show `This pattern can be replaced with a string literal.` for long strings
-					replacement: patternReplacement.length < 20 ? patternReplacement : 'a string literal',
+					replacement:
+						patternReplacement.length < 20
+							? patternReplacement
+							: 'a string literal',
 				},
 				/** @param {import('eslint').Rule.RuleFixer} fixer */
-				fix: fixer => fixer.replaceText(pattern, patternReplacement),
+				fix: (fixer) => fixer.replaceText(pattern, patternReplacement),
 			};
 		}
 
@@ -118,7 +125,7 @@ const create = context => ({
 			node: property,
 			messageId: MESSAGE_ID_USE_REPLACE_ALL,
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			* fix(fixer) {
+			*fix(fixer) {
 				yield fixer.insertTextAfter(property, 'All');
 
 				if (!patternReplacement) {
@@ -137,7 +144,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `String#replaceAll()` over regex searches with the global flag.',
+			description:
+				'Prefer `String#replaceAll()` over regex searches with the global flag.',
 			recommended: true,
 		},
 		fixable: 'code',

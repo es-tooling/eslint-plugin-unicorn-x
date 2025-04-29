@@ -14,7 +14,7 @@ test({
 	valid: [
 		// Async functions returning normal values/throwing values
 		'async () => bar;',
-		...['return', 'throw'].flatMap(keyword => [
+		...['return', 'throw'].flatMap((keyword) => [
 			outdent`
 				async () => {
 					${keyword} bar;
@@ -32,7 +32,7 @@ test({
 			`,
 		]),
 		// Sync function returning Promise.resolve/reject
-		...['resolve, reject'].flatMap(method => [
+		...['resolve, reject'].flatMap((method) => [
 			`() => Promise.${method}(bar);`,
 			outdent`
 				() => {
@@ -51,7 +51,7 @@ test({
 			`,
 		]),
 		// Sync generator yielding Promise.resolve/reject
-		...['resolve', 'reject'].flatMap(method => [
+		...['resolve', 'reject'].flatMap((method) => [
 			outdent`
 				function * foo() {
 					yield Promise.${method}(bar);
@@ -72,11 +72,13 @@ test({
 			}
 		`,
 		// Delegate yield expressions
-		...['resolve', 'reject'].map(method => outdent`
-			async function * foo() {
-				yield* Promise.${method}(bar);
-			}
-		`),
+		...['resolve', 'reject'].map(
+			(method) => outdent`
+				async function * foo() {
+					yield* Promise.${method}(bar);
+				}
+			`,
+		),
 		// Promise#then/catch/finally
 		'promise.then(() => foo).catch(() => bar).finally(() => baz)',
 		'promise.then(() => foo, () => bar).finally(() => baz)',
@@ -455,29 +457,28 @@ test({
 		...[
 			'async () => (Promise.reject(bar));',
 			'async () => ((Promise.reject(bar)));',
-		].map(code => ({
+		].map((code) => ({
 			code,
 			output: 'async () => { throw bar; };',
 			errors: [returnRejectError],
 		})),
-		...[
-			'(yield Promise.reject(bar));',
-			'((yield Promise.reject(bar)));',
-		].map(code => ({
-			code: outdent`
-				async function * foo() {
-					${code}
-				}
-			`,
-			output: outdent`
-				async function * foo() {
-					throw bar;
-				}
-			`,
-			errors: [yieldRejectError],
-		})),
+		...['(yield Promise.reject(bar));', '((yield Promise.reject(bar)));'].map(
+			(code) => ({
+				code: outdent`
+					async function * foo() {
+						${code}
+					}
+				`,
+				output: outdent`
+					async function * foo() {
+						throw bar;
+					}
+				`,
+				errors: [yieldRejectError],
+			}),
+		),
 		// Promise#then/catch/finally callbacks returning Promise.resolve/reject
-		...['then', 'catch', 'finally'].flatMap(method => [
+		...['then', 'catch', 'finally'].flatMap((method) => [
 			{
 				code: `promise.${method}(() => Promise.resolve(bar))`,
 				errors: [returnResolveError],

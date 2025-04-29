@@ -1,9 +1,13 @@
-import {getPropertyName, ReferenceTracker} from '@eslint-community/eslint-utils';
+import {
+	getPropertyName,
+	ReferenceTracker,
+} from '@eslint-community/eslint-utils';
 import {fixSpaceAroundKeyword} from './fix/index.js';
 import {isMemberExpression, isMethodCall} from './ast/index.js';
 
 const messages = {
-	'known-method': 'Prefer using `{{constructorName}}.prototype.{{methodName}}`.',
+	'known-method':
+		'Prefer using `{{constructorName}}.prototype.{{methodName}}`.',
 	'unknown-method': 'Prefer using method from `{{constructorName}}.prototype`.',
 };
 
@@ -16,7 +20,10 @@ const OBJECT_PROTOTYPE_METHODS = [
 	'valueOf',
 ];
 
-function getConstructorAndMethodName(methodNode, {sourceCode, globalReferences}) {
+function getConstructorAndMethodName(
+	methodNode,
+	{sourceCode, globalReferences},
+) {
 	if (!methodNode) {
 		return;
 	}
@@ -37,15 +44,23 @@ function getConstructorAndMethodName(methodNode, {sourceCode, globalReferences})
 
 	const objectNode = methodNode.object;
 
-	if (!(
-		(objectNode.type === 'ArrayExpression' && objectNode.elements.length === 0)
-		|| (objectNode.type === 'ObjectExpression' && objectNode.properties.length === 0)
-	)) {
+	if (
+		!(
+			(objectNode.type === 'ArrayExpression' &&
+				objectNode.elements.length === 0) ||
+			(objectNode.type === 'ObjectExpression' &&
+				objectNode.properties.length === 0)
+		)
+	) {
 		return;
 	}
 
-	const constructorName = objectNode.type === 'ArrayExpression' ? 'Array' : 'Object';
-	const methodName = getPropertyName(methodNode, sourceCode.getScope(methodNode));
+	const constructorName =
+		objectNode.type === 'ArrayExpression' ? 'Array' : 'Object';
+	const methodName = getPropertyName(
+		methodNode,
+		sourceCode.getScope(methodNode),
+	);
 
 	return {
 		constructorName,
@@ -80,11 +95,9 @@ function getProblem(callExpression, {sourceCode, globalReferences}) {
 		methodNode = callExpression.callee.object;
 	}
 
-	const {
-		isGlobalReference,
-		constructorName,
-		methodName,
-	} = getConstructorAndMethodName(methodNode, {sourceCode, globalReferences}) ?? {};
+	const {isGlobalReference, constructorName, methodName} =
+		getConstructorAndMethodName(methodNode, {sourceCode, globalReferences}) ??
+		{};
 
 	if (!constructorName) {
 		return;
@@ -94,9 +107,12 @@ function getProblem(callExpression, {sourceCode, globalReferences}) {
 		node: methodNode,
 		messageId: methodName ? 'known-method' : 'unknown-method',
 		data: {constructorName, methodName},
-		* fix(fixer) {
+		*fix(fixer) {
 			if (isGlobalReference) {
-				yield fixer.replaceText(methodNode, `${constructorName}.prototype.${methodName}`);
+				yield fixer.replaceText(
+					methodNode,
+					`${constructorName}.prototype.${methodName}`,
+				);
 				return;
 			}
 
@@ -106,10 +122,10 @@ function getProblem(callExpression, {sourceCode, globalReferences}) {
 				yield fixer.replaceText(objectNode, `${constructorName}.prototype`);
 
 				if (
-					objectNode.type === 'ArrayExpression'
-					|| objectNode.type === 'ObjectExpression'
+					objectNode.type === 'ArrayExpression' ||
+					objectNode.type === 'ObjectExpression'
 				) {
-					yield * fixSpaceAroundKeyword(fixer, callExpression, sourceCode);
+					yield* fixSpaceAroundKeyword(fixer, callExpression, sourceCode);
 				}
 			}
 		},
@@ -121,17 +137,22 @@ function create(context) {
 	const {sourceCode} = context;
 	const callExpressions = [];
 
-	context.on('CallExpression', callExpression => {
+	context.on('CallExpression', (callExpression) => {
 		callExpressions.push(callExpression);
 	});
 
-	context.on('Program:exit', function * (program) {
+	context.on('Program:exit', function* (program) {
 		const globalReferences = new WeakMap();
 
 		const tracker = new ReferenceTracker(sourceCode.getScope(program));
 
 		for (const {node, path} of tracker.iterateGlobalReferences(
-			Object.fromEntries(OBJECT_PROTOTYPE_METHODS.map(method => [method, {[ReferenceTracker.READ]: true}])),
+			Object.fromEntries(
+				OBJECT_PROTOTYPE_METHODS.map((method) => [
+					method,
+					{[ReferenceTracker.READ]: true},
+				]),
+			),
 		)) {
 			globalReferences.set(node, path);
 		}
@@ -151,7 +172,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer borrowing methods from the prototype instead of the instance.',
+			description:
+				'Prefer borrowing methods from the prototype instead of the instance.',
 			recommended: true,
 		},
 		fixable: 'code',

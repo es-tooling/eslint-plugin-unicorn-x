@@ -13,15 +13,14 @@ import {
 const MESSAGE_ID_ERROR = 'no-typeof-undefined/error';
 const MESSAGE_ID_SUGGESTION = 'no-typeof-undefined/suggestion';
 const messages = {
-	[MESSAGE_ID_ERROR]: 'Compare with `undefined` directly instead of using `typeof`.',
+	[MESSAGE_ID_ERROR]:
+		'Compare with `undefined` directly instead of using `typeof`.',
 	[MESSAGE_ID_SUGGESTION]: 'Switch to `… {{operator}} undefined`.',
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	const {
-		checkGlobalVariables,
-	} = {
+const create = (context) => {
+	const {checkGlobalVariables} = {
 		checkGlobalVariables: false,
 		...context.options[0],
 	};
@@ -30,39 +29,47 @@ const create = context => {
 
 	return {
 		BinaryExpression(binaryExpression) {
-			if (!(
-				(
-					binaryExpression.operator === '==='
-					|| binaryExpression.operator === '!=='
-					|| binaryExpression.operator === '=='
-					|| binaryExpression.operator === '!='
+			if (
+				!(
+					(binaryExpression.operator === '===' ||
+						binaryExpression.operator === '!==' ||
+						binaryExpression.operator === '==' ||
+						binaryExpression.operator === '!=') &&
+					binaryExpression.left.type === 'UnaryExpression' &&
+					binaryExpression.left.operator === 'typeof' &&
+					binaryExpression.left.prefix &&
+					isLiteral(binaryExpression.right, 'undefined')
 				)
-				&& binaryExpression.left.type === 'UnaryExpression'
-				&& binaryExpression.left.operator === 'typeof'
-				&& binaryExpression.left.prefix
-				&& isLiteral(binaryExpression.right, 'undefined')
-			)) {
+			) {
 				return;
 			}
 
-			const {left: typeofNode, right: undefinedString, operator} = binaryExpression;
+			const {
+				left: typeofNode,
+				right: undefinedString,
+				operator,
+			} = binaryExpression;
 
 			const valueNode = typeofNode.argument;
-			const isGlobalVariable = valueNode.type === 'Identifier'
-				&& !isShadowed(sourceCode.getScope(valueNode), valueNode);
+			const isGlobalVariable =
+				valueNode.type === 'Identifier' &&
+				!isShadowed(sourceCode.getScope(valueNode), valueNode);
 
 			if (!checkGlobalVariables && isGlobalVariable) {
 				return;
 			}
 
-			const [typeofToken, secondToken] = sourceCode.getFirstTokens(typeofNode, 2);
+			const [typeofToken, secondToken] = sourceCode.getFirstTokens(
+				typeofNode,
+				2,
+			);
 
-			const fix = function * (fixer) {
+			const fix = function* (fixer) {
 				// Change `==`/`!=` to `===`/`!==`
 				if (operator === '==' || operator === '!=') {
 					const operatorToken = sourceCode.getTokenAfter(
 						typeofNode,
-						token => token.type === 'Punctuator' && token.value === operator,
+						(token) => token.type === 'Punctuator' && token.value === operator,
 					);
 
 					yield fixer.insertTextAfter(operatorToken, '=');
@@ -75,13 +82,18 @@ const create = context => {
 
 				const {parent} = binaryExpression;
 				if (
-					(parent.type === 'ReturnStatement' || parent.type === 'ThrowStatement')
-					&& parent.argument === binaryExpression
-					&& !isOnSameLine(typeofToken, secondToken)
-					&& !isParenthesized(binaryExpression, sourceCode)
-					&& !isParenthesized(typeofNode, sourceCode)
+					(parent.type === 'ReturnStatement' ||
+						parent.type === 'ThrowStatement') &&
+					parent.argument === binaryExpression &&
+					!isOnSameLine(typeofToken, secondToken) &&
+					!isParenthesized(binaryExpression, sourceCode) &&
+					!isParenthesized(typeofNode, sourceCode)
 				) {
-					yield * addParenthesizesToReturnOrThrowExpression(fixer, parent, sourceCode);
+					yield* addParenthesizesToReturnOrThrowExpression(
+						fixer,
+						parent,
+						sourceCode,
+					);
 					return;
 				}
 

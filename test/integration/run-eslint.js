@@ -49,7 +49,17 @@ class UnicornEslintFatalError extends SyntaxError {
 const sum = (collection, fieldName) =>
 	collection.reduce((total, {[fieldName]: value}) => total + value, 0);
 
-const patterns = ['js', 'mjs', 'cjs', 'ts', 'mts', 'cts', 'jsx', 'tsx', 'vue'].map(extension => `**/*.${extension}`);
+const patterns = [
+	'js',
+	'mjs',
+	'cjs',
+	'ts',
+	'mts',
+	'cts',
+	'jsx',
+	'tsx',
+	'vue',
+].map((extension) => `**/*.${extension}`);
 const basicConfigs = [
 	eslintPluginUnicorn.configs.all,
 	{
@@ -94,11 +104,7 @@ function getBabelParserConfig(project) {
 					configFile: false,
 					parserOpts: {
 						allowReturnOutsideFunction: true,
-						plugins: [
-							'jsx',
-							'exportDefaultFrom',
-							...project.babelPlugins,
-						],
+						plugins: ['jsx', 'exportDefaultFrom', ...project.babelPlugins],
 					},
 				},
 			},
@@ -109,7 +115,10 @@ function getBabelParserConfig(project) {
 async function runEslint(project) {
 	const eslintIgnoreFile = path.join(project.location, '.eslintignore');
 	const ignore = fs.existsSync(eslintIgnoreFile)
-		? fs.readFileSync(eslintIgnoreFile, 'utf8').split('\n').filter(line => line && !line.startsWith('#'))
+		? fs
+				.readFileSync(eslintIgnoreFile, 'utf8')
+				.split('\n')
+				.filter((line) => line && !line.startsWith('#'))
 		: [];
 
 	const eslint = new ESLint({
@@ -128,11 +137,11 @@ async function runEslint(project) {
 	const results = await eslint.lintFiles(patterns);
 
 	const errors = results
-		.filter(file => file.fatalErrorCount > 0)
-		.flatMap(
-			file => file.messages
-				.filter(message => message.fatal)
-				.map(message => new UnicornEslintFatalError(message, file)),
+		.filter((file) => file.fatalErrorCount > 0)
+		.flatMap((file) =>
+			file.messages
+				.filter((message) => message.fatal)
+				.map((message) => new UnicornEslintFatalError(message, file)),
 		);
 
 	if (errors.length > 0) {

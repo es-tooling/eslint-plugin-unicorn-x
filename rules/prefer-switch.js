@@ -7,7 +7,8 @@ const messages = {
 	[MESSAGE_ID]: 'Use `switch` instead of multiple `else-if`.',
 };
 
-const isSame = (nodeA, nodeB) => nodeA === nodeB || isSameReference(nodeA, nodeB);
+const isSame = (nodeA, nodeB) =>
+	nodeA === nodeB || isSameReference(nodeA, nodeB);
 
 function getEqualityComparisons(node) {
 	const nodes = [node];
@@ -32,7 +33,9 @@ function getEqualityComparisons(node) {
 
 function getCommonReferences(expressions, candidates) {
 	for (const {left, right} of expressions) {
-		candidates = candidates.filter(node => isSame(node, left) || isSame(node, right));
+		candidates = candidates.filter(
+			(node) => isSame(node, left) || isSame(node, right),
+		);
 
 		if (candidates.length === 0) {
 			break;
@@ -45,7 +48,11 @@ function getCommonReferences(expressions, candidates) {
 function getStatements(statement) {
 	let discriminantCandidates;
 	const ifStatements = [];
-	for (; statement && statement.type === 'IfStatement'; statement = statement.alternate) {
+	for (
+		;
+		statement && statement.type === 'IfStatement';
+		statement = statement.alternate
+	) {
 		const {test} = statement;
 		const compareExpressions = getEqualityComparisons(test);
 
@@ -89,8 +96,8 @@ const breakAbleNodeTypes = new Set([
 	'ForInStatement',
 	'SwitchStatement',
 ]);
-const getBreakTarget = node => {
-	for (;node.parent; node = node.parent) {
+const getBreakTarget = (node) => {
+	for (; node.parent; node = node.parent) {
 		if (breakAbleNodeTypes.has(node.type)) {
 			return node;
 		}
@@ -120,7 +127,7 @@ function hasBreakInside(breakStatements, node) {
 	return false;
 }
 
-function * insertBracesIfNotBlockStatement(node, fixer, indent) {
+function* insertBracesIfNotBlockStatement(node, fixer, indent) {
 	if (!node || node.type === 'BlockStatement') {
 		return;
 	}
@@ -129,7 +136,7 @@ function * insertBracesIfNotBlockStatement(node, fixer, indent) {
 	yield fixer.insertTextAfter(node, `\n${indent}}`);
 }
 
-function * insertBreakStatement(node, fixer, sourceCode, indent) {
+function* insertBreakStatement(node, fixer, sourceCode, indent) {
 	if (node.type === 'BlockStatement') {
 		const lastToken = sourceCode.getLastToken(node);
 		yield fixer.insertTextBefore(lastToken, `\n${indent}break;\n${indent}`);
@@ -167,9 +174,11 @@ function shouldInsertBreakStatement(node) {
 		}
 
 		case 'IfStatement': {
-			return !node.alternate
-				|| shouldInsertBreakStatement(node.consequent)
-				|| shouldInsertBreakStatement(node.alternate);
+			return (
+				!node.alternate ||
+				shouldInsertBreakStatement(node.consequent) ||
+				shouldInsertBreakStatement(node.alternate)
+			);
 		}
 
 		case 'BlockStatement': {
@@ -186,10 +195,13 @@ function shouldInsertBreakStatement(node) {
 function fix({discriminant, ifStatements}, sourceCode, options) {
 	const discriminantText = sourceCode.getText(discriminant);
 
-	return function * (fixer) {
+	return function* (fixer) {
 		const firstStatement = ifStatements[0].statement;
 		const indent = getIndentString(firstStatement, sourceCode);
-		yield fixer.insertTextBefore(firstStatement, `switch (${discriminantText}) {`);
+		yield fixer.insertTextBefore(
+			firstStatement,
+			`switch (${discriminantText}) {`,
+		);
 
 		const lastStatement = ifStatements.at(-1).statement;
 		if (lastStatement.alternate) {
@@ -209,12 +221,18 @@ function fix({discriminant, ifStatements}, sourceCode, options) {
 		} else {
 			switch (options.emptyDefaultCase) {
 				case 'no-default-comment': {
-					yield fixer.insertTextAfter(firstStatement, `\n${indent}// No default`);
+					yield fixer.insertTextAfter(
+						firstStatement,
+						`\n${indent}// No default`,
+					);
 					break;
 				}
 
 				case 'do-nothing-comment': {
-					yield fixer.insertTextAfter(firstStatement, `\n${indent}default:\n${indent}// Do nothing`);
+					yield fixer.insertTextAfter(
+						firstStatement,
+						`\n${indent}default:\n${indent}// Do nothing`,
+					);
 					break;
 				}
 				// No default
@@ -244,15 +262,15 @@ function fix({discriminant, ifStatements}, sourceCode, options) {
 			}
 
 			if (shouldInsertBreakStatement(consequent)) {
-				yield * insertBreakStatement(consequent, fixer, sourceCode, indent);
-				yield * insertBracesIfNotBlockStatement(consequent, fixer, indent);
+				yield* insertBreakStatement(consequent, fixer, sourceCode, indent);
+				yield* insertBracesIfNotBlockStatement(consequent, fixer, indent);
 			}
 		}
 	};
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const options = {
 		minimumCases: 3,
 		emptyDefaultCase: 'no-default-comment',
@@ -273,7 +291,7 @@ const create = context => {
 				breakStatements.push(node);
 			}
 		},
-		* 'Program:exit'() {
+		*'Program:exit'() {
 			for (const node of ifStatements) {
 				if (checked.has(node)) {
 					continue;
@@ -298,8 +316,10 @@ const create = context => {
 				};
 
 				if (
-					!hasSideEffect(discriminant, sourceCode)
-					&& !ifStatements.some(({statement}) => hasBreakInside(breakStatements, statement))
+					!hasSideEffect(discriminant, sourceCode) &&
+					!ifStatements.some(({statement}) =>
+						hasBreakInside(breakStatements, statement),
+					)
 				) {
 					problem.fix = fix({discriminant, ifStatements}, sourceCode, options);
 				}
@@ -320,11 +340,7 @@ const schema = [
 				minimum: 2,
 			},
 			emptyDefaultCase: {
-				enum: [
-					'no-default-comment',
-					'do-nothing-comment',
-					'no-default-case',
-				],
+				enum: ['no-default-comment', 'do-nothing-comment', 'no-default-case'],
 			},
 		},
 	},

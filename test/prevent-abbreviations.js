@@ -3,7 +3,7 @@ import {getTester, avoidTestTitleConflict} from './utils/test.js';
 
 const {test} = getTester(import.meta);
 
-const createErrors = message => [{message}];
+const createErrors = (message) => [{message}];
 
 const extendedOptions = [
 	{
@@ -243,36 +243,50 @@ const tests = {
 	invalid: [
 		{
 			code: 'let e',
-			errors: createErrors('Please rename the variable `e`. Suggested names are: `error`, `event_`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the variable `e`. Suggested names are: `error`, `event_`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'let eCbOpts',
-			errors: createErrors('Please rename the variable `eCbOpts`. Suggested names are: `errorCallbackOptions`, `eventCallbackOptions`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the variable `eCbOpts`. Suggested names are: `errorCallbackOptions`, `eventCallbackOptions`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '({e: 1})',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'this.e = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '({e() {}})',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '(class {e() {}})',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'this.eResDir = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `eResDir`. Suggested names are: `errorResourceDirection`, `errorResourceDirectory`, `errorResponseDirection`, ... (9 more omitted). A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `eResDir`. Suggested names are: `errorResourceDirection`, `errorResourceDirectory`, `errorResponseDirection`, ... (9 more omitted). A more descriptive name will do too.',
+			),
 		},
 
 		// All suggested names should avoid capture
@@ -295,48 +309,66 @@ const tests = {
 				},
 			],
 
-			errors: createErrors('Please rename the variable `a`. Suggested names are: `const_`, `used_`, `var__`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the variable `a`. Suggested names are: `const_`, `used_`, `var__`. A more descriptive name will do too.',
+			),
 		},
 
 		{
 			code: 'let err',
 			output: 'let error',
-			errors: createErrors('The variable `err` should be named `error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `err` should be named `error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'let errCbOptsObj',
 			output: 'let errorCallbackOptionsObject',
-			errors: createErrors('The variable `errCbOptsObj` should be named `errorCallbackOptionsObject`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `errCbOptsObj` should be named `errorCallbackOptionsObject`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'let stdDev',
 			output: 'let standardDeviation',
-			errors: createErrors('The variable `stdDev` should be named `standardDeviation`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `stdDev` should be named `standardDeviation`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '({err: 1})',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `err` should be named `error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `err` should be named `error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'this.err = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `err` should be named `error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `err` should be named `error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '({err() {}})',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `err` should be named `error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `err` should be named `error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '(class {err() {}})',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `err` should be named `error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `err` should be named `error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'this.errCbOptsObj = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `errCbOptsObj` should be named `errorCallbackOptionsObject`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `errCbOptsObj` should be named `errorCallbackOptionsObject`. A more descriptive name will do too.',
+			),
 		},
 
 		{
@@ -371,17 +403,23 @@ const tests = {
 		{
 			code: 'let evt',
 			output: 'let event_',
-			errors: createErrors('The variable `evt` should be named `event_`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `evt` should be named `event_`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '({evt: 1})',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `evt` should be named `event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `evt` should be named `event`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'foo.evt = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `evt` should be named `event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `evt` should be named `event`. A more descriptive name will do too.',
+			),
 		},
 
 		// Testing that options apply
@@ -690,17 +728,23 @@ const tests = {
 		{
 			code: 'this._err = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `_err` should be named `_error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `_err` should be named `_error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'this.__err__ = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `__err__` should be named `__error__`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `__err__` should be named `__error__`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'this.e_ = 1',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `e_`. Suggested names are: `error_`, `event_`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `e_`. Suggested names are: `error_`, `event_`. A more descriptive name will do too.',
+			),
 		},
 
 		{
@@ -715,22 +759,30 @@ const tests = {
 		},
 		{
 			code: 'let _e',
-			errors: createErrors('Please rename the variable `_e`. Suggested names are: `_error`, `_event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the variable `_e`. Suggested names are: `_error`, `_event`. A more descriptive name will do too.',
+			),
 		},
 
 		{
 			code: 'class Err {}',
 			output: 'class Error_ {}',
-			errors: createErrors('The variable `Err` should be named `Error_`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `Err` should be named `Error_`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'class Cb {}',
 			output: 'class Callback {}',
-			errors: createErrors('The variable `Cb` should be named `Callback`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `Cb` should be named `Callback`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'class Res {}',
-			errors: createErrors('Please rename the variable `Res`. Suggested names are: `Resource`, `Response_`, `Result`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the variable `Res`. Suggested names are: `Resource`, `Response_`, `Result`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'const Err = 1;',
@@ -745,12 +797,16 @@ const tests = {
 		{
 			code: '({Err: 1})',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `Err` should be named `Error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `Err` should be named `Error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '({Res: 1})',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `Res`. Suggested names are: `Resource`, `Response`, `Result`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `Res`. Suggested names are: `Resource`, `Response`, `Result`. A more descriptive name will do too.',
+			),
 		},
 
 		{
@@ -782,10 +838,18 @@ const tests = {
 				const func = function_;
 			`,
 			errors: [
-				...createErrors('The variable `fn` should be named `function_`. A more descriptive name will do too.'),
-				...createErrors('The variable `i` should be named `index`. A more descriptive name will do too.'),
-				...createErrors('The variable `j` should be named `index_`. A more descriptive name will do too.'),
-				...createErrors('The variable `func` should be named `function__`. A more descriptive name will do too.'),
+				...createErrors(
+					'The variable `fn` should be named `function_`. A more descriptive name will do too.',
+				),
+				...createErrors(
+					'The variable `i` should be named `index`. A more descriptive name will do too.',
+				),
+				...createErrors(
+					'The variable `j` should be named `index_`. A more descriptive name will do too.',
+				),
+				...createErrors(
+					'The variable `func` should be named `function__`. A more descriptive name will do too.',
+				),
 			],
 		},
 		{
@@ -810,9 +874,15 @@ const tests = {
 				const function__ = function_;
 			`,
 			errors: [
-				...createErrors('The variable `i` should be named `index`. A more descriptive name will do too.'),
-				...createErrors('The variable `j` should be named `index_`. A more descriptive name will do too.'),
-				...createErrors('The variable `func` should be named `function__`. A more descriptive name will do too.'),
+				...createErrors(
+					'The variable `i` should be named `index`. A more descriptive name will do too.',
+				),
+				...createErrors(
+					'The variable `j` should be named `index_`. A more descriptive name will do too.',
+				),
+				...createErrors(
+					'The variable `func` should be named `function__`. A more descriptive name will do too.',
+				),
 			],
 		},
 		{
@@ -836,7 +906,9 @@ const tests = {
 				}
 				const function__ = function_;
 			`,
-			errors: createErrors('The variable `j` should be named `index_`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `j` should be named `index_`. A more descriptive name will do too.',
+			),
 		},
 
 		// `package` is a reserved word in strict mode
@@ -854,7 +926,9 @@ const tests = {
 				"use strict";
 				let package_;
 			`,
-			errors: createErrors('The variable `pkg` should be named `package_`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `pkg` should be named `package_`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: outdent`
@@ -867,7 +941,9 @@ const tests = {
 				let package__ = 1;
 				let package_ = 2;
 			`,
-			errors: createErrors('The variable `pkg` should be named `package__`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The variable `pkg` should be named `package__`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: outdent`
@@ -885,8 +961,12 @@ const tests = {
 				}
 			`,
 			errors: [
-				...createErrors('The variable `args` should be named `arguments_`. A more descriptive name will do too.'),
-				...createErrors('The variable `pkg` should be named `package_`. A more descriptive name will do too.'),
+				...createErrors(
+					'The variable `args` should be named `arguments_`. A more descriptive name will do too.',
+				),
+				...createErrors(
+					'The variable `pkg` should be named `package_`. A more descriptive name will do too.',
+				),
 			],
 		},
 
@@ -1642,7 +1722,6 @@ const importExportTests = {
 			options: checkPropertiesOptions,
 			errors: 1,
 		},
-
 	],
 };
 test(importExportTests);
@@ -1729,12 +1808,16 @@ test.babel({
 		{
 			code: '(class {e = 1})',
 			options: checkPropertiesOptions,
-			errors: createErrors('Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the property `e`. Suggested names are: `error`, `event`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: '(class {err = 1})',
 			options: checkPropertiesOptions,
-			errors: createErrors('The property `err` should be named `error`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The property `err` should be named `error`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: outdent`
@@ -1767,7 +1850,7 @@ test.typescript({
 			'declare let prop: any;',
 			'declare class prop {}',
 			'const prop: SomeThing<boolean> = func();',
-		].map(code => ({
+		].map((code) => ({
 			code,
 			output: code.replace('prop', 'property'),
 			errors: 1,
@@ -1918,12 +2001,7 @@ test({
 			filename: 'some.spec.e2e.test.js',
 			options: [
 				{
-					ignore: [
-						/^e_/,
-						// eslint-disable-next-line prefer-regex-literals
-						new RegExp('_e$', 'i'),
-						String.raw`\.e2e\.`,
-					],
+					ignore: [/^e_/, new RegExp('_e$', 'i'), String.raw`\.e2e\.`],
 				},
 			],
 		},
@@ -1942,29 +2020,39 @@ test({
 		{
 			code: 'foo();',
 			filename: '/path/to/doc/__prev-Attr$1Err__.conf.js',
-			errors: createErrors('The filename `__prev-Attr$1Err__.conf.js` should be named `__previous-Attribute$1Error__.config.js`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The filename `__prev-Attr$1Err__.conf.js` should be named `__previous-Attribute$1Error__.config.js`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'foo();',
 			filename: '.http.err.js',
-			errors: createErrors('The filename `.http.err.js` should be named `.http.error.js`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The filename `.http.err.js` should be named `.http.error.js`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'foo();',
 			filename: 'e.js',
-			errors: createErrors('Please rename the filename `e.js`. Suggested names are: `error.js`, `event.js`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'Please rename the filename `e.js`. Suggested names are: `error.js`, `event.js`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'foo();',
 			filename: 'c.js',
 			options: extendedOptions,
-			errors: createErrors('The filename `c.js` should be named `custom.js`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The filename `c.js` should be named `custom.js`. A more descriptive name will do too.',
+			),
 		},
 		{
 			code: 'foo();',
 			filename: 'cb.js',
 			options: extendedOptions,
-			errors: createErrors('The filename `cb.js` should be named `circuitBreacker.js`. A more descriptive name will do too.'),
+			errors: createErrors(
+				'The filename `cb.js` should be named `circuitBreacker.js`. A more descriptive name will do too.',
+			),
 		},
 		// `ignore` option
 		{
@@ -1974,9 +2062,15 @@ test({
 			`,
 			filename: 'some.spec.e2e.test.js',
 			errors: [
-				...createErrors('Please rename the filename `some.spec.e2e.test.js`. Suggested names are: `some.spec.error2error.test.js`, `some.spec.error2event.test.js`, `some.spec.event2error.test.js`, ... (1 more omitted). A more descriptive name will do too.'),
-				...createErrors('Please rename the variable `e_at_start`. Suggested names are: `error_at_start`, `event_at_start`. A more descriptive name will do too.'),
-				...createErrors('Please rename the variable `end_with_e`. Suggested names are: `end_with_error`, `end_with_event`. A more descriptive name will do too.'),
+				...createErrors(
+					'Please rename the filename `some.spec.e2e.test.js`. Suggested names are: `some.spec.error2error.test.js`, `some.spec.error2event.test.js`, `some.spec.event2error.test.js`, ... (1 more omitted). A more descriptive name will do too.',
+				),
+				...createErrors(
+					'Please rename the variable `e_at_start`. Suggested names are: `error_at_start`, `event_at_start`. A more descriptive name will do too.',
+				),
+				...createErrors(
+					'Please rename the variable `end_with_e`. Suggested names are: `end_with_error`, `end_with_event`. A more descriptive name will do too.',
+				),
 			],
 		},
 	],

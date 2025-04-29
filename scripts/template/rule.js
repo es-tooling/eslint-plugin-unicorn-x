@@ -1,21 +1,26 @@
-const template = (data) => `
+const template = (data) =>
+	`
 import {} from './ast/index.js';
 import {} from './fix/index.js';
 import {} from './utils/index.js';
 
-${data.hasSuggestions ? `
+${
+	data.hasSuggestions
+		? `
 const MESSAGE_ID_ERROR = '${data.id}/error';
 const MESSAGE_ID_SUGGESTION = '${data.id}/suggestion';
 const messages = {
 	[MESSAGE_ID_ERROR]: 'Prefer \`{{replacement}}\` over \`{{value}}\`.',
 	[MESSAGE_ID_SUGGESTION]: 'Replace \`{{value}}\` with \`{{replacement}}\`.',
 };
-`.trim() : `
+`.trim()
+		: `
 const MESSAGE_ID = '${data.id}';
 const messages = {
 	[MESSAGE_ID]: 'Prefer \`{{replacement}}\` over \`{{value}}\`.',
 };
-`.trim()}
+`.trim()
+}
 
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = context => {
@@ -32,11 +37,17 @@ const create = context => {
 					value: 'unicorn',
 					replacement: '🦄',
 				},
-${data.fixableType ? `
+${
+	data.fixableType
+		? `
 				/** @param {import('eslint').Rule.RuleFixer} fixer */
 				fix: fixer => fixer.replaceText(node, '\\'🦄\\''),
-` : ''}
-${data.hasSuggestions ? `
+`
+		: ''
+}
+${
+	data.hasSuggestions
+		? `
 				/** @param {import('eslint').Rule.RuleFixer} fixer */
 				suggest: [
 					{
@@ -48,7 +59,9 @@ ${data.hasSuggestions ? `
 						/** @param {import('eslint').Rule.RuleFixer} fixer */
 						fix: fixer => fixer.replaceText(node, '\\'🦄\\''),
 					}
-				],` : ''}
+				],`
+		: ''
+}
 			};
 		},
 	};

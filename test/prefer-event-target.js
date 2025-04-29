@@ -24,10 +24,12 @@ test.snapshot({
 			'import {EventEmitter} from "eventemitter3";',
 			'const {EventEmitter} = await import("eventemitter3");',
 			'const EventEmitter = (await import("eventemitter3")).EventEmitter;',
-		].map(code => outdent`
-			${code}
-			class Foo extends EventEmitter {}
-		`),
+		].map(
+			(code) => outdent`
+				${code}
+				class Foo extends EventEmitter {}
+			`,
+		),
 		'EventTarget()',
 		'new EventTarget',
 		'const target = new EventTarget;',

@@ -21,12 +21,11 @@ const simpleMethods = [
 	'map',
 ];
 
-const simpleMethodsExceptForEach = simpleMethods.filter(name => name !== 'forEach');
+const simpleMethodsExceptForEach = simpleMethods.filter(
+	(name) => name !== 'forEach',
+);
 
-const reduceLikeMethods = [
-	'reduce',
-	'reduceRight',
-];
+const reduceLikeMethods = ['reduce', 'reduceRight'];
 
 const generateError = (method, name) => ({
 	messageId: name ? ERROR_WITH_NAME_MESSAGE_ID : ERROR_WITHOUT_NAME_MESSAGE_ID,
@@ -38,28 +37,32 @@ const generateError = (method, name) => ({
 
 // Only test output is good enough
 const suggestionOutput = (output, name) => ({
-	messageId: name ? REPLACE_WITH_NAME_MESSAGE_ID : REPLACE_WITHOUT_NAME_MESSAGE_ID,
+	messageId: name
+		? REPLACE_WITH_NAME_MESSAGE_ID
+		: REPLACE_WITHOUT_NAME_MESSAGE_ID,
 	output,
 });
 
-const invalidTestCase = (({code, method, name, suggestions}) => ({
+const invalidTestCase = ({code, method, name, suggestions}) => ({
 	code,
 	errors: [
 		{
 			...generateError(method, name),
-			suggestions: suggestions.map(output => suggestionOutput(output, name)),
+			suggestions: suggestions.map((output) => suggestionOutput(output, name)),
 		},
 	],
-}));
+});
 
 test({
 	valid: [
-		...simpleMethods.map(method => `foo.${method}(element => fn(element))`),
-		...reduceLikeMethods.map(method => `foo.${method}((accumulator, element) => fn(element))`),
+		...simpleMethods.map((method) => `foo.${method}(element => fn(element))`),
+		...reduceLikeMethods.map(
+			(method) => `foo.${method}((accumulator, element) => fn(element))`,
+		),
 
 		// `this.{map, filter, …}`
-		...simpleMethods.map(method => `this.${method}(fn)`),
-		...reduceLikeMethods.map(method => `this.${method}(fn)`),
+		...simpleMethods.map((method) => `this.${method}(fn)`),
+		...reduceLikeMethods.map((method) => `this.${method}(fn)`),
 
 		// `Boolean`
 		'foo.find(Boolean)',
@@ -76,7 +79,7 @@ test({
 		// Not `MemberExpression`
 		'map(fn);',
 		// `callee.property` is not a `Identifier`
-		'foo[\'map\'](fn);',
+		"foo['map'](fn);",
 		// Computed
 		'foo[map](fn);',
 		// Not listed method
@@ -107,7 +110,7 @@ test({
 		'jQuery(this).filter(tooltip)',
 
 		// First argument is not a function
-		...notFunctionTypes.map(data => `foo.map(${data})`),
+		...notFunctionTypes.map((data) => `foo.map(${data})`),
 
 		// Ignored
 		'foo.map(() => {})',
@@ -115,7 +118,9 @@ test({
 		'foo.map(function bar() {})',
 
 		// Exclude await expressions
-		...simpleMethods.map(method => `(async () => await foo.${method}(bar))()`),
+		...simpleMethods.map(
+			(method) => `(async () => await foo.${method}(bar))()`,
+		),
 		'foo.map(function (a) {}.bind(bar))',
 
 		// #813
@@ -148,8 +153,8 @@ test({
 	],
 	invalid: [
 		// Suggestions
-		...simpleMethodsExceptForEach.map(
-			method => invalidTestCase({
+		...simpleMethodsExceptForEach.map((method) =>
+			invalidTestCase({
 				code: `foo.${method}(fn)`,
 				method,
 				name: 'fn',
@@ -170,8 +175,8 @@ test({
 				'foo.forEach((element, index, array) => { fn(element, index, array); })',
 			],
 		}),
-		...reduceLikeMethods.map(
-			method => invalidTestCase({
+		...reduceLikeMethods.map((method) =>
+			invalidTestCase({
 				code: `foo.${method}(fn)`,
 				method,
 				name: 'fn',
@@ -184,8 +189,8 @@ test({
 		),
 
 		// 2 arguments
-		...simpleMethodsExceptForEach.map(
-			method => invalidTestCase({
+		...simpleMethodsExceptForEach.map((method) =>
+			invalidTestCase({
 				code: `foo.${method}(fn, thisArgument)`,
 				method,
 				name: 'fn',
@@ -206,8 +211,8 @@ test({
 				'foo.forEach((element, index, array) => { fn(element, index, array); }, thisArgument)',
 			],
 		}),
-		...reduceLikeMethods.map(
-			method => invalidTestCase({
+		...reduceLikeMethods.map((method) =>
+			invalidTestCase({
 				code: `foo.${method}(fn, initialValue)`,
 				method,
 				name: 'fn',
@@ -220,8 +225,8 @@ test({
 		),
 
 		// `Boolean` is only ignored on reasonable places
-		...reduceLikeMethods.map(
-			method => invalidTestCase({
+		...reduceLikeMethods.map((method) =>
+			invalidTestCase({
 				code: `foo.${method}(Boolean, initialValue)`,
 				method,
 				name: 'Boolean',
@@ -244,8 +249,8 @@ test({
 		}),
 
 		// Not `Identifier`
-		...simpleMethodsExceptForEach.map(
-			method => invalidTestCase({
+		...simpleMethodsExceptForEach.map((method) =>
+			invalidTestCase({
 				code: `foo.${method}(lib.fn)`,
 				method,
 				suggestions: [
@@ -255,8 +260,8 @@ test({
 				],
 			}),
 		),
-		...reduceLikeMethods.map(
-			method => invalidTestCase({
+		...reduceLikeMethods.map((method) =>
+			invalidTestCase({
 				code: `foo.${method}(lib.fn)`,
 				method,
 				suggestions: [
@@ -296,7 +301,8 @@ test({
 						},
 						{
 							desc: 'Replace function `fn` with `… => fn(element, index, array)`.',
-							output: 'bar.map((element, index, array) => fn(element, index, array))',
+							output:
+								'bar.map((element, index, array) => fn(element, index, array))',
 						},
 					],
 				},
@@ -310,15 +316,18 @@ test({
 					suggestions: [
 						{
 							desc: 'Replace function `fn` with `… => fn(accumulator, element)`.',
-							output: 'bar.reduce((accumulator, element) => fn(accumulator, element))',
+							output:
+								'bar.reduce((accumulator, element) => fn(accumulator, element))',
 						},
 						{
 							desc: 'Replace function `fn` with `… => fn(accumulator, element, index)`.',
-							output: 'bar.reduce((accumulator, element, index) => fn(accumulator, element, index))',
+							output:
+								'bar.reduce((accumulator, element, index) => fn(accumulator, element, index))',
 						},
 						{
 							desc: 'Replace function `fn` with `… => fn(accumulator, element, index, array)`.',
-							output: 'bar.reduce((accumulator, element, index, array) => fn(accumulator, element, index, array))',
+							output:
+								'bar.reduce((accumulator, element, index, array) => fn(accumulator, element, index, array))',
 						},
 					],
 				},
@@ -340,7 +349,8 @@ test({
 						},
 						{
 							desc: 'Replace function with `… => …(element, index, array)`.',
-							output: 'foo.map((element, index, array) => lib.fn(element, index, array))',
+							output:
+								'foo.map((element, index, array) => lib.fn(element, index, array))',
 						},
 					],
 				},
@@ -354,15 +364,18 @@ test({
 					suggestions: [
 						{
 							desc: 'Replace function with `… => …(accumulator, element)`.',
-							output: 'foo.reduce((accumulator, element) => lib.fn(accumulator, element))',
+							output:
+								'foo.reduce((accumulator, element) => lib.fn(accumulator, element))',
 						},
 						{
 							desc: 'Replace function with `… => …(accumulator, element, index)`.',
-							output: 'foo.reduce((accumulator, element, index) => lib.fn(accumulator, element, index))',
+							output:
+								'foo.reduce((accumulator, element, index) => lib.fn(accumulator, element, index))',
 						},
 						{
 							desc: 'Replace function with `… => …(accumulator, element, index, array)`.',
-							output: 'foo.reduce((accumulator, element, index, array) => lib.fn(accumulator, element, index, array))',
+							output:
+								'foo.reduce((accumulator, element, index, array) => lib.fn(accumulator, element, index, array))',
 						},
 					],
 				},

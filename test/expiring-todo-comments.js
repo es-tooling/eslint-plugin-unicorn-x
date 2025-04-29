@@ -42,7 +42,7 @@ const missingAtSymbolError = (bad, good, message) => ({
 	message: `Missing '@' on TODO argument. On '${bad}' use '${good}'. ${message}`,
 });
 
-const noWarningCommentError = comment => ({
+const noWarningCommentError = (comment) => ({
 	message: `Unexpected 'todo' comment without any conditions: '${comment}'.`,
 });
 
@@ -179,9 +179,7 @@ test({
 			* TODO [engine:node@>=8]: Invalid
 			* Also something here
 			*/`,
-			errors: [
-				engineMatchesError('node>=8', 'Invalid'),
-			],
+			errors: [engineMatchesError('node>=8', 'Invalid')],
 			options: [{ignoreDatesOnPullRequests: false}],
 		},
 		{
@@ -212,7 +210,9 @@ test({
 		{
 			code: '// Expire Condition [2000-01-01]: too old',
 			errors: [expiredTodoError('2000-01-01', 'too old')],
-			options: [{ignoreDatesOnPullRequests: false, terms: ['Expire Condition']}],
+			options: [
+				{ignoreDatesOnPullRequests: false, terms: ['Expire Condition']},
+			],
 		},
 		{
 			code: '// XxX [2000-01-01]: too old',
@@ -221,37 +221,63 @@ test({
 		},
 		{
 			code: '// TODO [2200-12-12, 2200-12-12]: Multiple dates',
-			errors: [avoidMultipleDatesError('2200-12-12, 2200-12-12', 'Multiple dates')],
+			errors: [
+				avoidMultipleDatesError('2200-12-12, 2200-12-12', 'Multiple dates'),
+			],
 		},
 		{
 			code: '// TODO [>1]: if your package.json version is >1',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [reachedPackageVersionError('>1', 'if your package.json version is >1')],
+			errors: [
+				reachedPackageVersionError('>1', 'if your package.json version is >1'),
+			],
 		},
 		{
 			code: '// TODO [>1, >2]: multiple package versions',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [avoidMultiplePackageVersionsError('>1, >2', 'multiple package versions')],
+			errors: [
+				avoidMultiplePackageVersionsError(
+					'>1, >2',
+					'multiple package versions',
+				),
+			],
 		},
 		{
 			code: '// TODO [>=1]: if your package.json version is >=1',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [reachedPackageVersionError('>=1', 'if your package.json version is >=1')],
+			errors: [
+				reachedPackageVersionError(
+					'>=1',
+					'if your package.json version is >=1',
+				),
+			],
 		},
 		{
 			code: '// TODO [+known-package]: when you install `known-package`',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [havePackageError('known-package', 'when you install `known-package`')],
+			errors: [
+				havePackageError('known-package', 'when you install `known-package`'),
+			],
 		},
 		{
 			code: '// TODO [-unknown-package]: when you uninstall `unknown-package`',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [dontHavePackageError('unknown-package', 'when you uninstall `unknown-package`')],
+			errors: [
+				dontHavePackageError(
+					'unknown-package',
+					'when you uninstall `unknown-package`',
+				),
+			],
 		},
 		{
 			code: '// TODO [known-package@>=1]: when `known-package` version is >= 1',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [versionMatchesError('known-package >= 1', 'when `known-package` version is >= 1')],
+			errors: [
+				versionMatchesError(
+					'known-package >= 1',
+					'when `known-package` version is >= 1',
+				),
+			],
 		},
 		{
 			code: '// TODO [engine:node@>=8]: when support is for node >= 8',
@@ -260,22 +286,42 @@ test({
 		{
 			code: '// TODO [known-package@>0.2.0]: when `known-package` version is > 0.2.0',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [versionMatchesError('known-package > 0.2.0', 'when `known-package` version is > 0.2.0')],
+			errors: [
+				versionMatchesError(
+					'known-package > 0.2.0',
+					'when `known-package` version is > 0.2.0',
+				),
+			],
 		},
 		{
 			code: '// TODO [pre-release-package@>=1.0.0-alfa.1]: when `pre-release-package` version is >= 1.0.0-alfa.1',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [versionMatchesError('pre-release-package >= 1.0.0-alfa.1', 'when `pre-release-package` version is >= 1.0.0-alfa.1')],
+			errors: [
+				versionMatchesError(
+					'pre-release-package >= 1.0.0-alfa.1',
+					'when `pre-release-package` version is >= 1.0.0-alfa.1',
+				),
+			],
 		},
 		{
 			code: '// TODO [pre-release-package@>=1.0.0-beta.1]: when `pre-release-package` version is >= 1.0.0-beta.1',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [versionMatchesError('pre-release-package >= 1.0.0-beta.1', 'when `pre-release-package` version is >= 1.0.0-beta.1')],
+			errors: [
+				versionMatchesError(
+					'pre-release-package >= 1.0.0-beta.1',
+					'when `pre-release-package` version is >= 1.0.0-beta.1',
+				),
+			],
 		},
 		{
 			code: '// TODO [pre-release-package@>=1.0.0-beta.0]: when `pre-release-package` version is >= 1.0.0-beta.0',
 			filename: './test/fixture/basic-package/foo.js',
-			errors: [versionMatchesError('pre-release-package >= 1.0.0-beta.0', 'when `pre-release-package` version is >= 1.0.0-beta.0')],
+			errors: [
+				versionMatchesError(
+					'pre-release-package >= 1.0.0-beta.0',
+					'when `pre-release-package` version is >= 1.0.0-beta.0',
+				),
+			],
 		},
 		{
 			code: '// TODO [semver>1]: Missing @.',
@@ -283,31 +329,63 @@ test({
 		},
 		{
 			code: '// TODO [> 1]: Remove whitespace when it can fix.',
-			errors: [removeWhitespaceError('> 1', 'Remove whitespace when it can fix.')],
+			errors: [
+				removeWhitespaceError('> 1', 'Remove whitespace when it can fix.'),
+			],
 		},
 		{
 			code: '// TODO [semver@> 1]: Remove whitespace when it can fix.',
-			errors: [removeWhitespaceError('semver@> 1', 'Remove whitespace when it can fix.')],
+			errors: [
+				removeWhitespaceError(
+					'semver@> 1',
+					'Remove whitespace when it can fix.',
+				),
+			],
 		},
 		{
 			code: '// TODO [semver @>1]: Remove whitespace when it can fix.',
-			errors: [removeWhitespaceError('semver @>1', 'Remove whitespace when it can fix.')],
+			errors: [
+				removeWhitespaceError(
+					'semver @>1',
+					'Remove whitespace when it can fix.',
+				),
+			],
 		},
 		{
 			code: '// TODO [semver@>= 1]: Remove whitespace when it can fix.',
-			errors: [removeWhitespaceError('semver@>= 1', 'Remove whitespace when it can fix.')],
+			errors: [
+				removeWhitespaceError(
+					'semver@>= 1',
+					'Remove whitespace when it can fix.',
+				),
+			],
 		},
 		{
 			code: '// TODO [semver @>=1]: Remove whitespace when it can fix.',
-			errors: [removeWhitespaceError('semver @>=1', 'Remove whitespace when it can fix.')],
+			errors: [
+				removeWhitespaceError(
+					'semver @>=1',
+					'Remove whitespace when it can fix.',
+				),
+			],
 		},
 		{
 			code: '// TODO [engine:node @>=1]: Remove whitespace when it can fix.',
-			errors: [removeWhitespaceError('engine:node @>=1', 'Remove whitespace when it can fix.')],
+			errors: [
+				removeWhitespaceError(
+					'engine:node @>=1',
+					'Remove whitespace when it can fix.',
+				),
+			],
 		},
 		{
 			code: '// TODO [engine:node@>= 1]: Remove whitespace when it can fix.',
-			errors: [removeWhitespaceError('engine:node@>= 1', 'Remove whitespace when it can fix.')],
+			errors: [
+				removeWhitespaceError(
+					'engine:node@>= 1',
+					'Remove whitespace when it can fix.',
+				),
+			],
 		},
 		{
 			code: '// TODO',
@@ -326,22 +404,30 @@ test({
 		},
 		{
 			code: '// TODO [] might have [some] that [try [to trick] me]',
-			errors: [noWarningCommentError('TODO [] might have [some] that [try [to...')],
+			errors: [
+				noWarningCommentError('TODO [] might have [some] that [try [to...'),
+			],
 			options: [{allowWarningComments: false}],
 		},
 		{
 			code: '// TODO [but [it will]] [fallback] [[[ to the default ]]] rule [[[',
-			errors: [noWarningCommentError('TODO [but [it will]] [fallback] [[[ to...')],
+			errors: [
+				noWarningCommentError('TODO [but [it will]] [fallback] [[[ to...'),
+			],
 			options: [{allowWarningComments: false}],
 		},
 		{
 			code: '// TODO [engine:npm@>=10000]: Unsupported engine',
-			errors: [noWarningCommentError('TODO [engine:npm@>=10000]: Unsupported...')],
+			errors: [
+				noWarningCommentError('TODO [engine:npm@>=10000]: Unsupported...'),
+			],
 			options: [{allowWarningComments: false}],
 		},
 		{
 			code: '// TODO [engine:somethingrandom@>=10000]: Unsupported engine',
-			errors: [noWarningCommentError('TODO [engine:somethingrandom@>=10000]:...')],
+			errors: [
+				noWarningCommentError('TODO [engine:somethingrandom@>=10000]:...'),
+			],
 			options: [{allowWarningComments: false}],
 		},
 		{
@@ -357,40 +443,70 @@ test({
 			code: '// TODO [2200-12-12, >1, 2200-12-12, >2]: Multiple dates and package versions',
 			filename: './test/fixture/basic-package/foo.js',
 			errors: [
-				avoidMultipleDatesError('2200-12-12, 2200-12-12', 'Multiple dates and package versions'),
-				avoidMultiplePackageVersionsError('>1, >2', 'Multiple dates and package versions'),
+				avoidMultipleDatesError(
+					'2200-12-12, 2200-12-12',
+					'Multiple dates and package versions',
+				),
+				avoidMultiplePackageVersionsError(
+					'>1, >2',
+					'Multiple dates and package versions',
+				),
 			],
 		},
 		{
 			code: '// TODO [-unknown-package, known-package@>=1]: Combine not having a package with version match',
 			filename: './test/fixture/basic-package/foo.js',
 			errors: [
-				dontHavePackageError('unknown-package', 'Combine not having a package with version match'),
-				versionMatchesError('known-package >= 1', 'Combine not having a package with version match'),
+				dontHavePackageError(
+					'unknown-package',
+					'Combine not having a package with version match',
+				),
+				versionMatchesError(
+					'known-package >= 1',
+					'Combine not having a package with version match',
+				),
 			],
 		},
 		{
 			code: '// TODO [+known-package, -unknown-package]: Combine presence/absence of packages',
 			filename: './test/fixture/basic-package/foo.js',
 			errors: [
-				havePackageError('known-package', 'Combine presence/absence of packages'),
-				dontHavePackageError('unknown-package', 'Combine presence/absence of packages'),
+				havePackageError(
+					'known-package',
+					'Combine presence/absence of packages',
+				),
+				dontHavePackageError(
+					'unknown-package',
+					'Combine presence/absence of packages',
+				),
 			],
 		},
 		{
 			code: '// Expire Condition [2000-01-01, semver>1]: Expired TODO and missing symbol',
 			errors: [
 				expiredTodoError('2000-01-01', 'Expired TODO and missing symbol'),
-				missingAtSymbolError('semver>1', 'semver@>1', 'Expired TODO and missing symbol'),
+				missingAtSymbolError(
+					'semver>1',
+					'semver@>1',
+					'Expired TODO and missing symbol',
+				),
 			],
-			options: [{ignoreDatesOnPullRequests: false, terms: ['Expire Condition']}],
+			options: [
+				{ignoreDatesOnPullRequests: false, terms: ['Expire Condition']},
+			],
 		},
 		{
 			code: '// TODO [semver @>=1, -unknown-package]: Package uninstalled and whitespace error',
 			filename: './test/fixture/basic-package/foo.js',
 			errors: [
-				dontHavePackageError('unknown-package', 'Package uninstalled and whitespace error'),
-				removeWhitespaceError('semver @>=1', 'Package uninstalled and whitespace error'),
+				dontHavePackageError(
+					'unknown-package',
+					'Package uninstalled and whitespace error',
+				),
+				removeWhitespaceError(
+					'semver @>=1',
+					'Package uninstalled and whitespace error',
+				),
 			],
 		},
 		{
@@ -410,9 +526,7 @@ test({
 		{
 			code: '// TODO [ISSUE-123] fix later',
 			options: [{allowWarningComments: false, ignore: []}],
-			errors: [
-				noWarningCommentError('TODO [ISSUE-123] fix later'),
-			],
+			errors: [noWarningCommentError('TODO [ISSUE-123] fix later')],
 		},
 		{
 			code: `
@@ -420,9 +534,7 @@ test({
 			// TODO ISSUE-123 fix later
 			`,
 			options: [{allowWarningComments: false, ignore: [/issue-\d+/i]}],
-			errors: [
-				noWarningCommentError('TODO fix later'),
-			],
+			errors: [noWarningCommentError('TODO fix later')],
 		},
 		{
 			code: `/*
@@ -430,9 +542,7 @@ test({
 			TODO ISSUE-123 Valid
 			*/`,
 			options: [{allowWarningComments: false, ignore: [/issue-\d+/i]}],
-			errors: [
-				noWarningCommentError('TODO Invalid'),
-			],
+			errors: [noWarningCommentError('TODO Invalid')],
 		},
 		{
 			code: '// TODO [2999-12-01]: Y3K bug',

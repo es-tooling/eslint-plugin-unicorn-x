@@ -1,4 +1,8 @@
-export default function removeSpacesAfter(indexOrNodeOrToken, sourceCode, fixer) {
+export default function removeSpacesAfter(
+	indexOrNodeOrToken,
+	sourceCode,
+	fixer,
+) {
 	let index = indexOrNodeOrToken;
 	if (typeof indexOrNodeOrToken === 'object') {
 		index = sourceCode.getRange(indexOrNodeOrToken)[1];

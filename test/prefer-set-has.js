@@ -332,43 +332,53 @@ test.snapshot({
 
 		// Methods
 		// Not call
-		...methodsReturnsArray.map(method => outdent`
-			const foo = bar.${method};
-			function unicorn() {
-				return foo.includes(1);
-			}
-		`),
-		...methodsReturnsArray.map(method => outdent`
-			const foo = new bar.${method}();
-			function unicorn() {
-				return foo.includes(1);
-			}
-		`),
+		...methodsReturnsArray.map(
+			(method) => outdent`
+				const foo = bar.${method};
+				function unicorn() {
+					return foo.includes(1);
+				}
+			`,
+		),
+		...methodsReturnsArray.map(
+			(method) => outdent`
+				const foo = new bar.${method}();
+				function unicorn() {
+					return foo.includes(1);
+				}
+			`,
+		),
 		// Not MemberExpression
 		...methodsReturnsArray
-			.filter(method => method !== 'with')
-			.map(method => outdent`
-				const foo = ${method}();
-				function unicorn() {
-					return foo.includes(1);
-				}
-			`),
+			.filter((method) => method !== 'with')
+			.map(
+				(method) => outdent`
+					const foo = ${method}();
+					function unicorn() {
+						return foo.includes(1);
+					}
+				`,
+			),
 		// Computed
 		...methodsReturnsArray
-			.filter(method => method !== 'with')
-			.map(method => outdent`
-				const foo = bar[${method}]();
+			.filter((method) => method !== 'with')
+			.map(
+				(method) => outdent`
+					const foo = bar[${method}]();
+					function unicorn() {
+						return foo.includes(1);
+					}
+				`,
+			),
+		// Not `Identifier`
+		...methodsReturnsArray.map(
+			(method) => outdent`
+				const foo = bar["${method}"]();
 				function unicorn() {
 					return foo.includes(1);
 				}
-			`),
-		// Not `Identifier`
-		...methodsReturnsArray.map(method => outdent`
-			const foo = bar["${method}"]();
-			function unicorn() {
-				return foo.includes(1);
-			}
-		`),
+			`,
+		),
 		// Not listed method
 		outdent`
 			const foo = bar.notListed();
@@ -600,13 +610,14 @@ test.snapshot({
 		`,
 
 		// Methods
-		...methodsReturnsArray.map(method =>
-			outdent`
-				const foo = bar.${method}();
-				function unicorn() {
-					return foo.includes(1);
-				}
-			`,
+		...methodsReturnsArray.map(
+			(method) =>
+				outdent`
+					const foo = bar.${method}();
+					function unicorn() {
+						return foo.includes(1);
+					}
+				`,
 		),
 
 		// `lodash`
@@ -629,9 +640,7 @@ test.snapshot({
 			parserOptions: {
 				babelOptions: {
 					parserOpts: {
-						plugins: [
-							['decorators', {decoratorsBeforeExport: true}],
-						],
+						plugins: [['decorators', {decoratorsBeforeExport: true}]],
 					},
 				},
 			},
@@ -655,8 +664,7 @@ test.snapshot({
 			export default class A {}
 		`,
 	],
-	invalid: [
-	],
+	invalid: [],
 });
 
 test.snapshot({

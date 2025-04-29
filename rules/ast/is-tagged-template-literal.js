@@ -9,9 +9,9 @@ Check if the given node is a tagged template literal.
 */
 export default function isTaggedTemplateLiteral(node, tags) {
 	if (
-		node.type !== 'TemplateLiteral'
-		|| node.parent.type !== 'TaggedTemplateExpression'
-		|| node.parent.quasi !== node
+		node.type !== 'TemplateLiteral' ||
+		node.parent.type !== 'TaggedTemplateExpression' ||
+		node.parent.quasi !== node
 	) {
 		return false;
 	}

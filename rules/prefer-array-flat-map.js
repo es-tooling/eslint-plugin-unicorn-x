@@ -10,28 +10,26 @@ const messages = {
 const ignored = ['React.Children', 'Children'];
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(callExpression) {
-		if (!(
-			isMethodCall(callExpression, {
-				method: 'flat',
-				optionalCall: false,
-				optionalMember: false,
-			})
-			&& (
-				callExpression.arguments.length === 0
-				|| (
-					callExpression.arguments.length === 1
-					&& callExpression.arguments[0].type === 'Literal'
-					&& callExpression.arguments[0].raw === '1'
-				)
+		if (
+			!(
+				isMethodCall(callExpression, {
+					method: 'flat',
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+				(callExpression.arguments.length === 0 ||
+					(callExpression.arguments.length === 1 &&
+						callExpression.arguments[0].type === 'Literal' &&
+						callExpression.arguments[0].raw === '1')) &&
+				isMethodCall(callExpression.callee.object, {
+					method: 'map',
+					optionalCall: false,
+					optionalMember: false,
+				})
 			)
-			&& isMethodCall(callExpression.callee.object, {
-				method: 'map',
-				optionalCall: false,
-				optionalMember: false,
-			})
-		)) {
+		) {
 			return;
 		}
 
@@ -51,13 +49,13 @@ const create = context => ({
 				end: sourceCode.getLoc(flatCallExpression).end,
 			},
 			messageId: MESSAGE_ID,
-			* fix(fixer) {
+			*fix(fixer) {
 				// Removes:
 				//   map(…).flat();
 				//         ^^^^^^^
 				//   (map(…)).flat();
 				//           ^^^^^^^
-				yield * removeMethodCall(fixer, flatCallExpression, sourceCode);
+				yield* removeMethodCall(fixer, flatCallExpression, sourceCode);
 
 				// Renames:
 				//   map(…).flat();

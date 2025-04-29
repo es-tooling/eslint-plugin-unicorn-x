@@ -7,16 +7,17 @@ const messages = {
 
 const nameRegexp = /^(?:[A-Z][\da-z]*)*Error$/;
 
-const getClassName = name => pascalCase(name).replace(/(?:error|)$/i, 'Error');
+const getClassName = (name) =>
+	pascalCase(name).replace(/(?:error|)$/i, 'Error');
 
-const getConstructorMethod = className => `
+const getConstructorMethod = (className) => `
 	constructor() {
 		super();
 		this.name = '${className}';
 	}
 `;
 
-const hasValidSuperClass = node => {
+const hasValidSuperClass = (node) => {
 	if (!node.superClass) {
 		return false;
 	}
@@ -30,15 +31,15 @@ const hasValidSuperClass = node => {
 	return nameRegexp.test(name);
 };
 
-const isSuperExpression = node =>
-	node.type === 'ExpressionStatement'
-	&& node.expression.type === 'CallExpression'
-	&& node.expression.callee.type === 'Super';
+const isSuperExpression = (node) =>
+	node.type === 'ExpressionStatement' &&
+	node.expression.type === 'CallExpression' &&
+	node.expression.callee.type === 'Super';
 
 const isAssignmentExpression = (node, name) => {
 	if (
-		node.type !== 'ExpressionStatement'
-		|| node.expression.type !== 'AssignmentExpression'
+		node.type !== 'ExpressionStatement' ||
+		node.expression.type !== 'AssignmentExpression'
 	) {
 		return false;
 	}
@@ -53,12 +54,12 @@ const isAssignmentExpression = (node, name) => {
 };
 
 const isPropertyDefinition = (node, name) =>
-	node.type === 'PropertyDefinition'
-	&& !node.computed
-	&& node.key.type === 'Identifier'
-	&& node.key.name === name;
+	node.type === 'PropertyDefinition' &&
+	!node.computed &&
+	node.key.type === 'Identifier' &&
+	node.key.name === name;
 
-function * customErrorDefinition(context, node) {
+function* customErrorDefinition(context, node) {
 	if (!hasValidSuperClass(node)) {
 		return;
 	}
@@ -80,16 +81,17 @@ function * customErrorDefinition(context, node) {
 	const {sourceCode} = context;
 	const {body} = node.body;
 	const range = sourceCode.getRange(node.body);
-	const constructor = body.find(x => x.kind === 'constructor');
+	const constructor = body.find((x) => x.kind === 'constructor');
 
 	if (!constructor) {
 		yield {
 			node,
 			message: 'Add a constructor to your error.',
-			fix: fixer => fixer.insertTextAfterRange([
-				range[0],
-				range[0] + 1,
-			], getConstructorMethod(name)),
+			fix: (fixer) =>
+				fixer.insertTextAfterRange(
+					[range[0], range[0] + 1],
+					getConstructorMethod(name),
+				),
 		};
 		return;
 	}
@@ -103,8 +105,12 @@ function * customErrorDefinition(context, node) {
 
 	const constructorBody = constructorBodyNode.body;
 
-	const superExpression = constructorBody.find(body => isSuperExpression(body));
-	const messageExpressionIndex = constructorBody.findIndex(x => isAssignmentExpression(x, 'message'));
+	const superExpression = constructorBody.find((body) =>
+		isSuperExpression(body),
+	);
+	const messageExpressionIndex = constructorBody.findIndex((x) =>
+		isAssignmentExpression(x, 'message'),
+	);
 
 	if (!superExpression) {
 		yield {
@@ -116,26 +122,37 @@ function * customErrorDefinition(context, node) {
 
 		yield {
 			node: superExpression,
-			message: 'Pass the error message to `super()` instead of setting `this.message`.',
-			* fix(fixer) {
+			message:
+				'Pass the error message to `super()` instead of setting `this.message`.',
+			*fix(fixer) {
 				if (superExpression.expression.arguments.length === 0) {
 					const rhs = expression.expression.right;
 					const [start] = sourceCode.getRange(superExpression);
-					yield fixer.insertTextAfterRange([start, start + 6], rhs.raw || rhs.name);
+					yield fixer.insertTextAfterRange(
+						[start, start + 6],
+						rhs.raw || rhs.name,
+					);
 				}
 
-				const start = messageExpressionIndex === 0
-					? sourceCode.getRange(constructorBodyNode)[0]
-					: sourceCode.getRange(constructorBody[messageExpressionIndex - 1])[1];
+				const start =
+					messageExpressionIndex === 0
+						? sourceCode.getRange(constructorBodyNode)[0]
+						: sourceCode.getRange(
+								constructorBody[messageExpressionIndex - 1],
+							)[1];
 				const [, end] = sourceCode.getRange(expression);
 				yield fixer.removeRange([start, end]);
 			},
 		};
 	}
 
-	const nameExpression = constructorBody.find(x => isAssignmentExpression(x, 'name'));
+	const nameExpression = constructorBody.find((x) =>
+		isAssignmentExpression(x, 'name'),
+	);
 	if (!nameExpression) {
-		const nameProperty = body.find(node => isPropertyDefinition(node, 'name'));
+		const nameProperty = body.find((node) =>
+			isPropertyDefinition(node, 'name'),
+		);
 
 		if (!nameProperty?.value || nameProperty.value.value !== name) {
 			yield {
@@ -178,23 +195,25 @@ const customErrorExport = (context, node) => {
 	return {
 		node: node.left.property,
 		messageId: MESSAGE_ID_INVALID_EXPORT,
-		fix: fixer => fixer.replaceText(node.left.property, errorName),
+		fix: (fixer) => fixer.replaceText(node.left.property, errorName),
 	};
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	context.on('ClassDeclaration', node => customErrorDefinition(context, node));
-	context.on('AssignmentExpression', node => {
+const create = (context) => {
+	context.on('ClassDeclaration', (node) =>
+		customErrorDefinition(context, node),
+	);
+	context.on('AssignmentExpression', (node) => {
 		if (node.right.type === 'ClassExpression') {
 			return customErrorDefinition(context, node.right);
 		}
 	});
-	context.on('AssignmentExpression', node => {
+	context.on('AssignmentExpression', (node) => {
 		if (
-			node.left.type === 'MemberExpression'
-			&& node.left.object.type === 'Identifier'
-			&& node.left.object.name === 'exports'
+			node.left.type === 'MemberExpression' &&
+			node.left.object.type === 'Identifier' &&
+			node.left.object.name === 'exports'
 		) {
 			return customErrorExport(context, node);
 		}

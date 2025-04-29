@@ -1,2 +1,2 @@
 const btn = bar;
-foo.forEach(btn => click(btn))
+foo.forEach((btn) => click(btn));

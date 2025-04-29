@@ -18,7 +18,7 @@ const additionalPolyfillNames = {
 	'es.object.set-prototype-of': 'setprototypeof',
 	'es.string.code-point-at': 'code-point-at',
 };
-const polyfills = Object.keys(compatData).map(feature => {
+const polyfills = Object.keys(compatData).map((feature) => {
 	const [ecmaVersion, constructorName, methodName = ''] = feature.split('.');
 
 	let normalisedMethodName;
@@ -37,15 +37,14 @@ const polyfills = Object.keys(compatData).map(feature => {
 		normalisedMethodName,
 	};
 });
-const modulePrefixSuffix =
-	/(^mdn-polyfills\/|polyfill-)|(-polyfill$)/gi;
+const modulePrefixSuffix = /(^mdn-polyfills\/|polyfill-)|(-polyfill$)/gi;
 const modulePrefixPattern = /^(?<version>[a-z]+)\d*[./-]/i;
 const delimiters = ['-', '/', '.prototype.', '.'];
 const matchesPolyfillName = (
 	moduleName,
 	polyfill,
 	moduleVersion,
-	modulePrefix
+	modulePrefix,
 ) => {
 	const {
 		constructorName,
@@ -62,28 +61,28 @@ const matchesPolyfillName = (
 	}
 
 	if (
-		!withoutVersion.startsWith(constructorName)
-		&& !withoutVersion.startsWith(normalisedConstructorName)
+		!withoutVersion.startsWith(constructorName) &&
+		!withoutVersion.startsWith(normalisedConstructorName)
 	) {
 		return false;
 	}
 
 	if (
-		moduleVersion
-		&& (
-			withoutVersion === constructorName
-			|| withoutVersion === normalisedConstructorName
-		)
+		moduleVersion &&
+		(withoutVersion === constructorName ||
+			withoutVersion === normalisedConstructorName)
 	) {
 		return true;
 	}
 
 	for (const delimiter of delimiters) {
 		if (
-			withoutVersion === `${constructorName}${delimiter}${methodName}`
-			|| withoutVersion === `${constructorName}${delimiter}${normalisedMethodName}`
-			|| withoutVersion === `${normalisedConstructorName}${delimiter}${normalisedMethodName}`
-			|| withoutVersion === `${normalisedConstructorName}${delimiter}${methodName}`
+			withoutVersion === `${constructorName}${delimiter}${methodName}` ||
+			withoutVersion ===
+				`${constructorName}${delimiter}${normalisedMethodName}` ||
+			withoutVersion ===
+				`${normalisedConstructorName}${delimiter}${normalisedMethodName}` ||
+			withoutVersion === `${normalisedConstructorName}${delimiter}${methodName}`
 		) {
 			return true;
 		}
@@ -93,8 +92,10 @@ const matchesPolyfillName = (
 };
 const findPolyfill = (moduleName) => {
 	const moduleNameLower = moduleName.toLowerCase();
-	const normalisedModuleName =
-		moduleNameLower.replaceAll(modulePrefixSuffix, '');
+	const normalisedModuleName = moduleNameLower.replaceAll(
+		modulePrefixSuffix,
+		'',
+	);
 	const modulePrefix = moduleName.match(modulePrefixPattern);
 
 	for (const polyfill of polyfills) {
@@ -113,24 +114,25 @@ const findPolyfill = (moduleName) => {
 		}
 
 		if (normalisedModuleName !== moduleNameLower) {
-			const methodOrConstructor =
-				methodName || constructorName;
+			const methodOrConstructor = methodName || constructorName;
 			const normalisedMethodOrConstructor =
 				normalisedMethodName || normalisedConstructorName;
 			if (
-				normalisedModuleName === methodOrConstructor
-				|| normalisedModuleName === normalisedMethodOrConstructor
+				normalisedModuleName === methodOrConstructor ||
+				normalisedModuleName === normalisedMethodOrConstructor
 			) {
 				return polyfill;
 			}
 		}
 
-		if (matchesPolyfillName(
-			normalisedModuleName,
-			polyfill,
-			modulePrefix?.groups.version,
-			modulePrefix?.[0]
-		)) {
+		if (
+			matchesPolyfillName(
+				normalisedModuleName,
+				polyfill,
+				modulePrefix?.groups.version,
+				modulePrefix?.[0],
+			)
+		) {
 			return polyfill;
 		}
 	}
@@ -154,7 +156,10 @@ function getTargets(options, dirname) {
 }
 
 function create(context) {
-	const targets = getTargets(context.options[0], path.dirname(context.filename));
+	const targets = getTargets(
+		context.options[0],
+		path.dirname(context.filename),
+	);
 	if (!targets) {
 		return {};
 	}
@@ -167,25 +172,33 @@ function create(context) {
 		return {};
 	}
 
-	const checkFeatures = features => !features.every(feature => unavailableFeatures.includes(feature));
+	const checkFeatures = (features) =>
+		!features.every((feature) => unavailableFeatures.includes(feature));
 
 	return {
 		Literal(node) {
 			if (
 				!(
-					(['ImportDeclaration', 'ImportExpression'].includes(node.parent.type) && node.parent.source === node)
-					|| (isStaticRequire(node.parent) && node.parent.arguments[0] === node)
+					(['ImportDeclaration', 'ImportExpression'].includes(
+						node.parent.type,
+					) &&
+						node.parent.source === node) ||
+					(isStaticRequire(node.parent) && node.parent.arguments[0] === node)
 				)
 			) {
 				return;
 			}
 
 			const importedModule = node.value;
-			if (typeof importedModule !== 'string' || ['.', '/'].includes(importedModule[0])) {
+			if (
+				typeof importedModule !== 'string' ||
+				['.', '/'].includes(importedModule[0])
+			) {
 				return;
 			}
 
-			const coreJsModuleFeatures = coreJsEntries[importedModule.replace('core-js-pure', 'core-js')];
+			const coreJsModuleFeatures =
+				coreJsEntries[importedModule.replace('core-js-pure', 'core-js')];
 
 			if (coreJsModuleFeatures) {
 				if (coreJsModuleFeatures.length > 1) {
@@ -208,7 +221,8 @@ function create(context) {
 			const polyfill = findPolyfill(importedModule);
 			if (polyfill) {
 				const [, namespace, method = ''] = polyfill.feature.split('.');
-				const features = coreJsEntries[`core-js/full/${namespace}${method && '/'}${method}`];
+				const features =
+					coreJsEntries[`core-js/full/${namespace}${method && '/'}${method}`];
 
 				if (features && checkFeatures(features)) {
 					context.report({node, messageId: MESSAGE_ID_POLYFILL});
@@ -247,7 +261,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Enforce the use of built-in methods instead of unnecessary polyfills.',
+			description:
+				'Enforce the use of built-in methods instead of unnecessary polyfills.',
 			recommended: true,
 		},
 		schema,

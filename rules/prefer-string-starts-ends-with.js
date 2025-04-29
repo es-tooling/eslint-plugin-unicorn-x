@@ -2,7 +2,10 @@ import {isParenthesized, getStaticValue} from '@eslint-community/eslint-utils';
 import escapeString from './utils/escape-string.js';
 import shouldAddParenthesesToMemberExpressionObject from './utils/should-add-parentheses-to-member-expression-object.js';
 import shouldAddParenthesesToLogicalExpressionChild from './utils/should-add-parentheses-to-logical-expression-child.js';
-import {getParenthesizedText, getParenthesizedRange} from './utils/parentheses.js';
+import {
+	getParenthesizedText,
+	getParenthesizedRange,
+} from './utils/parentheses.js';
 import {isMethodCall, isRegexLiteral} from './ast/index.js';
 
 const MESSAGE_STARTS_WITH = 'prefer-starts-with';
@@ -15,15 +18,27 @@ const messages = {
 	[MESSAGE_ENDS_WITH]: 'Prefer `String#endsWith()` over a regex with `$`.',
 	[FIX_TYPE_STRING_CASTING]: 'Convert to string `String(…).{{method}}()`.',
 	[FIX_TYPE_OPTIONAL_CHAINING]: 'Use optional chaining `…?.{{method}}()`.',
-	[FIX_TYPE_NULLISH_COALESCING]: 'Use nullish coalescing `(… ?? \'\').{{method}}()`.',
+	[FIX_TYPE_NULLISH_COALESCING]:
+		"Use nullish coalescing `(… ?? '').{{method}}()`.",
 };
 
-const doesNotContain = (string, characters) => characters.every(character => !string.includes(character));
-const isSimpleString = string => doesNotContain(
-	string,
-	['^', '$', '+', '[', '{', '(', '\\', '.', '?', '*', '|'],
-);
-const addParentheses = text => `(${text})`;
+const doesNotContain = (string, characters) =>
+	characters.every((character) => !string.includes(character));
+const isSimpleString = (string) =>
+	doesNotContain(string, [
+		'^',
+		'$',
+		'+',
+		'[',
+		'{',
+		'(',
+		'\\',
+		'.',
+		'?',
+		'*',
+		'|',
+	]);
+const addParentheses = (text) => `(${text})`;
 
 const checkRegex = ({pattern, flags}) => {
 	if (flags.includes('i') || flags.includes('m')) {
@@ -54,7 +69,7 @@ const checkRegex = ({pattern, flags}) => {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
@@ -65,8 +80,8 @@ const create = context => {
 					argumentsLength: 1,
 					optionalCall: false,
 					optionalMember: false,
-				})
-				|| !isRegexLiteral(node.callee.object)
+				}) ||
+				!isRegexLiteral(node.callee.object)
 			) {
 				return;
 			}
@@ -79,14 +94,14 @@ const create = context => {
 			}
 
 			const [target] = node.arguments;
-			const method = result.messageId === MESSAGE_STARTS_WITH ? 'startsWith' : 'endsWith';
+			const method =
+				result.messageId === MESSAGE_STARTS_WITH ? 'startsWith' : 'endsWith';
 
-			let isString = target.type === 'TemplateLiteral'
-				|| (
-					target.type === 'CallExpression'
-					&& target.callee.type === 'Identifier'
-					&& target.callee.name === 'String'
-				);
+			let isString =
+				target.type === 'TemplateLiteral' ||
+				(target.type === 'CallExpression' &&
+					target.callee.type === 'Identifier' &&
+					target.callee.name === 'String');
 			let isNonString = false;
 			if (!isString) {
 				const staticValue = getStaticValue(target, sourceCode.getScope(target));
@@ -102,7 +117,7 @@ const create = context => {
 				messageId: result.messageId,
 			};
 
-			function * fix(fixer, fixType) {
+			function* fix(fixer, fixType) {
 				let targetText = getParenthesizedText(target, sourceCode);
 				const isRegexParenthesized = isParenthesized(regexNode, sourceCode);
 				const isTargetParenthesized = isParenthesized(target, sourceCode);
@@ -111,13 +126,16 @@ const create = context => {
 					// Goal: `(target ?? '').startsWith(pattern)`
 					case FIX_TYPE_NULLISH_COALESCING: {
 						if (
-							!isTargetParenthesized
-							&& shouldAddParenthesesToLogicalExpressionChild(target, {operator: '??', property: 'left'})
+							!isTargetParenthesized &&
+							shouldAddParenthesesToLogicalExpressionChild(target, {
+								operator: '??',
+								property: 'left',
+							})
 						) {
 							targetText = addParentheses(targetText);
 						}
 
-						targetText += ' ?? \'\'';
+						targetText += " ?? ''";
 
 						// `LogicalExpression` need add parentheses to call `.startsWith()`,
 						// but if regex is parenthesized, we can reuse it
@@ -139,15 +157,18 @@ const create = context => {
 					// Goal: `target.startsWith(pattern)` or `target?.startsWith(pattern)`
 					case FIX_TYPE_OPTIONAL_CHAINING: {
 						// Optional chaining: `target.startsWith` => `target?.startsWith`
-						yield fixer.replaceText(sourceCode.getTokenBefore(node.callee.property), '?.');
+						yield fixer.replaceText(
+							sourceCode.getTokenBefore(node.callee.property),
+							'?.',
+						);
 					}
 
 					// Fallthrough
 					default: {
 						if (
-							!isRegexParenthesized
-							&& !isTargetParenthesized
-							&& shouldAddParenthesesToMemberExpressionObject(target, sourceCode)
+							!isRegexParenthesized &&
+							!isTargetParenthesized &&
+							shouldAddParenthesesToMemberExpressionObject(target, sourceCode)
 						) {
 							targetText = addParentheses(targetText);
 						}
@@ -163,7 +184,10 @@ const create = context => {
 				yield fixer.replaceText(node.callee.property, method);
 
 				// Replace argument with result.string
-				yield fixer.replaceTextRange(getParenthesizedRange(target, sourceCode), escapeString(result.string));
+				yield fixer.replaceTextRange(
+					getParenthesizedRange(target, sourceCode),
+					escapeString(result.string),
+				);
 			}
 
 			if (isString || !isNonString) {
@@ -175,7 +199,11 @@ const create = context => {
 					FIX_TYPE_STRING_CASTING,
 					FIX_TYPE_OPTIONAL_CHAINING,
 					FIX_TYPE_NULLISH_COALESCING,
-				].map(type => ({messageId: type, data: {method}, fix: fixer => fix(fixer, type)}));
+				].map((type) => ({
+					messageId: type,
+					data: {method},
+					fix: (fixer) => fix(fixer, type),
+				}));
 			}
 
 			return problem;
@@ -189,7 +217,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `String#startsWith()` & `String#endsWith()` over `RegExp#test()`.',
+			description:
+				'Prefer `String#startsWith()` & `String#endsWith()` over `RegExp#test()`.',
 			recommended: true,
 		},
 		fixable: 'code',
