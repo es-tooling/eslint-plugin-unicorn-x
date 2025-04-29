@@ -134,7 +134,7 @@ import throwNewError from './throw-new-error.js';
 
 const rules = {
 	'better-regex': createRule(betterRegex, 'better-regex', true),
-	'catch-error-name': createRule(catchErrorName, 'catch-error-name'),
+	'catch-error-name': createRule(catchErrorName, 'catch-error-name', true),
 	'consistent-assert': createRule(consistentAssert, 'consistent-assert'),
 	'consistent-date-clone': createRule(
 		consistentDateClone,
