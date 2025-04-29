@@ -8,7 +8,7 @@
 		maximumArguments?: number,
 		allowSpreadElement?: boolean,
 		optional?: boolean,
-	} | string | string[]
+	}
 } CallOrNewExpressionCheckOptions
 */
 function create(node, options, types) {
@@ -16,32 +16,13 @@ function create(node, options, types) {
 		return false;
 	}
 
-	if (typeof options === 'string') {
-		options = {names: [options]};
-	}
-
-	if (Array.isArray(options)) {
-		options = {names: options};
-	}
-
-	let {
-		name,
-		names,
-		argumentsLength,
-		minimumArguments,
-		maximumArguments,
-		allowSpreadElement,
-		optional,
-	} = {
-		minimumArguments: 0,
-		maximumArguments: Number.POSITIVE_INFINITY,
-		allowSpreadElement: false,
-		...options,
-	};
-
-	if (name) {
-		names = [name];
-	}
+	const minimumArguments = options?.minimumArguments ?? 0;
+	const maximumArguments =
+		options?.maximumArguments ?? Number.POSITIVE_INFINITY;
+	const allowSpreadElement = options?.allowSpreadElement ?? false;
+	const names = options?.name ? [options.name] : options?.names;
+	const optional = options?.optional;
+	const argumentsLength = options?.argumentsLength;
 
 	if (
 		(optional === true && node.optional !== optional) ||
