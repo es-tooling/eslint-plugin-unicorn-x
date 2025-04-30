@@ -9,12 +9,16 @@ const messages = {
 	[MESSAGE_ID]: '{{original}} can be optimized to {{optimized}}.',
 	[MESSAGE_ID_PARSE_ERROR]: 'Problem parsing {{original}}: {{error}}',
 };
+const newExpressionOptions = {name: 'RegExp', minimumArguments: 1};
 
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = (context) => {
 	const {sortCharacterClasses} = context.options[0] || {};
 
 	const ignoreList = [];
+	const optimizeOptions = {
+		blacklist: ignoreList,
+	};
 
 	if (sortCharacterClasses === false) {
 		ignoreList.push('charClassClassrangesMerge');
@@ -37,7 +41,7 @@ const create = (context) => {
 
 			try {
 				optimized = regexpTree
-					.optimize(original, undefined, {blacklist: ignoreList})
+					.optimize(original, undefined, optimizeOptions)
 					.toString();
 			} catch (error) {
 				context.report({
@@ -77,13 +81,11 @@ const create = (context) => {
 				return;
 			}
 
-			context.report({
-				...problem,
-				fix: (fixer) => fixer.replaceText(node, optimized),
-			});
+			problem.fix = (fixer) => fixer.replaceText(node, optimized);
+			context.report(problem);
 		},
 		NewExpression(node) {
-			if (!isNewExpression(node, {name: 'RegExp', minimumArguments: 1})) {
+			if (!isNewExpression(node, newExpressionOptions)) {
 				return;
 			}
 

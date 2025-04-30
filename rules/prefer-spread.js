@@ -283,140 +283,206 @@ function isNotArray(node, scope) {
 	return false;
 }
 
+const checkConcatCall = (node, context) => {
+	const {object} = node.callee;
+	const scope = context.sourceCode.getScope(object);
+
+	if (isNotArray(object, scope)) {
+		return;
+	}
+
+	const staticResult = getStaticValue(object, scope);
+	if (staticResult && !Array.isArray(staticResult.value)) {
+		return;
+	}
+
+	const problem = {
+		node: node.callee.property,
+		messageId: ERROR_ARRAY_CONCAT,
+	};
+
+	const fixableArguments = getConcatFixableArguments(node.arguments, scope);
+
+	if (fixableArguments.length > 0 || node.arguments.length === 0) {
+		problem.fix = fixConcat(node, context.sourceCode, fixableArguments);
+		context.report(problem);
+		return;
+	}
+
+	const [firstArgument, ...restArguments] = node.arguments;
+	if (firstArgument.type === 'SpreadElement') {
+		context.report(problem);
+		return;
+	}
+
+	const fixableArgumentsAfterFirstArgument = getConcatFixableArguments(
+		restArguments,
+		scope,
+	);
+	const suggestions = [
+		{
+			messageId: SUGGESTION_CONCAT_ARGUMENT_IS_SPREADABLE,
+			isSpreadable: true,
+		},
+		{
+			messageId: SUGGESTION_CONCAT_ARGUMENT_IS_NOT_SPREADABLE,
+			isSpreadable: false,
+		},
+	];
+
+	if (!hasSideEffect(firstArgument, context.sourceCode)) {
+		suggestions.push({
+			messageId: SUGGESTION_CONCAT_TEST_ARGUMENT,
+			testArgument: true,
+		});
+	}
+
+	problem.suggest = suggestions.map(
+		({messageId, isSpreadable, testArgument}) => ({
+			messageId,
+			fix: fixConcat(
+				node,
+				context.sourceCode,
+				// When apply suggestion, we also merge fixable arguments after the first one
+				[
+					{
+						node: firstArgument,
+						isSpreadable,
+						testArgument,
+					},
+					...fixableArgumentsAfterFirstArgument,
+				],
+			),
+		}),
+	);
+
+	if (
+		fixableArgumentsAfterFirstArgument.length < restArguments.length &&
+		restArguments.every(({type}) => type !== 'SpreadElement')
+	) {
+		problem.suggest.push({
+			messageId: SUGGESTION_CONCAT_SPREAD_ALL_ARGUMENTS,
+			fix: fixConcat(
+				node,
+				context.sourceCode,
+				node.arguments.map(
+					(node) =>
+						getConcatArgumentSpreadable(node, scope) || {
+							node,
+							isSpreadable: true,
+						},
+				),
+			),
+		});
+	}
+
+	context.report(problem);
+};
+
+const checkSliceCall = (node, context) => {
+	if (isNodeMatches(node.callee.object, ignoredSliceCallee)) {
+		return;
+	}
+
+	const [firstArgument] = node.arguments;
+	if (firstArgument && !isLiteral(firstArgument, 0)) {
+		return;
+	}
+
+	context.report({
+		node: node.callee.property,
+		messageId: ERROR_ARRAY_SLICE,
+		fix: methodCallToSpread(node, context.sourceCode),
+	});
+};
+
+const checkSplitCall = (node, context) => {
+	const [separator] = node.arguments;
+	if (!isLiteral(separator, '')) {
+		return;
+	}
+
+	const string = node.callee.object;
+	const staticValue = getStaticValue(
+		string,
+		context.sourceCode.getScope(string),
+	);
+	let hasSameResult = false;
+	if (staticValue) {
+		const {value} = staticValue;
+
+		if (typeof value !== 'string') {
+			return;
+		}
+
+		// eslint-disable-next-line unicorn-x/prefer-spread
+		const resultBySplit = value.split('');
+		const resultBySpread = [...value];
+
+		hasSameResult =
+			resultBySplit.length === resultBySpread.length &&
+			resultBySplit.every(
+				(character, index) => character === resultBySpread[index],
+			);
+	}
+
+	const problem = {
+		node: node.callee.property,
+		messageId: ERROR_STRING_SPLIT,
+	};
+
+	if (hasSameResult) {
+		problem.fix = methodCallToSpread(node, context.sourceCode);
+	} else {
+		problem.suggest = [
+			{
+				messageId: SUGGESTION_USE_SPREAD,
+				fix: methodCallToSpread(node, context.sourceCode),
+			},
+		];
+	}
+
+	context.report(problem);
+};
+
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = (context) => {
 	const {sourceCode} = context;
 
-	// `Array.from()`
-	context.on('CallExpression', (node) => {
-		if (
-			isMethodCall(node, {
-				object: 'Array',
-				method: 'from',
-				argumentsLength: 1,
-				optionalCall: false,
-				optionalMember: false,
-			}) &&
-			// Allow `Array.from({length})`
-			node.arguments[0].type !== 'ObjectExpression'
-		) {
-			return {
-				node,
-				messageId: ERROR_ARRAY_FROM,
-				fix: fixArrayFrom(node, sourceCode),
-			};
-		}
-	});
-
-	// `array.concat()`
-	context.on('CallExpression', (node) => {
-		if (
-			!isMethodCall(node, {
-				method: 'concat',
-				optionalCall: false,
-				optionalMember: false,
-			})
-		) {
-			return;
-		}
-
-		const {object} = node.callee;
-		const scope = sourceCode.getScope(object);
-
-		if (isNotArray(object, scope)) {
-			return;
-		}
-
-		const staticResult = getStaticValue(object, scope);
-		if (staticResult && !Array.isArray(staticResult.value)) {
-			return;
-		}
-
-		const problem = {
-			node: node.callee.property,
-			messageId: ERROR_ARRAY_CONCAT,
-		};
-
-		const fixableArguments = getConcatFixableArguments(node.arguments, scope);
-
-		if (fixableArguments.length > 0 || node.arguments.length === 0) {
-			problem.fix = fixConcat(node, sourceCode, fixableArguments);
-			return problem;
-		}
-
-		const [firstArgument, ...restArguments] = node.arguments;
-		if (firstArgument.type === 'SpreadElement') {
-			return problem;
-		}
-
-		const fixableArgumentsAfterFirstArgument = getConcatFixableArguments(
-			restArguments,
-			scope,
-		);
-		const suggestions = [
-			{
-				messageId: SUGGESTION_CONCAT_ARGUMENT_IS_SPREADABLE,
-				isSpreadable: true,
-			},
-			{
-				messageId: SUGGESTION_CONCAT_ARGUMENT_IS_NOT_SPREADABLE,
-				isSpreadable: false,
-			},
-		];
-
-		if (!hasSideEffect(firstArgument, sourceCode)) {
-			suggestions.push({
-				messageId: SUGGESTION_CONCAT_TEST_ARGUMENT,
-				testArgument: true,
-			});
-		}
-
-		problem.suggest = suggestions.map(
-			({messageId, isSpreadable, testArgument}) => ({
-				messageId,
-				fix: fixConcat(
+	return {
+		CallExpression(node) {
+			// `Array.from()`
+			if (
+				isMethodCall(node, {
+					object: 'Array',
+					method: 'from',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+				// Allow `Array.from({length})`
+				node.arguments[0].type !== 'ObjectExpression'
+			) {
+				context.report({
 					node,
-					sourceCode,
-					// When apply suggestion, we also merge fixable arguments after the first one
-					[
-						{
-							node: firstArgument,
-							isSpreadable,
-							testArgument,
-						},
-						...fixableArgumentsAfterFirstArgument,
-					],
-				),
-			}),
-		);
+					messageId: ERROR_ARRAY_FROM,
+					fix: fixArrayFrom(node, sourceCode),
+				});
+			}
 
-		if (
-			fixableArgumentsAfterFirstArgument.length < restArguments.length &&
-			restArguments.every(({type}) => type !== 'SpreadElement')
-		) {
-			problem.suggest.push({
-				messageId: SUGGESTION_CONCAT_SPREAD_ALL_ARGUMENTS,
-				fix: fixConcat(
-					node,
-					sourceCode,
-					node.arguments.map(
-						(node) =>
-							getConcatArgumentSpreadable(node, scope) || {
-								node,
-								isSpreadable: true,
-							},
-					),
-				),
-			});
-		}
+			// `array.concat()`
+			if (
+				isMethodCall(node, {
+					method: 'concat',
+					optionalCall: false,
+					optionalMember: false,
+				})
+			) {
+				checkConcatCall(node, context);
+			}
 
-		return problem;
-	});
-
-	// `array.slice()`
-	context.on('CallExpression', (node) => {
-		if (
-			!(
+			// `array.slice()`
+			if (
 				isMethodCall(node, {
 					method: 'slice',
 					minimumArguments: 0,
@@ -426,106 +492,40 @@ const create = (context) => {
 				}) &&
 				!isArrayLiteral(node.callee.object) &&
 				!hasOptionalChainElement(node.callee.object)
-			)
-		) {
-			return;
-		}
+			) {
+				checkSliceCall(node, context);
+			}
 
-		if (isNodeMatches(node.callee.object, ignoredSliceCallee)) {
-			return;
-		}
-
-		const [firstArgument] = node.arguments;
-		if (firstArgument && !isLiteral(firstArgument, 0)) {
-			return;
-		}
-
-		return {
-			node: node.callee.property,
-			messageId: ERROR_ARRAY_SLICE,
-			fix: methodCallToSpread(node, sourceCode),
-		};
-	});
-
-	// `array.toSpliced()`
-	context.on('CallExpression', (node) => {
-		if (
-			!(
+			// `array.toSpliced()`
+			if (
 				isMethodCall(node, {
 					method: 'toSpliced',
 					argumentsLength: 0,
 					optionalCall: false,
 					optionalMember: false,
-				}) && node.callee.object.type !== 'ArrayExpression'
-			)
-		) {
-			return;
-		}
-
-		return {
-			node: node.callee.property,
-			messageId: ERROR_ARRAY_TO_SPLICED,
-			fix: methodCallToSpread(node, sourceCode),
-		};
-	});
-
-	// `string.split()`
-	context.on('CallExpression', (node) => {
-		if (
-			!isMethodCall(node, {
-				method: 'split',
-				argumentsLength: 1,
-				optionalCall: false,
-				optionalMember: false,
-			})
-		) {
-			return;
-		}
-
-		const [separator] = node.arguments;
-		if (!isLiteral(separator, '')) {
-			return;
-		}
-
-		const string = node.callee.object;
-		const staticValue = getStaticValue(string, sourceCode.getScope(string));
-		let hasSameResult = false;
-		if (staticValue) {
-			const {value} = staticValue;
-
-			if (typeof value !== 'string') {
-				return;
+				}) &&
+				node.callee.object.type !== 'ArrayExpression'
+			) {
+				context.report({
+					node: node.callee.property,
+					messageId: ERROR_ARRAY_TO_SPLICED,
+					fix: methodCallToSpread(node, sourceCode),
+				});
 			}
 
-			// eslint-disable-next-line unicorn-x/prefer-spread
-			const resultBySplit = value.split('');
-			const resultBySpread = [...value];
-
-			hasSameResult =
-				resultBySplit.length === resultBySpread.length &&
-				resultBySplit.every(
-					(character, index) => character === resultBySpread[index],
-				);
-		}
-
-		const problem = {
-			node: node.callee.property,
-			messageId: ERROR_STRING_SPLIT,
-		};
-
-		if (hasSameResult) {
-			problem.fix = methodCallToSpread(node, sourceCode);
-		} else {
-			problem.suggest = [
-				{
-					messageId: SUGGESTION_USE_SPREAD,
-					fix: methodCallToSpread(node, sourceCode),
-				},
-			];
-		}
-
-		return problem;
-	});
+			// `string.split()`
+			if (
+				isMethodCall(node, {
+					method: 'split',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				})
+			) {
+				checkSplitCall(node, context);
+			}
+		},
+	};
 };
 
 /** @type {import('eslint').Rule.RuleModule} */
