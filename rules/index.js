@@ -394,6 +394,7 @@ const rules = {
 	'prefer-node-protocol': createRule(
 		preferNodeProtocol,
 		'prefer-node-protocol',
+		true,
 	),
 	'prefer-number-properties': createRule(
 		preferNumberProperties,
@@ -452,6 +453,7 @@ const rules = {
 	'prevent-abbreviations': createRule(
 		preventAbbreviations,
 		'prevent-abbreviations',
+		true,
 	),
 	'relative-url-style': createRule(relativeUrlStyle, 'relative-url-style'),
 	'require-array-join-separator': createRule(
