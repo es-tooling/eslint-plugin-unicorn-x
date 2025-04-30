@@ -70,7 +70,7 @@ function isFromIgnoredPackage(node) {
 	if (
 		isConstVariableDeclarationId(node) &&
 		isMemberExpression(node.parent.init, {
-			property: 'EventEmitter',
+			properties: 'EventEmitter',
 			optional: false,
 			computed: false,
 		}) &&

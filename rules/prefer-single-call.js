@@ -24,7 +24,7 @@ const isExpressionStatement = (node) =>
 	node.parent.expression === node;
 const isClassList = (node) =>
 	isMemberExpression(node, {
-		property: 'classList',
+		properties: 'classList',
 		optional: false,
 		computed: false,
 	});

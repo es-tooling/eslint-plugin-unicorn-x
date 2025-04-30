@@ -16,7 +16,11 @@ const isLengthCompareZero = (node) =>
 	node.type === 'BinaryExpression' &&
 	node.right.type === 'Literal' &&
 	node.right.raw === '0' &&
-	isMemberExpression(node.left, {property: 'length', optional: false}) &&
+	isMemberExpression(node.left, {
+		properties: 'length',
+		optional: false,
+		computed: undefined,
+	}) &&
 	isLogicalExpression(node.parent);
 
 function flatLogicalExpression(node) {

@@ -4,24 +4,20 @@ import {isMemberExpression} from '../ast/index.js';
 @param {
 	{
 		object?: string,
-		method?: string,
-		methods?: string[],
+		properties?: string[] | string,
 	}
 } [options]
 @returns {string}
 */
 function isPrototypeProperty(node, options) {
-	const {object, property, properties} = {
-		property: '',
-		properties: [],
-		...options,
-	};
+	const object = options?.object;
+	const properties = options?.properties ?? [];
 
 	if (
 		!isMemberExpression(node, {
-			property,
 			properties,
 			optional: false,
+			computed: undefined,
 		})
 	) {
 		return;
@@ -32,9 +28,10 @@ function isPrototypeProperty(node, options) {
 	return (
 		// `Object.prototype.method` or `Array.prototype.method`
 		isMemberExpression(objectNode, {
-			object,
-			property: 'prototype',
+			properties: 'prototype',
+			objects: object,
 			optional: false,
+			computed: undefined,
 		}) ||
 		// `[].method`
 		(object === 'Array' &&

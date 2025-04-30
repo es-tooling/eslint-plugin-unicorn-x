@@ -45,7 +45,7 @@ function isNodeBuiltinModuleFunctionCall(
 				!(
 					checkKind === 'property' &&
 					isMemberExpression(node, {
-						property: functionName,
+						properties: functionName,
 						computed: false,
 						optional: false,
 					})

@@ -11,10 +11,10 @@ function getObjectLengthOrInfinityDescription(node, object) {
 	// `Number.POSITIVE_INFINITY`
 	if (
 		isMemberExpression(node, {
-			object: 'Number',
-			property: 'POSITIVE_INFINITY',
-			computed: false,
+			objects: 'Number',
+			properties: 'POSITIVE_INFINITY',
 			optional: false,
+			computed: false,
 		})
 	) {
 		return 'Number.POSITIVE_INFINITY';
@@ -29,8 +29,11 @@ function getObjectLengthOrInfinityDescription(node, object) {
 	// `object.length`
 	if (
 		!(
-			isMemberExpression(node, {property: 'length', computed: false}) &&
-			isSameReference(object, node.object)
+			isMemberExpression(node, {
+				properties: 'length',
+				optional: undefined,
+				computed: false,
+			}) && isSameReference(object, node.object)
 		)
 	) {
 		return;

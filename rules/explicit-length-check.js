@@ -156,6 +156,7 @@ function create(context) {
 				!isMemberExpression(memberExpression, {
 					properties: ['length', 'size'],
 					optional: false,
+					computed: undefined,
 				}) ||
 				memberExpression.object.type === 'ThisExpression'
 			) {

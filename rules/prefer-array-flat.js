@@ -139,7 +139,7 @@ const arrayPrototypeConcat = {
 					optionalMember: false,
 				}) &&
 				isArrayPrototypeProperty(node.callee.object, {
-					property: 'concat',
+					properties: 'concat',
 				})
 			)
 		) {

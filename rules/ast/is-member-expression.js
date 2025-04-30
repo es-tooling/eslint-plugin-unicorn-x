@@ -1,10 +1,8 @@
 /**
 @param {
 	{
-		property?: string,
-		properties?: string[],
-		object?: string,
-		objects?: string[],
+		properties?: string[] | string,
+		objects?: string[] | string,
 		optional?: boolean,
 		computed?: boolean
 	}
@@ -16,9 +14,12 @@ export default function isMemberExpression(node, options) {
 		return false;
 	}
 
-	const property = options?.property ?? '';
-	const properties = property ? [property] : (options?.properties ?? []);
-	const objects = options?.object ? [options.object] : (options?.objects ?? []);
+	const properties =
+		typeof options?.properties === 'string'
+			? [options.properties]
+			: options?.properties;
+	const objects =
+		typeof options?.objects === 'string' ? [options.objects] : options?.objects;
 	const optional = options?.optional;
 	let computed = options?.computed;
 

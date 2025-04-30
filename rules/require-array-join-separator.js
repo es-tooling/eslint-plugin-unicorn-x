@@ -27,7 +27,7 @@ const create = (context) => ({
 						optionalMember: false,
 					}) &&
 						isArrayPrototypeProperty(node.callee.object, {
-							property: 'join',
+							properties: 'join',
 						}))
 				)
 			)

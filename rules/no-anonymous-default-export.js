@@ -186,8 +186,8 @@ const create = (context) => {
 			) ||
 			!(
 				isMemberExpression(node.left, {
-					object: 'module',
-					property: 'exports',
+					objects: 'module',
+					properties: 'exports',
 					computed: false,
 					optional: false,
 				}) || (node.left.type === 'Identifier', node.left.name === 'exports')
