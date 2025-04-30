@@ -423,7 +423,7 @@ const rules = {
 	'prefer-set-has': createRule(preferSetHas, 'prefer-set-has'),
 	'prefer-set-size': createRule(preferSetSize, 'prefer-set-size'),
 	'prefer-single-call': createRule(preferSingleCall, 'prefer-single-call'),
-	'prefer-spread': createRule(preferSpread, 'prefer-spread'),
+	'prefer-spread': createRule(preferSpread, 'prefer-spread', true),
 	'prefer-string-raw': createRule(preferStringRaw, 'prefer-string-raw'),
 	'prefer-string-replace-all': createRule(
 		preferStringReplaceAll,
