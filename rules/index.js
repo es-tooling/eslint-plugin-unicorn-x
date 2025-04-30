@@ -273,6 +273,7 @@ const rules = {
 	'no-unnecessary-slice-end': createRule(
 		noUnnecessarySliceEnd,
 		'no-unnecessary-slice-end',
+		true,
 	),
 	'no-unreadable-array-destructuring': createRule(
 		noUnreadableArrayDestructuring,
