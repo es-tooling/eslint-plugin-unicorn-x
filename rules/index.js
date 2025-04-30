@@ -296,7 +296,7 @@ const rules = {
 		noUselessPromiseResolveReject,
 		'no-useless-promise-resolve-reject',
 	),
-	'no-useless-spread': createRule(noUselessSpread, 'no-useless-spread'),
+	'no-useless-spread': createRule(noUselessSpread, 'no-useless-spread', true),
 	'no-useless-switch-case': createRule(
 		noUselessSwitchCase,
 		'no-useless-switch-case',
