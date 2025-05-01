@@ -132,13 +132,15 @@ function reportProblems(create) {
 	return wrapped;
 }
 
-export function checkVueTemplate(create, options) {
+export function checkVueTemplate(create, options, raw) {
 	const {visitScriptBlock} = {
 		visitScriptBlock: true,
 		...options,
 	};
 
-	create = reportProblems(create);
+	if (!raw) {
+		create = reportProblems(create);
+	}
 
 	const wrapped = (context) => {
 		const listeners = create(context);
