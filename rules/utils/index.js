@@ -1,19 +1,15 @@
 export {
 	isParenthesized,
-	getParenthesizedTimes,
 	getParentheses,
 	getParenthesizedRange,
 	getParenthesizedText,
 } from './parentheses.js';
 
-export {
-	isArrayPrototypeProperty,
-	isObjectPrototypeProperty,
-} from './array-or-object-prototype-property.js';
+export {isArrayPrototypeProperty} from './array-or-object-prototype-property.js';
 
 export {isNodeMatches, isNodeMatchesNameOrPath} from './is-node-matches.js';
 
-export {isBooleanNode, getBooleanAncestor} from './boolean.js';
+export {isBooleanNode} from './boolean.js';
 
 export {default as cartesianProductSamples} from './cartesian-product-samples.js';
 export {default as escapeString} from './escape-string.js';

@@ -46,5 +46,3 @@ function isPrototypeProperty(node, options) {
 
 export const isArrayPrototypeProperty = (node, options) =>
 	isPrototypeProperty(node, {...options, object: 'Array'});
-export const isObjectPrototypeProperty = (node, options) =>
-	isPrototypeProperty(node, {...options, object: 'Object'});
