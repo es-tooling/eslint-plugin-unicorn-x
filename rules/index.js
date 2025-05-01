@@ -325,7 +325,7 @@ const rules = {
 		preferArrayIndexOf,
 		'prefer-array-index-of',
 	),
-	'prefer-array-some': createRule(preferArraySome, 'prefer-array-some'),
+	'prefer-array-some': createRule(preferArraySome, 'prefer-array-some', true),
 	'prefer-at': createRule(preferAt, 'prefer-at'),
 	'prefer-blob-reading-methods': createRule(
 		preferBlobReadingMethods,
