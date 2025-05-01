@@ -443,6 +443,7 @@ const rules = {
 	'prefer-structured-clone': createRule(
 		preferStructuredClone,
 		'prefer-structured-clone',
+		true,
 	),
 	'prefer-switch': createRule(preferSwitch, 'prefer-switch'),
 	'prefer-ternary': createRule(preferTernary, 'prefer-ternary'),
