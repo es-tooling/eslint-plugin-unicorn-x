@@ -115,14 +115,233 @@ function* unwrapSingleArraySpread(fixer, arrayExpression, sourceCode) {
 	yield* fixSpaceAroundKeyword(fixer, arrayExpression, sourceCode);
 }
 
+const checkNestedSpread = (node, context) => {
+	const spreadObject = node;
+	const spreadElement = spreadObject.parent;
+	const spreadToken = context.sourceCode.getFirstToken(spreadElement);
+	const parentType = spreadElement.parent.type;
+
+	context.report({
+		node: spreadToken,
+		messageId: SPREAD_IN_LIST,
+		data: {
+			argumentType:
+				spreadObject.type === 'ArrayExpression' ? 'array' : 'object',
+			parentDescription: parentDescriptions[parentType],
+		},
+		/** @param {import('eslint').Rule.RuleFixer} fixer */
+		*fix(fixer) {
+			// `[...[foo]]`
+			//   ^^^
+			yield fixer.remove(spreadToken);
+
+			// `[...(( [foo] ))]`
+			//      ^^       ^^
+			yield* removeParentheses(spreadObject, fixer, context.sourceCode);
+
+			// `[...[foo]]`
+			//      ^
+			const firstToken = context.sourceCode.getFirstToken(spreadObject);
+			yield fixer.remove(firstToken);
+
+			const [penultimateToken, lastToken] = context.sourceCode.getLastTokens(
+				spreadObject,
+				2,
+			);
+
+			// `[...[foo]]`
+			//          ^
+			yield fixer.remove(lastToken);
+
+			// `[...[foo,]]`
+			//          ^
+			if (isCommaToken(penultimateToken)) {
+				yield fixer.remove(penultimateToken);
+			}
+
+			if (parentType !== 'CallExpression' && parentType !== 'NewExpression') {
+				return;
+			}
+
+			const commaTokens = getCommaTokens(spreadObject, context.sourceCode);
+			for (const [index, commaToken] of commaTokens.entries()) {
+				if (spreadObject.elements[index]) {
+					continue;
+				}
+
+				// `call(...[foo, , bar])`
+				//               ^ Replace holes with `undefined`
+				yield fixer.insertTextBefore(commaToken, 'undefined');
+			}
+		},
+	});
+};
+
+const checkSingleArraySpread = (node, context) => {
+	const {parent} = node;
+	if (
+		!(
+			(parent.type === 'ForOfStatement' && parent.right === node) ||
+			(parent.type === 'YieldExpression' &&
+				parent.delegate &&
+				parent.argument === node) ||
+			((isNewExpression(parent, {
+				names: ['Map', 'WeakMap', 'Set', 'WeakSet'],
+				argumentsLength: 1,
+			}) ||
+				isNewExpression(parent, {names: typedArray, minimumArguments: 1}) ||
+				isMethodCall(parent, {
+					object: 'Promise',
+					methods: ['all', 'allSettled', 'any', 'race'],
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) ||
+				isMethodCall(parent, {
+					objects: ['Array', ...typedArray],
+					method: 'from',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) ||
+				isMethodCall(parent, {
+					object: 'Object',
+					method: 'fromEntries',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				})) &&
+				parent.arguments[0] === node)
+		)
+	) {
+		return;
+	}
+
+	let parentDescription = '';
+	let messageId = ITERABLE_TO_ARRAY;
+	switch (parent.type) {
+		case 'ForOfStatement': {
+			messageId = ITERABLE_TO_ARRAY_IN_FOR_OF;
+			break;
+		}
+
+		case 'YieldExpression': {
+			messageId = ITERABLE_TO_ARRAY_IN_YIELD_STAR;
+			break;
+		}
+
+		case 'NewExpression': {
+			parentDescription = `new ${parent.callee.name}(…)`;
+			break;
+		}
+
+		case 'CallExpression': {
+			parentDescription = `${parent.callee.object.name}.${parent.callee.property.name}(…)`;
+			break;
+		}
+		// No default
+	}
+
+	context.report({
+		node,
+		messageId,
+		data: {parentDescription},
+		fix: (fixer) => unwrapSingleArraySpread(fixer, node, context.sourceCode),
+	});
+};
+
+const checkArrayClone = (node, context) => {
+	const argument = node.elements[0].argument;
+	if (
+		!(
+			// Array methods returns a new array
+			(
+				isMethodCall(argument, {
+					methods: [
+						'concat',
+						'copyWithin',
+						'filter',
+						'flat',
+						'flatMap',
+						'map',
+						'slice',
+						'splice',
+						'toReversed',
+						'toSorted',
+						'toSpliced',
+						'with',
+					],
+					optionalCall: false,
+					optionalMember: false,
+				}) ||
+				// `String#split()`
+				isMethodCall(argument, {
+					method: 'split',
+					optionalCall: false,
+					optionalMember: false,
+				}) ||
+				// `Object.keys()` and `Object.values()`
+				isMethodCall(argument, {
+					object: 'Object',
+					methods: ['keys', 'values'],
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) ||
+				// `await Promise.all()` and `await Promise.allSettled`
+				(argument.type === 'AwaitExpression' &&
+					isMethodCall(argument.argument, {
+						object: 'Promise',
+						methods: ['all', 'allSettled'],
+						argumentsLength: 1,
+						optionalCall: false,
+						optionalMember: false,
+					})) ||
+				// `Array.from()`, `Array.of()`
+				isMethodCall(argument, {
+					object: 'Array',
+					methods: ['from', 'of'],
+					optionalCall: false,
+					optionalMember: false,
+				}) ||
+				// `new Array()`
+				isNewExpression(argument, {name: 'Array'})
+			)
+		)
+	) {
+		return;
+	}
+
+	const problem = {
+		node,
+		messageId: CLONE_ARRAY,
+	};
+
+	if (
+		// `[...new Array(1)]` -> `new Array(1)` is not safe to fix since there are holes
+		isNewExpression(argument, {name: 'Array'}) ||
+		// `[...foo.slice(1)]` -> `foo.slice(1)` is not safe to fix since `foo` can be a string
+		(argument.type === 'CallExpression' &&
+			argument.callee.type === 'MemberExpression' &&
+			argument.callee.property.type === 'Identifier' &&
+			argument.callee.property.name === 'slice')
+	) {
+		context.report(problem);
+		return;
+	}
+
+	context.report({
+		...problem,
+		fix: (fixer) => unwrapSingleArraySpread(fixer, node, context.sourceCode),
+	});
+};
+
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = (context) => {
-	const {sourceCode} = context;
-
-	// Useless spread in list
-	context.on(['ArrayExpression', 'ObjectExpression'], (node) => {
-		if (
-			!(
+	return {
+		'ArrayExpression, ObjectExpression'(node) {
+			// Useless spread in list
+			if (
 				node.parent.type === 'SpreadElement' &&
 				node.parent.argument === node &&
 				((node.type === 'ObjectExpression' &&
@@ -133,241 +352,18 @@ const create = (context) => {
 							node.parent.parent.elements.includes(node.parent)) ||
 							(isCallOrNewExpression(node.parent.parent) &&
 								node.parent.parent.arguments.includes(node.parent)))))
-			)
-		) {
-			return;
-		}
-
-		const spreadObject = node;
-		const spreadElement = spreadObject.parent;
-		const spreadToken = sourceCode.getFirstToken(spreadElement);
-		const parentType = spreadElement.parent.type;
-
-		return {
-			node: spreadToken,
-			messageId: SPREAD_IN_LIST,
-			data: {
-				argumentType:
-					spreadObject.type === 'ArrayExpression' ? 'array' : 'object',
-				parentDescription: parentDescriptions[parentType],
-			},
-			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			*fix(fixer) {
-				// `[...[foo]]`
-				//   ^^^
-				yield fixer.remove(spreadToken);
-
-				// `[...(( [foo] ))]`
-				//      ^^       ^^
-				yield* removeParentheses(spreadObject, fixer, sourceCode);
-
-				// `[...[foo]]`
-				//      ^
-				const firstToken = sourceCode.getFirstToken(spreadObject);
-				yield fixer.remove(firstToken);
-
-				const [penultimateToken, lastToken] = sourceCode.getLastTokens(
-					spreadObject,
-					2,
-				);
-
-				// `[...[foo]]`
-				//          ^
-				yield fixer.remove(lastToken);
-
-				// `[...[foo,]]`
-				//          ^
-				if (isCommaToken(penultimateToken)) {
-					yield fixer.remove(penultimateToken);
-				}
-
-				if (parentType !== 'CallExpression' && parentType !== 'NewExpression') {
-					return;
-				}
-
-				const commaTokens = getCommaTokens(spreadObject, sourceCode);
-				for (const [index, commaToken] of commaTokens.entries()) {
-					if (spreadObject.elements[index]) {
-						continue;
-					}
-
-					// `call(...[foo, , bar])`
-					//               ^ Replace holes with `undefined`
-					yield fixer.insertTextBefore(commaToken, 'undefined');
-				}
-			},
-		};
-	});
-
-	// Useless iterable to array
-	context.on('ArrayExpression', (arrayExpression) => {
-		if (!isSingleArraySpread(arrayExpression)) {
-			return;
-		}
-
-		const {parent} = arrayExpression;
-		if (
-			!(
-				(parent.type === 'ForOfStatement' &&
-					parent.right === arrayExpression) ||
-				(parent.type === 'YieldExpression' &&
-					parent.delegate &&
-					parent.argument === arrayExpression) ||
-				((isNewExpression(parent, {
-					names: ['Map', 'WeakMap', 'Set', 'WeakSet'],
-					argumentsLength: 1,
-				}) ||
-					isNewExpression(parent, {names: typedArray, minimumArguments: 1}) ||
-					isMethodCall(parent, {
-						object: 'Promise',
-						methods: ['all', 'allSettled', 'any', 'race'],
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					}) ||
-					isMethodCall(parent, {
-						objects: ['Array', ...typedArray],
-						method: 'from',
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					}) ||
-					isMethodCall(parent, {
-						object: 'Object',
-						method: 'fromEntries',
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					})) &&
-					parent.arguments[0] === arrayExpression)
-			)
-		) {
-			return;
-		}
-
-		let parentDescription = '';
-		let messageId = ITERABLE_TO_ARRAY;
-		switch (parent.type) {
-			case 'ForOfStatement': {
-				messageId = ITERABLE_TO_ARRAY_IN_FOR_OF;
-				break;
+			) {
+				checkNestedSpread(node, context);
 			}
 
-			case 'YieldExpression': {
-				messageId = ITERABLE_TO_ARRAY_IN_YIELD_STAR;
-				break;
+			if (isSingleArraySpread(node)) {
+				// Useless iterable to array
+				checkSingleArraySpread(node, context);
+				// Useless array clone
+				checkArrayClone(node, context);
 			}
-
-			case 'NewExpression': {
-				parentDescription = `new ${parent.callee.name}(…)`;
-				break;
-			}
-
-			case 'CallExpression': {
-				parentDescription = `${parent.callee.object.name}.${parent.callee.property.name}(…)`;
-				break;
-			}
-			// No default
-		}
-
-		return {
-			node: arrayExpression,
-			messageId,
-			data: {parentDescription},
-			fix: (fixer) =>
-				unwrapSingleArraySpread(fixer, arrayExpression, sourceCode),
-		};
-	});
-
-	// Useless array clone
-	context.on('ArrayExpression', (arrayExpression) => {
-		if (!isSingleArraySpread(arrayExpression)) {
-			return;
-		}
-
-		const node = arrayExpression.elements[0].argument;
-		if (
-			!(
-				// Array methods returns a new array
-				(
-					isMethodCall(node, {
-						methods: [
-							'concat',
-							'copyWithin',
-							'filter',
-							'flat',
-							'flatMap',
-							'map',
-							'slice',
-							'splice',
-							'toReversed',
-							'toSorted',
-							'toSpliced',
-							'with',
-						],
-						optionalCall: false,
-						optionalMember: false,
-					}) ||
-					// `String#split()`
-					isMethodCall(node, {
-						method: 'split',
-						optionalCall: false,
-						optionalMember: false,
-					}) ||
-					// `Object.keys()` and `Object.values()`
-					isMethodCall(node, {
-						object: 'Object',
-						methods: ['keys', 'values'],
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					}) ||
-					// `await Promise.all()` and `await Promise.allSettled`
-					(node.type === 'AwaitExpression' &&
-						isMethodCall(node.argument, {
-							object: 'Promise',
-							methods: ['all', 'allSettled'],
-							argumentsLength: 1,
-							optionalCall: false,
-							optionalMember: false,
-						})) ||
-					// `Array.from()`, `Array.of()`
-					isMethodCall(node, {
-						object: 'Array',
-						methods: ['from', 'of'],
-						optionalCall: false,
-						optionalMember: false,
-					}) ||
-					// `new Array()`
-					isNewExpression(node, {name: 'Array'})
-				)
-			)
-		) {
-			return;
-		}
-
-		const problem = {
-			node: arrayExpression,
-			messageId: CLONE_ARRAY,
-		};
-
-		if (
-			// `[...new Array(1)]` -> `new Array(1)` is not safe to fix since there are holes
-			isNewExpression(node, {name: 'Array'}) ||
-			// `[...foo.slice(1)]` -> `foo.slice(1)` is not safe to fix since `foo` can be a string
-			(node.type === 'CallExpression' &&
-				node.callee.type === 'MemberExpression' &&
-				node.callee.property.type === 'Identifier' &&
-				node.callee.property.name === 'slice')
-		) {
-			return problem;
-		}
-
-		return Object.assign(problem, {
-			fix: (fixer) =>
-				unwrapSingleArraySpread(fixer, arrayExpression, sourceCode),
-		});
-	});
+		},
+	};
 };
 
 /** @type {import('eslint').Rule.RuleModule} */
