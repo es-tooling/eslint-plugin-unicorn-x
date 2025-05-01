@@ -15,6 +15,72 @@ const messages = {
 
 const lodashCloneDeepFunctions = ['_.cloneDeep', 'lodash.cloneDeep'];
 
+const checkParseStringifyCall = (node, context) => {
+	const jsonStringify = node.arguments[0];
+	const {sourceCode} = context;
+
+	context.report({
+		node,
+		loc: {
+			start: sourceCode.getLoc(node).start,
+			end: sourceCode.getLoc(jsonStringify.callee).end,
+		},
+		messageId: MESSAGE_ID_ERROR,
+		data: {
+			description: 'JSON.parse(JSON.stringify(…))',
+		},
+		suggest: [
+			{
+				messageId: MESSAGE_ID_SUGGESTION,
+				*fix(fixer) {
+					yield fixer.replaceText(node.callee, 'structuredClone');
+
+					yield fixer.remove(jsonStringify.callee);
+					yield* removeParentheses(jsonStringify.callee, fixer, sourceCode);
+
+					const {
+						openingParenthesisToken,
+						closingParenthesisToken,
+						trailingCommaToken,
+					} = getCallExpressionTokens(sourceCode, jsonStringify);
+
+					yield fixer.remove(openingParenthesisToken);
+					yield fixer.remove(closingParenthesisToken);
+					if (trailingCommaToken) {
+						yield fixer.remove(trailingCommaToken);
+					}
+				},
+			},
+		],
+	});
+};
+
+// `_.cloneDeep(foo)`
+const checkFunctionCall = (node, functions, context) => {
+	const {callee} = node;
+	const matchedFunction = functions.find((nameOrPath) =>
+		isNodeMatchesNameOrPath(callee, nameOrPath),
+	);
+
+	if (!matchedFunction) {
+		return;
+	}
+
+	context.report({
+		node: callee,
+		messageId: MESSAGE_ID_ERROR,
+		data: {
+			description: `${matchedFunction.trim()}(…)`,
+		},
+		suggest: [
+			{
+				messageId: MESSAGE_ID_SUGGESTION,
+				fix: (fixer) => fixer.replaceText(callee, 'structuredClone'),
+			},
+		],
+	});
+};
+
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = (context) => {
 	const {functions: configFunctions} = {
@@ -23,107 +89,39 @@ const create = (context) => {
 	};
 	const functions = [...configFunctions, ...lodashCloneDeepFunctions];
 
-	// `JSON.parse(JSON.stringify(…))`
-	context.on('CallExpression', (callExpression) => {
-		if (
-			!(
+	return {
+		CallExpression(node) {
+			// `JSON.parse(JSON.stringify(…))`
+			if (
 				// `JSON.stringify()`
-				(
-					isMethodCall(callExpression, {
-						object: 'JSON',
-						method: 'parse',
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					}) &&
-					// `JSON.parse()`
-					isMethodCall(callExpression.arguments[0], {
-						object: 'JSON',
-						method: 'stringify',
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					})
-				)
-			)
-		) {
-			return;
-		}
-
-		const jsonParse = callExpression;
-		const jsonStringify = callExpression.arguments[0];
-		const {sourceCode} = context;
-
-		return {
-			node: jsonParse,
-			loc: {
-				start: sourceCode.getLoc(jsonParse).start,
-				end: sourceCode.getLoc(jsonStringify.callee).end,
-			},
-			messageId: MESSAGE_ID_ERROR,
-			data: {
-				description: 'JSON.parse(JSON.stringify(…))',
-			},
-			suggest: [
-				{
-					messageId: MESSAGE_ID_SUGGESTION,
-					*fix(fixer) {
-						yield fixer.replaceText(jsonParse.callee, 'structuredClone');
-
-						yield fixer.remove(jsonStringify.callee);
-						yield* removeParentheses(jsonStringify.callee, fixer, sourceCode);
-
-						const {
-							openingParenthesisToken,
-							closingParenthesisToken,
-							trailingCommaToken,
-						} = getCallExpressionTokens(sourceCode, jsonStringify);
-
-						yield fixer.remove(openingParenthesisToken);
-						yield fixer.remove(closingParenthesisToken);
-						if (trailingCommaToken) {
-							yield fixer.remove(trailingCommaToken);
-						}
-					},
-				},
-			],
-		};
-	});
-
-	// `_.cloneDeep(foo)`
-	context.on('CallExpression', (callExpression) => {
-		if (
-			!isCallExpression(callExpression, {
-				argumentsLength: 1,
-				optional: false,
-			})
-		) {
-			return;
-		}
-
-		const {callee} = callExpression;
-		const matchedFunction = functions.find((nameOrPath) =>
-			isNodeMatchesNameOrPath(callee, nameOrPath),
-		);
-
-		if (!matchedFunction) {
-			return;
-		}
-
-		return {
-			node: callee,
-			messageId: MESSAGE_ID_ERROR,
-			data: {
-				description: `${matchedFunction.trim()}(…)`,
-			},
-			suggest: [
-				{
-					messageId: MESSAGE_ID_SUGGESTION,
-					fix: (fixer) => fixer.replaceText(callee, 'structuredClone'),
-				},
-			],
-		};
-	});
+				isMethodCall(node, {
+					object: 'JSON',
+					method: 'parse',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				}) &&
+				// `JSON.parse()`
+				isMethodCall(node.arguments[0], {
+					object: 'JSON',
+					method: 'stringify',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				})
+			) {
+				checkParseStringifyCall(node, context);
+			}
+			if (
+				isCallExpression(node, {
+					argumentsLength: 1,
+					optional: false,
+				})
+			) {
+				checkFunctionCall(node, functions, context);
+			}
+		},
+	};
 };
 
 const schema = [
