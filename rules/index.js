@@ -248,6 +248,7 @@ const rules = {
 	'no-single-promise-in-promise-methods': createRule(
 		noSinglePromiseInPromiseMethods,
 		'no-single-promise-in-promise-methods',
+		true,
 	),
 	'no-static-only-class': createRule(noStaticOnlyClass, 'no-static-only-class'),
 	'no-thenable': createRule(noThenable, 'no-thenable', true),
