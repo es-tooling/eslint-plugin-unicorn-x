@@ -321,7 +321,7 @@ const rules = {
 		preferArrayFlatMap,
 		'prefer-array-flat-map',
 	),
-	'prefer-array-flat': createRule(preferArrayFlat, 'prefer-array-flat'),
+	'prefer-array-flat': createRule(preferArrayFlat, 'prefer-array-flat', true),
 	'prefer-array-index-of': createRule(
 		preferArrayIndexOf,
 		'prefer-array-index-of',
