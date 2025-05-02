@@ -227,7 +227,7 @@ function create(context) {
 	];
 
 	return {
-		*CallExpression(node) {
+		CallExpression(node) {
 			for (const {
 				testFunction,
 				description,
@@ -261,7 +261,7 @@ function create(context) {
 					problem.fix = fix(node, array, sourceCode, shouldSwitchToArray);
 				}
 
-				yield problem;
+				context.report(problem);
 			}
 		},
 	};
