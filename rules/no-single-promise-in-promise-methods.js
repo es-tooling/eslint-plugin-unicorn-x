@@ -143,11 +143,13 @@ const create = (context) => ({
 				isExpressionStatement(callExpression.parent.parent))
 		) {
 			problem.fix = unwrapAwaitedCallExpression(callExpression, sourceCode);
-			return problem;
+			context.report(problem);
+			return;
 		}
 
 		if (methodName === 'all') {
-			return problem;
+			context.report(problem);
+			return;
 		}
 
 		problem.suggest = [
@@ -161,7 +163,7 @@ const create = (context) => ({
 			},
 		];
 
-		return problem;
+		context.report(problem);
 	},
 });
 
