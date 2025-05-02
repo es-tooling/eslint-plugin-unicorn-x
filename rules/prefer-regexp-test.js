@@ -98,7 +98,7 @@ const isRegExpWithoutGlobalFlag = (node, scope) => {
 
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = (context) => ({
-	*CallExpression(node) {
+	CallExpression(node) {
 		if (!isBooleanNode(node)) {
 			return;
 		}
@@ -137,7 +137,7 @@ const create = (context) => ({
 				];
 			}
 
-			yield problem;
+			context.report(problem);
 		}
 	},
 });

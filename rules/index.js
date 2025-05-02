@@ -421,7 +421,11 @@ const rules = {
 		preferReflectApply,
 		'prefer-reflect-apply',
 	),
-	'prefer-regexp-test': createRule(preferRegexpTest, 'prefer-regexp-test'),
+	'prefer-regexp-test': createRule(
+		preferRegexpTest,
+		'prefer-regexp-test',
+		true,
+	),
 	'prefer-set-has': createRule(preferSetHas, 'prefer-set-has'),
 	'prefer-set-size': createRule(preferSetSize, 'prefer-set-size'),
 	'prefer-single-call': createRule(preferSingleCall, 'prefer-single-call'),
