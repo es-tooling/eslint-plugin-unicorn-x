@@ -1,11 +1,17 @@
 import {isStringLiteral} from './literal.js';
-import {isCallExpression} from './call-or-new-expression.js';
+import {
+	isCallExpression,
+	callExpressionHasArguments,
+	callExpressionHasName,
+} from './guards.js';
 
 const isStaticRequire = (node) =>
-	isCallExpression(node, {
-		name: 'require',
-		argumentsLength: 1,
-		optional: false,
-	}) && isStringLiteral(node.arguments[0]);
+	node !== undefined &&
+	node !== null &&
+	isCallExpression(node) &&
+	callExpressionHasArguments(node, 1) &&
+	callExpressionHasName(node, 'require') &&
+	node.optional !== true &&
+	isStringLiteral(node.arguments[0]);
 
 export default isStaticRequire;

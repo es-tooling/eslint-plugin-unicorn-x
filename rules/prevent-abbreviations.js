@@ -352,8 +352,8 @@ const isInternalImport = (node) => {
 	}
 
 	return (
-		!source.includes('node_modules') &&
-		(source.startsWith('.') || source.startsWith('/'))
+		(source.startsWith('.') || source.startsWith('/')) &&
+		!source.includes('node_modules')
 	);
 };
 
