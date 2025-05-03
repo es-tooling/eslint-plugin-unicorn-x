@@ -12,7 +12,14 @@ import {
 	hasOptionalChainElement,
 } from './utils/index.js';
 import {removeMethodCall} from './fix/index.js';
-import {isLiteral, isMethodCall} from './ast/index.js';
+import {isLiteral} from './ast/index.js';
+import {
+	isMethodCall,
+	memberExpressionHasObject,
+	memberExpressionHasProperty,
+	callExpressionHasArguments,
+	callExpressionHasSpread,
+} from './ast/guards.js';
 
 const ERROR_ARRAY_FROM = 'array-from';
 const ERROR_ARRAY_CONCAT = 'array-concat';
@@ -451,15 +458,19 @@ const create = (context) => {
 
 	return {
 		CallExpression(node) {
+			if (!isMethodCall(node)) {
+				return;
+			}
+			const hasSpread = callExpressionHasSpread(node);
+
 			// `Array.from()`
 			if (
-				isMethodCall(node, {
-					object: 'Array',
-					method: 'from',
-					argumentsLength: 1,
-					optionalCall: false,
-					optionalMember: false,
-				}) &&
+				memberExpressionHasObject(node.callee, 'Array') &&
+				memberExpressionHasProperty(node.callee, 'from') &&
+				callExpressionHasArguments(node, 1) &&
+				!hasSpread &&
+				node.optional !== true &&
+				node.callee.optional !== true &&
 				// Allow `Array.from({length})`
 				node.arguments[0].type !== 'ObjectExpression'
 			) {
@@ -472,24 +483,20 @@ const create = (context) => {
 
 			// `array.concat()`
 			if (
-				isMethodCall(node, {
-					method: 'concat',
-					optionalCall: false,
-					optionalMember: false,
-				})
+				memberExpressionHasProperty(node.callee, 'concat') &&
+				node.optional !== true &&
+				node.callee.optional !== true
 			) {
 				checkConcatCall(node, context);
 			}
 
 			// `array.slice()`
 			if (
-				isMethodCall(node, {
-					method: 'slice',
-					minimumArguments: 0,
-					maximumArguments: 1,
-					optionalCall: false,
-					optionalMember: false,
-				}) &&
+				memberExpressionHasProperty(node.callee, 'slice') &&
+				callExpressionHasArguments(node, [0, 1]) &&
+				!hasSpread &&
+				node.optional !== true &&
+				node.callee.optional !== true &&
 				!isArrayLiteral(node.callee.object) &&
 				!hasOptionalChainElement(node.callee.object)
 			) {
@@ -498,12 +505,11 @@ const create = (context) => {
 
 			// `array.toSpliced()`
 			if (
-				isMethodCall(node, {
-					method: 'toSpliced',
-					argumentsLength: 0,
-					optionalCall: false,
-					optionalMember: false,
-				}) &&
+				memberExpressionHasProperty(node.callee, 'toSpliced') &&
+				callExpressionHasArguments(node, 0) &&
+				!hasSpread &&
+				node.optional !== true &&
+				node.callee.optional !== true &&
 				node.callee.object.type !== 'ArrayExpression'
 			) {
 				context.report({
@@ -515,12 +521,11 @@ const create = (context) => {
 
 			// `string.split()`
 			if (
-				isMethodCall(node, {
-					method: 'split',
-					argumentsLength: 1,
-					optionalCall: false,
-					optionalMember: false,
-				})
+				memberExpressionHasProperty(node.callee, 'split') &&
+				callExpressionHasArguments(node, 1) &&
+				!hasSpread &&
+				node.optional !== true &&
+				node.callee.optional !== true
 			) {
 				checkSplitCall(node, context);
 			}
