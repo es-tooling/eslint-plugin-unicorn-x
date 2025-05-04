@@ -4,10 +4,19 @@ export function isCallExpression(node) {
 
 export function callExpressionHasArguments(node, size) {
 	if (Array.isArray(size)) {
-		const [min = 0, max = Infinity] = size;
+		const [min = 0, max = Number.POSITIVE_INFINITY] = size;
 		return node.arguments.length >= min && node.arguments.length <= max;
 	}
 	return node.arguments.length === size;
+}
+
+export function callExpressionHasName(node, name) {
+	return (
+		node.callee.type === 'Identifier' &&
+		(Array.isArray(name)
+			? name.includes(node.callee.name)
+			: node.callee.name === name)
+	);
 }
 
 export function memberExpressionHasProperty(node, property) {
