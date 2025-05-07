@@ -2,7 +2,7 @@
 
 > More than 100 powerful ESLint rules
 
-A modern, faster and lighter fork of `eslint-plugin-unicorn`.
+A modern, faster and lighter fork of [`eslint-plugin-unicorn`](https://github.com/sindresorhus/eslint-plugin-unicorn).
 
 ## Install
 
