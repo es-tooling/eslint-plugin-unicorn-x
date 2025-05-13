@@ -39,6 +39,14 @@ export default [
 ];
 ```
 
+## Why this fork exists
+
+This fork exists to provide various performance improvements and a reduced install footprint.
+
+Much of this cannot be contributed upstream due to differences in opinion on dependency selection, backwards compatibility requirements, and so on.
+
+We will contribute what we can upstream, and continue to track the original, allowing this plugin to exist as a mostly drop-in replacement to get an easy bump in lint performance.
+
 ## Migration from `eslint-plugin-unicorn`
 
 If you are migrating from `eslint-plugin-unicorn`, simply replace `unicorn` with `unicorn-x` in your rules and update the plugin import path:
