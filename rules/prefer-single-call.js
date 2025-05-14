@@ -20,7 +20,9 @@ const messages = {
 };
 
 const isExpressionStatement = (node) =>
-	node?.parent.type === 'ExpressionStatement' &&
+	node !== undefined &&
+	node.parent !== undefined &&
+	node.parent.type === 'ExpressionStatement' &&
 	node.parent.expression === node;
 const isClassList = (node) =>
 	isMemberExpression(node, {
