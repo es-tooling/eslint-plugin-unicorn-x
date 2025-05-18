@@ -5,5 +5,5 @@ const repoUrl = 'https://github.com/es-tooling/eslint-plugin-unicorn-x';
 
 export default function getDocumentationUrl(filename) {
 	const ruleName = path.basename(filename, '.js');
-	return `${repoUrl}/blob/v${packageJson.version}/docs/rules/${ruleName}.md`;
+	return `${repoUrl}/blob/${packageJson.version}/docs/rules/${ruleName}.md`;
 }
