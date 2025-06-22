@@ -1,3 +1,4 @@
+import {createRule} from './utils/rule.js';
 import betterRegex from './better-regex.js';
 import catchErrorName from './catch-error-name.js';
 import consistentAssert from './consistent-assert.js';
@@ -130,7 +131,6 @@ import switchCaseBraces from './switch-case-braces.js';
 import templateIndent from './template-indent.js';
 import textEncodingIdentifierCase from './text-encoding-identifier-case.js';
 import throwNewError from './throw-new-error.js';
-import {createRule} from './utils/rule.js';
 
 const rules = {
 	'better-regex': createRule(betterRegex, 'better-regex', true),
