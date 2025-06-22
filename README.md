@@ -10,7 +10,7 @@ A modern, faster and lighter fork of [`eslint-plugin-unicorn`](https://github.co
 npm install --save-dev eslint eslint-plugin-unicorn-x
 ```
 
-**Requires ESLint `>=9.20.0` and [flat config](https://eslint.org/docs/latest/use/configure/configuration-files).**
+**Requires ESLint `>=9.29.0` and [flat config](https://eslint.org/docs/latest/use/configure/configuration-files).**
 
 ## Usage
 
