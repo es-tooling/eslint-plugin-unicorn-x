@@ -1,11 +1,23 @@
 import {getParentheses} from '../utils/parentheses.js';
 
 // eslint-disable-next-line max-params
-export default function * replaceNodeOrTokenAndSpacesBefore(nodeOrToken, replacement, fixer, sourceCode, tokenStore = sourceCode) {
+export default function* replaceNodeOrTokenAndSpacesBefore(
+	nodeOrToken,
+	replacement,
+	fixer,
+	sourceCode,
+	tokenStore = sourceCode,
+) {
 	const tokens = getParentheses(nodeOrToken, tokenStore);
 
 	for (const token of tokens) {
-		yield * replaceNodeOrTokenAndSpacesBefore(token, '', fixer, sourceCode, tokenStore);
+		yield* replaceNodeOrTokenAndSpacesBefore(
+			token,
+			'',
+			fixer,
+			sourceCode,
+			tokenStore,
+		);
 	}
 
 	let [start, end] = sourceCode.getRange(nodeOrToken);

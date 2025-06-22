@@ -11,21 +11,22 @@ import {
 const ERROR_MESSAGE_ID = 'error';
 const SUGGESTION_MESSAGE_ID = 'suggestion';
 const messages = {
-	[ERROR_MESSAGE_ID]: 'Prefer `childNode.remove()` over `parentNode.removeChild(childNode)`.',
-	[SUGGESTION_MESSAGE_ID]: 'Replace `parentNode.removeChild(childNode)` with `childNode{{dotOrQuestionDot}}remove()`.',
+	[ERROR_MESSAGE_ID]:
+		'Prefer `childNode.remove()` over `parentNode.removeChild(childNode)`.',
+	[SUGGESTION_MESSAGE_ID]:
+		'Replace `parentNode.removeChild(childNode)` with `childNode{{dotOrQuestionDot}}remove()`.',
 };
 
 // TODO: Don't check node.type twice
-const isMemberExpressionOptionalObject = node =>
-	node.parent.type === 'MemberExpression'
-	&& node.parent.object === node
-	&& (
-		node.parent.optional
-		|| (node.type === 'MemberExpression' && isMemberExpressionOptionalObject(node.object))
-	);
+const isMemberExpressionOptionalObject = (node) =>
+	node.parent.type === 'MemberExpression' &&
+	node.parent.object === node &&
+	(node.parent.optional ||
+		(node.type === 'MemberExpression' &&
+			isMemberExpressionOptionalObject(node.object)));
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
@@ -35,9 +36,9 @@ const create = context => {
 					method: 'removeChild',
 					argumentsLength: 1,
 					optionalCall: false,
-				})
-				|| isNodeValueNotDomNode(node.callee.object)
-				|| isNodeValueNotDomNode(node.arguments[0])
+				}) ||
+				isNodeValueNotDomNode(node.callee.object) ||
+				isNodeValueNotDomNode(node.arguments[0])
 			) {
 				return;
 			}
@@ -52,21 +53,32 @@ const create = context => {
 
 			const isOptionalParentNode = isMemberExpressionOptionalObject(parentNode);
 
-			const createFix = (optional = false) => fixer => {
-				let childNodeText = getParenthesizedText(childNode, sourceCode);
-				if (
-					!isParenthesized(childNode, sourceCode)
-					&& shouldAddParenthesesToMemberExpressionObject(childNode, sourceCode)
-				) {
-					childNodeText = `(${childNodeText})`;
-				}
+			const createFix =
+				(optional = false) =>
+				(fixer) => {
+					let childNodeText = getParenthesizedText(childNode, sourceCode);
+					if (
+						!isParenthesized(childNode, sourceCode) &&
+						shouldAddParenthesesToMemberExpressionObject(childNode, sourceCode)
+					) {
+						childNodeText = `(${childNodeText})`;
+					}
 
-				if (needsSemicolon(sourceCode.getTokenBefore(node), sourceCode, childNodeText)) {
-					childNodeText = `;${childNodeText}`;
-				}
+					if (
+						needsSemicolon(
+							sourceCode.getTokenBefore(node),
+							sourceCode,
+							childNodeText,
+						)
+					) {
+						childNodeText = `;${childNodeText}`;
+					}
 
-				return fixer.replaceText(node, `${childNodeText}${optional ? '?' : ''}.remove()`);
-			};
+					return fixer.replaceText(
+						node,
+						`${childNodeText}${optional ? '?' : ''}.remove()`,
+					);
+				};
 
 			if (!hasSideEffect(parentNode, sourceCode) && isValueNotUsable(node)) {
 				if (!isOptionalParentNode) {
@@ -77,29 +89,29 @@ const create = context => {
 				// The most common case `foo?.parentNode.remove(foo)`
 				// TODO: Allow case like `foo.bar?.parentNode.remove(foo.bar)`
 				if (
-					node.callee.type === 'MemberExpression'
-					&& !node.callee.optional
-					&& parentNode.type === 'MemberExpression'
-					&& parentNode.optional
-					&& !parentNode.computed
-					&& parentNode.property.type === 'Identifier'
-					&& parentNode.property.name === 'parentNode'
-					&& parentNode.object.type === 'Identifier'
-					&& childNode.type === 'Identifier'
-					&& parentNode.object.name === childNode.name
+					node.callee.type === 'MemberExpression' &&
+					!node.callee.optional &&
+					parentNode.type === 'MemberExpression' &&
+					parentNode.optional &&
+					!parentNode.computed &&
+					parentNode.property.type === 'Identifier' &&
+					parentNode.property.name === 'parentNode' &&
+					parentNode.object.type === 'Identifier' &&
+					childNode.type === 'Identifier' &&
+					parentNode.object.name === childNode.name
 				) {
 					problem.fix = createFix(true);
 					return problem;
 				}
 			}
 
-			problem.suggest = (
-				isOptionalParentNode ? [true, false] : [false]
-			).map(optional => ({
-				messageId: SUGGESTION_MESSAGE_ID,
-				data: {dotOrQuestionDot: optional ? '?.' : '.'},
-				fix: createFix(optional),
-			}));
+			problem.suggest = (isOptionalParentNode ? [true, false] : [false]).map(
+				(optional) => ({
+					messageId: SUGGESTION_MESSAGE_ID,
+					data: {dotOrQuestionDot: optional ? '?.' : '.'},
+					fix: createFix(optional),
+				}),
+			);
 
 			return problem;
 		},
@@ -112,7 +124,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `childNode.remove()` over `parentNode.removeChild(childNode)`.',
+			description:
+				'Prefer `childNode.remove()` over `parentNode.removeChild(childNode)`.',
 			recommended: true,
 		},
 		fixable: 'code',

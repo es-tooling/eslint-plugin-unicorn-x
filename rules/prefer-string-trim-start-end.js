@@ -8,11 +8,13 @@ const messages = {
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = () => ({
 	CallExpression(callExpression) {
-		if (!isMethodCall(callExpression, {
-			methods: ['trimLeft', 'trimRight'],
-			argumentsLength: 0,
-			optionalCall: false,
-		})) {
+		if (
+			!isMethodCall(callExpression, {
+				methods: ['trimLeft', 'trimRight'],
+				argumentsLength: 0,
+				optionalCall: false,
+			})
+		) {
 			return;
 		}
 
@@ -24,7 +26,7 @@ const create = () => ({
 			node,
 			messageId: MESSAGE_ID,
 			data: {method, replacement},
-			fix: fixer => fixer.replaceText(node, replacement),
+			fix: (fixer) => fixer.replaceText(node, replacement),
 		};
 	},
 });
@@ -35,7 +37,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `String#trimStart()` / `String#trimEnd()` over `String#trimLeft()` / `String#trimRight()`.',
+			description:
+				'Prefer `String#trimStart()` / `String#trimEnd()` over `String#trimLeft()` / `String#trimRight()`.',
 			recommended: true,
 		},
 		fixable: 'code',

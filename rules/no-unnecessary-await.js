@@ -1,4 +1,7 @@
-import {addParenthesizesToReturnOrThrowExpression, removeSpacesAfter} from './fix/index.js';
+import {
+	addParenthesizesToReturnOrThrowExpression,
+	removeSpacesAfter,
+} from './fix/index.js';
 import {isParenthesized} from './utils/parentheses.js';
 import needsSemicolon from './utils/needs-semicolon.js';
 import isOnSameLine from './utils/is-on-same-line.js';
@@ -36,12 +39,12 @@ function notPromise(node) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	AwaitExpression(node) {
 		if (
 			// F#-style pipeline operator, `Promise.resolve() |> await`
-			!node.argument
-			|| !notPromise(node.argument)
+			!node.argument ||
+			!notPromise(node.argument)
 		) {
 			return;
 		}
@@ -57,26 +60,28 @@ const create = context => ({
 		const valueNode = node.argument;
 		if (
 			// Removing `await` may change them to a declaration, if there is no `id` will cause SyntaxError
-			valueNode.type === 'FunctionExpression'
-			|| valueNode.type === 'ClassExpression'
+			valueNode.type === 'FunctionExpression' ||
+			valueNode.type === 'ClassExpression' ||
 			// `+await +1` -> `++1`
-			|| (
-				node.parent.type === 'UnaryExpression'
-				&& valueNode.type === 'UnaryExpression'
-				&& node.parent.operator === valueNode.operator
-			)
+			(node.parent.type === 'UnaryExpression' &&
+				valueNode.type === 'UnaryExpression' &&
+				node.parent.operator === valueNode.operator)
 		) {
 			return problem;
 		}
 
 		return Object.assign(problem, {
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			* fix(fixer) {
+			*fix(fixer) {
 				if (
-					!isOnSameLine(awaitToken, valueNode)
-					&& !isParenthesized(node, sourceCode)
+					!isOnSameLine(awaitToken, valueNode) &&
+					!isParenthesized(node, sourceCode)
 				) {
-					yield * addParenthesizesToReturnOrThrowExpression(fixer, node.parent, sourceCode);
+					yield* addParenthesizesToReturnOrThrowExpression(
+						fixer,
+						node.parent,
+						sourceCode,
+					);
 				}
 
 				yield fixer.remove(awaitToken);

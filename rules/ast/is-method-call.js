@@ -31,12 +31,7 @@ export default function isMethodCall(node, options) {
 		options = {methods: options};
 	}
 
-	const {
-		optionalCall,
-		optionalMember,
-		method,
-		methods,
-	} = {
+	const {optionalCall, optionalMember, method, methods} = {
 		method: '',
 		methods: [],
 		...options,
@@ -49,8 +44,8 @@ export default function isMethodCall(node, options) {
 			maximumArguments: options.maximumArguments,
 			allowSpreadElement: options.allowSpreadElement,
 			optional: optionalCall,
-		})
-		&& isMemberExpression(node.callee, {
+		}) &&
+		isMemberExpression(node.callee, {
 			object: options.object,
 			objects: options.objects,
 			computed: options.computed,

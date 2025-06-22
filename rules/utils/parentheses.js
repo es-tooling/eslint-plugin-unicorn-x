@@ -1,4 +1,8 @@
-import {isParenthesized, isOpeningParenToken, isClosingParenToken} from '@eslint-community/eslint-utils';
+import {
+	isParenthesized,
+	isOpeningParenToken,
+	isClosingParenToken,
+} from '@eslint-community/eslint-utils';
 
 /*
 Get how many times the node is parenthesized.

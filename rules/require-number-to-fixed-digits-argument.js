@@ -7,7 +7,7 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(node) {
 		if (
 			!isMethodCall(node, {
@@ -15,17 +15,17 @@ const create = context => ({
 				argumentsLength: 0,
 				optionalCall: false,
 				optionalMember: false,
-			})
-			|| node.callee.object.type === 'NewExpression'
+			}) ||
+			node.callee.object.type === 'NewExpression'
 		) {
 			return;
 		}
 
 		const {sourceCode} = context;
-		const [
-			openingParenthesis,
-			closingParenthesis,
-		] = sourceCode.getLastTokens(node, 2);
+		const [openingParenthesis, closingParenthesis] = sourceCode.getLastTokens(
+			node,
+			2,
+		);
 
 		return {
 			loc: {
@@ -34,7 +34,7 @@ const create = context => ({
 			},
 			messageId: MESSAGE_ID,
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			fix: fixer => appendArgument(fixer, node, '0', sourceCode),
+			fix: (fixer) => appendArgument(fixer, node, '0', sourceCode),
 		};
 	},
 });

@@ -40,13 +40,20 @@ const continueAbleNodeTypes = new Set([
 	'ForInStatement',
 ]);
 
-const stripChainExpression = node =>
-	(node.parent.type === 'ChainExpression' && node.parent.expression === node)
+const stripChainExpression = (node) =>
+	node.parent.type === 'ChainExpression' && node.parent.expression === node
 		? node.parent
 		: node;
 
-function isReturnStatementInContinueAbleNodes(returnStatement, callbackFunction) {
-	for (let node = returnStatement; node && node !== callbackFunction; node = node.parent) {
+function isReturnStatementInContinueAbleNodes(
+	returnStatement,
+	callbackFunction,
+) {
+	for (
+		let node = returnStatement;
+		node && node !== callbackFunction;
+		node = node.parent
+	) {
 		if (continueAbleNodeTypes.has(node.type)) {
 			return true;
 		}
@@ -60,7 +67,10 @@ function shouldSwitchReturnStatementToBlockStatement(returnStatement) {
 
 	switch (parent.type) {
 		case 'IfStatement': {
-			return parent.consequent === returnStatement || parent.alternate === returnStatement;
+			return (
+				parent.consequent === returnStatement ||
+				parent.alternate === returnStatement
+			);
 		}
 
 		// These parent's body need switch to `BlockStatement` too, but since they are "continueAble", won't fix
@@ -90,23 +100,28 @@ function getFixFunction(callExpression, functionInfo, context) {
 	const objectText = sourceCode.getText(iterableObject);
 
 	const getForOfLoopHeadText = () => {
-		const [elementText, indexText] = parameters.map(parameter => sourceCode.getText(parameter));
+		const [elementText, indexText] = parameters.map((parameter) =>
+			sourceCode.getText(parameter),
+		);
 		const shouldUseEntries = parameters.length === 2;
 
 		let text = 'for (';
-		text += isFunctionParameterVariableReassigned(callback, sourceCode) ? 'let' : 'const';
+		text += isFunctionParameterVariableReassigned(callback, sourceCode)
+			? 'let'
+			: 'const';
 		text += ' ';
 		text += shouldUseEntries ? `[${indexText}, ${elementText}]` : elementText;
 		text += ' of ';
 
-		const shouldAddParenthesesToObject
-			= isParenthesized(iterableObject, sourceCode)
-				|| (
-				// `1?.forEach()` -> `(1).entries()`
-					isOptionalObject
-					&& shouldUseEntries
-					&& shouldAddParenthesesToMemberExpressionObject(iterableObject, sourceCode)
-				);
+		const shouldAddParenthesesToObject =
+			isParenthesized(iterableObject, sourceCode) ||
+			// `1?.forEach()` -> `(1).entries()`
+			(isOptionalObject &&
+				shouldUseEntries &&
+				shouldAddParenthesesToMemberExpressionObject(
+					iterableObject,
+					sourceCode,
+				));
 
 		text += shouldAddParenthesesToObject ? `(${objectText})` : objectText;
 
@@ -125,7 +140,7 @@ function getFixFunction(callExpression, functionInfo, context) {
 		return [start, end];
 	};
 
-	function * replaceReturnStatement(returnStatement, fixer) {
+	function* replaceReturnStatement(returnStatement, fixer) {
 		const returnToken = sourceCode.getFirstToken(returnStatement);
 		assertToken(returnToken, {
 			expected: 'return',
@@ -144,18 +159,27 @@ function getFixFunction(callExpression, functionInfo, context) {
 		const nextToken = sourceCode.getTokenAfter(returnToken);
 		let textBefore = '';
 		let textAfter = '';
-		const shouldAddParentheses
-			= !isParenthesized(returnStatement.argument, sourceCode)
-				&& shouldAddParenthesesToExpressionStatementExpression(returnStatement.argument);
+		const shouldAddParentheses =
+			!isParenthesized(returnStatement.argument, sourceCode) &&
+			shouldAddParenthesesToExpressionStatementExpression(
+				returnStatement.argument,
+			);
 		if (shouldAddParentheses) {
 			textBefore = `(${textBefore}`;
 			textAfter = `${textAfter})`;
 		}
 
-		const insertBraces = shouldSwitchReturnStatementToBlockStatement(returnStatement);
+		const insertBraces =
+			shouldSwitchReturnStatementToBlockStatement(returnStatement);
 		if (insertBraces) {
 			textBefore = `{ ${textBefore}`;
-		} else if (needsSemicolon(previousToken, sourceCode, shouldAddParentheses ? '(' : nextToken.value)) {
+		} else if (
+			needsSemicolon(
+				previousToken,
+				sourceCode,
+				shouldAddParentheses ? '(' : nextToken.value,
+			)
+		) {
 			textBefore = `;${textBefore}`;
 		}
 
@@ -167,7 +191,9 @@ function getFixFunction(callExpression, functionInfo, context) {
 			yield fixer.insertTextAfter(returnStatement.argument, textAfter);
 		}
 
-		const returnStatementHasSemicolon = isSemicolonToken(sourceCode.getLastToken(returnStatement));
+		const returnStatementHasSemicolon = isSemicolonToken(
+			sourceCode.getLastToken(returnStatement),
+		);
 		if (!returnStatementHasSemicolon) {
 			yield fixer.insertTextAfter(returnStatement, ';');
 		}
@@ -179,7 +205,7 @@ function getFixFunction(callExpression, functionInfo, context) {
 		}
 	}
 
-	const shouldRemoveExpressionStatementLastToken = token => {
+	const shouldRemoveExpressionStatementLastToken = (token) => {
 		if (!isSemicolonToken(token)) {
 			return false;
 		}
@@ -191,19 +217,21 @@ function getFixFunction(callExpression, functionInfo, context) {
 		return true;
 	};
 
-	function * removeCallbackParentheses(fixer) {
+	function* removeCallbackParentheses(fixer) {
 		// Opening parenthesis tokens already included in `getForOfLoopHeadRange`
-		const closingParenthesisTokens = getParentheses(callback, sourceCode)
-			.filter(token => isClosingParenToken(token));
+		const closingParenthesisTokens = getParentheses(
+			callback,
+			sourceCode,
+		).filter((token) => isClosingParenToken(token));
 
 		for (const closingParenthesisToken of closingParenthesisTokens) {
 			yield fixer.remove(closingParenthesisToken);
 		}
 	}
 
-	return function * (fixer) {
+	return function* (fixer) {
 		// `(( foo.forEach(bar => bar) ))`
-		yield * removeParentheses(callExpression, fixer, sourceCode);
+		yield* removeParentheses(callExpression, fixer, sourceCode);
 
 		// Replace these with `for (const … of …) `
 		// foo.forEach(bar =>    bar)
@@ -214,17 +242,20 @@ function getFixFunction(callExpression, functionInfo, context) {
 		// ^^^^^^^^^^^^^^^^^^^^^^
 		// foo.forEach(function(bar)    {})
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-		yield fixer.replaceTextRange(getForOfLoopHeadRange(), getForOfLoopHeadText());
+		yield fixer.replaceTextRange(
+			getForOfLoopHeadRange(),
+			getForOfLoopHeadText(),
+		);
 
 		// Parenthesized callback function
 		// foo.forEach( ((bar => {})) )
 		//                         ^^
-		yield * removeCallbackParentheses(fixer);
+		yield* removeCallbackParentheses(fixer);
 
-		const [
-			penultimateToken,
-			lastToken,
-		] = sourceCode.getLastTokens(callExpression, 2);
+		const [penultimateToken, lastToken] = sourceCode.getLastTokens(
+			callExpression,
+			2,
+		);
 
 		// The possible trailing comma token of `Array#forEach()` CallExpression
 		// foo.forEach(bar => {},)
@@ -239,7 +270,7 @@ function getFixFunction(callExpression, functionInfo, context) {
 		yield fixer.remove(lastToken);
 
 		for (const returnStatement of returnStatements) {
-			yield * replaceReturnStatement(returnStatement, fixer);
+			yield* replaceReturnStatement(returnStatement, fixer);
 		}
 
 		if (ancestor.type === 'ExpressionStatement') {
@@ -247,7 +278,9 @@ function getFixFunction(callExpression, functionInfo, context) {
 			// Remove semicolon if it's not needed anymore
 			// foo.forEach(bar => {});
 			//                       ^
-			if (shouldRemoveExpressionStatementLastToken(expressionStatementLastToken)) {
+			if (
+				shouldRemoveExpressionStatementLastToken(expressionStatementLastToken)
+			) {
 				yield fixer.remove(expressionStatementLastToken, fixer);
 			}
 		} else if (ancestor.type === 'ArrowFunctionExpression') {
@@ -255,14 +288,14 @@ function getFixFunction(callExpression, functionInfo, context) {
 			yield fixer.insertTextAfter(callExpression, ' }');
 		}
 
-		yield * fixSpaceAroundKeyword(fixer, callExpression.parent, sourceCode);
+		yield* fixSpaceAroundKeyword(fixer, callExpression.parent, sourceCode);
 
 		if (isOptionalObject) {
 			yield fixer.insertTextBefore(callExpression, `if (${objectText}) `);
 		}
 
 		// Prevent possible variable conflicts
-		yield * extendFixRange(fixer, sourceCode.getRange(callExpression.parent));
+		yield* extendFixRange(fixer, sourceCode.getRange(callExpression.parent));
 	};
 }
 
@@ -276,7 +309,10 @@ const isChildScope = (child, parent) => {
 	return false;
 };
 
-function isFunctionParametersSafeToFix(callbackFunction, {sourceCode, scope, callExpression, allIdentifiers}) {
+function isFunctionParametersSafeToFix(
+	callbackFunction,
+	{sourceCode, scope, callExpression, allIdentifiers},
+) {
 	const variables = sourceCode.getDeclaredVariables(callbackFunction);
 
 	for (const variable of variables) {
@@ -290,20 +326,25 @@ function isFunctionParametersSafeToFix(callbackFunction, {sourceCode, scope, cal
 		}
 
 		const variableName = definition.name.name;
-		const [callExpressionStart, callExpressionEnd] = sourceCode.getRange(callExpression);
+		const [callExpressionStart, callExpressionEnd] =
+			sourceCode.getRange(callExpression);
 		for (const identifier of allIdentifiers) {
 			const {name} = identifier;
 			const [start, end] = sourceCode.getRange(identifier);
 			if (
-				name !== variableName
-				|| start < callExpressionStart
-				|| end > callExpressionEnd
+				name !== variableName ||
+				start < callExpressionStart ||
+				end > callExpressionEnd
 			) {
 				continue;
 			}
 
 			const variable = findVariable(scope, identifier);
-			if (!variable || variable.scope === scope || isChildScope(scope, variable.scope)) {
+			if (
+				!variable ||
+				variable.scope === scope ||
+				isChildScope(scope, variable.scope)
+			) {
 				return false;
 			}
 		}
@@ -313,14 +354,20 @@ function isFunctionParametersSafeToFix(callbackFunction, {sourceCode, scope, cal
 }
 
 function isFunctionParameterVariableReassigned(callbackFunction, sourceCode) {
-	return sourceCode.getDeclaredVariables(callbackFunction)
-		.filter(variable => variable.defs[0].type === 'Parameter')
-		.some(variable =>
-			variable.references.some(reference => !reference.init && reference.isWrite()),
+	return sourceCode
+		.getDeclaredVariables(callbackFunction)
+		.filter((variable) => variable.defs[0].type === 'Parameter')
+		.some((variable) =>
+			variable.references.some(
+				(reference) => !reference.init && reference.isWrite(),
+			),
 		);
 }
 
-function isFixable(callExpression, {scope, functionInfo, allIdentifiers, sourceCode}) {
+function isFixable(
+	callExpression,
+	{scope, functionInfo, allIdentifiers, sourceCode},
+) {
 	// Check `CallExpression`
 	if (callExpression.optional || callExpression.arguments.length !== 1) {
 		return false;
@@ -329,8 +376,8 @@ function isFixable(callExpression, {scope, functionInfo, allIdentifiers, sourceC
 	// Check ancestors, we only fix `ExpressionStatement`
 	const callOrChainExpression = stripChainExpression(callExpression);
 	if (
-		callOrChainExpression.parent.type !== 'ExpressionStatement'
-		&& !isArrowFunctionBody(callOrChainExpression)
+		callOrChainExpression.parent.type !== 'ExpressionStatement' &&
+		!isArrowFunctionBody(callOrChainExpression)
 	) {
 		return false;
 	}
@@ -339,9 +386,10 @@ function isFixable(callExpression, {scope, functionInfo, allIdentifiers, sourceC
 	const [callback] = callExpression.arguments;
 	if (
 		// Leave non-function type to `no-array-callback-reference` rule
-		(callback.type !== 'FunctionExpression' && callback.type !== 'ArrowFunctionExpression')
-		|| callback.async
-		|| callback.generator
+		(callback.type !== 'FunctionExpression' &&
+			callback.type !== 'ArrowFunctionExpression') ||
+		callback.async ||
+		callback.generator
 	) {
 		return false;
 	}
@@ -349,13 +397,15 @@ function isFixable(callExpression, {scope, functionInfo, allIdentifiers, sourceC
 	// Check `callback.params`
 	const parameters = callback.params;
 	if (
-		!(parameters.length === 1 || parameters.length === 2)
+		!(parameters.length === 1 || parameters.length === 2) ||
 		// `array.forEach((element = defaultValue) => {})`
-		|| (parameters.length === 1 && parameters[0].type === 'AssignmentPattern')
+		(parameters.length === 1 && parameters[0].type === 'AssignmentPattern') ||
 		// https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1814
-		|| (parameters.length === 2 && parameters[1].type !== 'Identifier')
-		|| parameters.some(({type, typeAnnotation}) => type === 'RestElement' || typeAnnotation)
-		|| !isFunctionParametersSafeToFix(callback, {
+		(parameters.length === 2 && parameters[1].type !== 'Identifier') ||
+		parameters.some(
+			({type, typeAnnotation}) => type === 'RestElement' || typeAnnotation,
+		) ||
+		!isFunctionParametersSafeToFix(callback, {
 			scope,
 			callExpression,
 			allIdentifiers,
@@ -367,7 +417,11 @@ function isFixable(callExpression, {scope, functionInfo, allIdentifiers, sourceC
 
 	// Check `ReturnStatement`s in `callback`
 	const {returnStatements, scope: callbackScope} = functionInfo.get(callback);
-	if (returnStatements.some(returnStatement => isReturnStatementInContinueAbleNodes(returnStatement, callback))) {
+	if (
+		returnStatements.some((returnStatement) =>
+			isReturnStatementInContinueAbleNodes(returnStatement, callback),
+		)
+	) {
 		return false;
 	}
 
@@ -387,14 +441,14 @@ const ignoredObjects = [
 ];
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const functionStack = [];
 	const callExpressions = [];
 	const allIdentifiers = [];
 	const functionInfo = new Map();
 	const {sourceCode} = context;
 
-	context.on(functionTypes, node => {
+	context.on(functionTypes, (node) => {
 		functionStack.push(node);
 		functionInfo.set(node, {
 			returnStatements: [],
@@ -406,13 +460,13 @@ const create = context => {
 		functionStack.pop();
 	});
 
-	context.on('Identifier', node => {
+	context.on('Identifier', (node) => {
 		if (isReferenceIdentifier(node)) {
 			allIdentifiers.push(node);
 		}
 	});
 
-	context.on('ReturnStatement', node => {
+	context.on('ReturnStatement', (node) => {
 		const currentFunction = functionStack.at(-1);
 		if (!currentFunction) {
 			return;
@@ -422,12 +476,12 @@ const create = context => {
 		returnStatements.push(node);
 	});
 
-	context.on('CallExpression', node => {
+	context.on('CallExpression', (node) => {
 		if (
 			!isMethodCall(node, {
 				method: 'forEach',
-			})
-			|| isNodeMatches(node.callee.object, ignoredObjects)
+			}) ||
+			isNodeMatches(node.callee.object, ignoredObjects)
 		) {
 			return;
 		}
@@ -438,7 +492,7 @@ const create = context => {
 		});
 	});
 
-	context.onExit('Program', function * () {
+	context.onExit('Program', function* () {
 		for (const {node, scope} of callExpressions) {
 			const iterable = node.callee;
 
@@ -447,17 +501,20 @@ const create = context => {
 				messageId: MESSAGE_ID_ERROR,
 			};
 
-			if (!isFixable(node, {
-				scope,
-				allIdentifiers,
-				functionInfo,
-				sourceCode,
-			})) {
+			if (
+				!isFixable(node, {
+					scope,
+					allIdentifiers,
+					functionInfo,
+					sourceCode,
+				})
+			) {
 				yield problem;
 				continue;
 			}
 
-			const shouldUseSuggestion = iterable.optional && hasSideEffect(iterable, sourceCode);
+			const shouldUseSuggestion =
+				iterable.optional && hasSideEffect(iterable, sourceCode);
 			const fix = getFixFunction(node, functionInfo, context);
 
 			if (shouldUseSuggestion) {

@@ -7,13 +7,17 @@ const messages = {
 	[MESSAGE_ID]: 'Prefer `{{replacement}}` over `{{method}}`.{{extra}}',
 };
 const extraMessages = {
-	beforeunload: 'Use `event.preventDefault(); event.returnValue = \'foo\'` to trigger the prompt.',
-	message: 'Note that there is difference between `SharedWorker#onmessage` and `SharedWorker#addEventListener(\'message\')`.',
-	error: 'Note that there is difference between `{window,element}.onerror` and `{window,element}.addEventListener(\'error\')`.',
+	beforeunload:
+		"Use `event.preventDefault(); event.returnValue = 'foo'` to trigger the prompt.",
+	message:
+		"Note that there is difference between `SharedWorker#onmessage` and `SharedWorker#addEventListener('message')`.",
+	error:
+		"Note that there is difference between `{window,element}.onerror` and `{window,element}.addEventListener('error')`.",
 };
 
-const getEventMethodName = memberExpression => memberExpression.property.name;
-const getEventTypeName = eventMethodName => eventMethodName.slice('on'.length);
+const getEventMethodName = (memberExpression) => memberExpression.property.name;
+const getEventTypeName = (eventMethodName) =>
+	eventMethodName.slice('on'.length);
 
 const fixCode = (fixer, sourceCode, assignmentNode, memberExpression) => {
 	const eventTypeName = getEventTypeName(getEventMethodName(memberExpression));
@@ -33,8 +37,8 @@ const fixCode = (fixer, sourceCode, assignmentNode, memberExpression) => {
 
 const shouldFixBeforeUnload = (assignedExpression, nodeReturnsSomething) => {
 	if (
-		assignedExpression.type !== 'ArrowFunctionExpression'
-		&& assignedExpression.type !== 'FunctionExpression'
+		assignedExpression.type !== 'ArrowFunctionExpression' &&
+		assignedExpression.type !== 'FunctionExpression'
 	) {
 		return false;
 	}
@@ -46,10 +50,10 @@ const shouldFixBeforeUnload = (assignedExpression, nodeReturnsSomething) => {
 	return !nodeReturnsSomething.get(assignedExpression);
 };
 
-const isClearing = node => isUndefined(node) || isNullLiteral(node);
+const isClearing = (node) => isUndefined(node) || isNullLiteral(node);
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const options = context.options[0] || {};
 	const excludedPackages = new Set(options.excludedPackages || ['koa', 'sax']);
 	let isDisabled;
@@ -67,7 +71,10 @@ const create = context => {
 		},
 
 		onCodePathEnd() {
-			nodeReturnsSomething.set(codePathInfo.node, codePathInfo.returnsSomething);
+			nodeReturnsSomething.set(
+				codePathInfo.node,
+				codePathInfo.returnsSomething,
+			);
 			codePathInfo = codePathInfo.upper;
 		},
 
@@ -82,7 +89,11 @@ const create = context => {
 		},
 
 		Literal(node) {
-			if (node.parent.type === 'ImportDeclaration' && !isDisabled && excludedPackages.has(node.value)) {
+			if (
+				node.parent.type === 'ImportDeclaration' &&
+				!isDisabled &&
+				excludedPackages.has(node.value)
+			) {
 				isDisabled = true;
 			}
 		},
@@ -96,11 +107,15 @@ const create = context => {
 				return;
 			}
 
-			const {left: memberExpression, right: assignedExpression, operator} = node;
+			const {
+				left: memberExpression,
+				right: assignedExpression,
+				operator,
+			} = node;
 
 			if (
-				memberExpression.type !== 'MemberExpression'
-				|| memberExpression.computed
+				memberExpression.type !== 'MemberExpression' ||
+				memberExpression.computed
 			) {
 				return;
 			}
@@ -124,8 +139,8 @@ const create = context => {
 			if (isClearing(assignedExpression)) {
 				replacement = 'removeEventListener';
 			} else if (
-				eventTypeName === 'beforeunload'
-				&& !shouldFixBeforeUnload(assignedExpression, nodeReturnsSomething)
+				eventTypeName === 'beforeunload' &&
+				!shouldFixBeforeUnload(assignedExpression, nodeReturnsSomething)
 			) {
 				extra = extraMessages.beforeunload;
 			} else if (eventTypeName === 'message') {
@@ -135,11 +150,12 @@ const create = context => {
 				// Disable `onerror` fix, see #1493
 				extra = extraMessages.error;
 			} else if (
-				operator === '='
-				&& node.parent.type === 'ExpressionStatement'
-				&& node.parent.expression === node
+				operator === '=' &&
+				node.parent.type === 'ExpressionStatement' &&
+				node.parent.expression === node
 			) {
-				fix = fixer => fixCode(fixer, context.sourceCode, node, memberExpression);
+				fix = (fixer) =>
+					fixCode(fixer, context.sourceCode, node, memberExpression);
 			}
 
 			return {
@@ -178,7 +194,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `.addEventListener()` and `.removeEventListener()` over `on`-functions.',
+			description:
+				'Prefer `.addEventListener()` and `.removeEventListener()` over `on`-functions.',
 			recommended: true,
 		},
 		fixable: 'code',

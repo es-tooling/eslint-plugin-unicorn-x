@@ -1,21 +1,26 @@
 import {isMethodCall, isMemberExpression} from './ast/index.js';
-import {getParenthesizedRange, isSameReference, isLogicalExpression} from './utils/index.js';
+import {
+	getParenthesizedRange,
+	isSameReference,
+	isLogicalExpression,
+} from './utils/index.js';
 
 const messages = {
-	'non-zero': 'The non-empty check is useless as `Array#some()` returns `false` for an empty array.',
+	'non-zero':
+		'The non-empty check is useless as `Array#some()` returns `false` for an empty array.',
 	zero: 'The empty check is useless as `Array#every()` returns `true` for an empty array.',
 };
 
 // We assume the user already follows `unicorn/explicit-length-check`. These are allowed in that rule.
-const isLengthCompareZero = node =>
-	node.type === 'BinaryExpression'
-	&& node.right.type === 'Literal'
-	&& node.right.raw === '0'
-	&& isMemberExpression(node.left, {property: 'length', optional: false})
-	&& isLogicalExpression(node.parent);
+const isLengthCompareZero = (node) =>
+	node.type === 'BinaryExpression' &&
+	node.right.type === 'Literal' &&
+	node.right.raw === '0' &&
+	isMemberExpression(node.left, {property: 'length', optional: false}) &&
+	isLogicalExpression(node.parent);
 
 function flatLogicalExpression(node) {
-	return [node.left, node.right].flatMap(child =>
+	return [node.left, node.right].flatMap((child) =>
 		child.type === 'LogicalExpression' && child.operator === node.operator
 			? flatLogicalExpression(child)
 			: [child],
@@ -23,7 +28,7 @@ function flatLogicalExpression(node) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const logicalExpressions = [];
 	const zeroLengthChecks = new Set();
 	const nonZeroLengthChecks = new Set();
@@ -32,36 +37,35 @@ const create = context => {
 
 	function isUselessLengthCheckNode({node, operator, siblings}) {
 		return (
-			(
-				operator === '||'
-				&& zeroLengthChecks.has(node)
-				&& siblings.some(condition =>
-					arrayEveryCalls.has(condition)
-					&& isSameReference(node.left.object, condition.callee.object),
-				)
-			)
-			|| (
-				operator === '&&'
-				&& nonZeroLengthChecks.has(node)
-				&& siblings.some(condition =>
-					arraySomeCalls.has(condition)
-					&& isSameReference(node.left.object, condition.callee.object),
-				)
-			)
+			(operator === '||' &&
+				zeroLengthChecks.has(node) &&
+				siblings.some(
+					(condition) =>
+						arrayEveryCalls.has(condition) &&
+						isSameReference(node.left.object, condition.callee.object),
+				)) ||
+			(operator === '&&' &&
+				nonZeroLengthChecks.has(node) &&
+				siblings.some(
+					(condition) =>
+						arraySomeCalls.has(condition) &&
+						isSameReference(node.left.object, condition.callee.object),
+				))
 		);
 	}
 
 	function getUselessLengthCheckNode(logicalExpression) {
 		const {operator} = logicalExpression;
-		return flatLogicalExpression(logicalExpression)
-			.filter((node, index, conditions) => isUselessLengthCheckNode({
-				node,
-				operator,
-				siblings: [
-					conditions[index - 1],
-					conditions[index + 1],
-				].filter(Boolean),
-			}));
+		return flatLogicalExpression(logicalExpression).filter(
+			(node, index, conditions) =>
+				isUselessLengthCheckNode({
+					node,
+					operator,
+					siblings: [conditions[index - 1], conditions[index + 1]].filter(
+						Boolean,
+					),
+				}),
+		);
 	}
 
 	return {
@@ -81,8 +85,8 @@ const create = context => {
 					optionalCall: false,
 					optionalMember: false,
 					computed: false,
-				})
-				&& node.callee.property.type === 'Identifier'
+				}) &&
+				node.callee.property.type === 'Identifier'
 			) {
 				if (node.callee.property.name === 'some') {
 					arraySomeCalls.add(node);
@@ -96,9 +100,9 @@ const create = context => {
 				logicalExpressions.push(node);
 			}
 		},
-		* 'Program:exit'() {
+		*'Program:exit'() {
 			const nodes = new Set(
-				logicalExpressions.flatMap(logicalExpression =>
+				logicalExpressions.flatMap((logicalExpression) =>
 					getUselessLengthCheckNode(logicalExpression),
 				),
 			);

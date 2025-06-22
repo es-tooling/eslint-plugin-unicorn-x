@@ -31,7 +31,7 @@ export class GlobalReferenceTracker {
 		this.#handle = handle;
 	}
 
-	* track(globalScope) {
+	*track(globalScope) {
 		const tracker = new ReferenceTracker(globalScope);
 
 		for (const reference of tracker.iterateGlobalReferences(this.#traceMap)) {
@@ -46,7 +46,7 @@ export class GlobalReferenceTracker {
 			}
 
 			if (problems[Symbol.iterator]) {
-				yield * problems;
+				yield* problems;
 			} else {
 				yield problems;
 			}
@@ -55,7 +55,8 @@ export class GlobalReferenceTracker {
 
 	createListeners(context) {
 		return {
-			'Program:exit': program => this.track(context.sourceCode.getScope(program)),
+			'Program:exit': (program) =>
+				this.track(context.sourceCode.getScope(program)),
 		};
 	}
 }

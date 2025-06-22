@@ -10,16 +10,13 @@ const prepareOptions = ({
 	checkProperties = true,
 	onlyCamelCase = true,
 } = {}) => ({
-	disallowedPrefixes: (disallowedPrefixes || [
-		'new',
-		'class',
-	]),
+	disallowedPrefixes: disallowedPrefixes || ['new', 'class'],
 	checkProperties,
 	onlyCamelCase,
 });
 
 function findKeywordPrefix(name, options) {
-	return options.disallowedPrefixes.find(keyword => {
+	return options.disallowedPrefixes.find((keyword) => {
 		const suffix = options.onlyCamelCase ? '[A-Z]' : '.';
 		const regex = new RegExp(`^${keyword}${suffix}`);
 		return name.match(regex);
@@ -29,19 +26,25 @@ function findKeywordPrefix(name, options) {
 function checkMemberExpression(report, node, options) {
 	const {name, parent} = node;
 	const keyword = findKeywordPrefix(name, options);
-	const effectiveParent = parent.type === 'MemberExpression' ? parent.parent : parent;
+	const effectiveParent =
+		parent.type === 'MemberExpression' ? parent.parent : parent;
 
 	if (!options.checkProperties) {
 		return;
 	}
 
-	if (parent.object.type === 'Identifier' && parent.object.name === name && Boolean(keyword)) {
+	if (
+		parent.object.type === 'Identifier' &&
+		parent.object.name === name &&
+		Boolean(keyword)
+	) {
 		report(node, keyword);
 	} else if (
-		effectiveParent.type === 'AssignmentExpression'
-		&& Boolean(keyword)
-		&& (effectiveParent.right.type !== 'MemberExpression' || effectiveParent.left.type === 'MemberExpression')
-		&& effectiveParent.left.property.name === name
+		effectiveParent.type === 'AssignmentExpression' &&
+		Boolean(keyword) &&
+		(effectiveParent.right.type !== 'MemberExpression' ||
+			effectiveParent.left.type === 'MemberExpression') &&
+		effectiveParent.left.property.name === name
 	) {
 		report(node, keyword);
 	}
@@ -79,7 +82,7 @@ function checkObjectPattern(report, node, options) {
 
 // Core logic copied from:
 // https://github.com/eslint/eslint/blob/master/lib/rules/camelcase.js
-const create = context => {
+const create = (context) => {
 	const options = prepareOptions(context.options[0]);
 
 	// Contains reported nodes to avoid reporting twice on destructuring with shorthand notation
@@ -104,13 +107,14 @@ const create = context => {
 		Identifier(node) {
 			const {name, parent} = node;
 			const keyword = findKeywordPrefix(name, options);
-			const effectiveParent = parent.type === 'MemberExpression' ? parent.parent : parent;
+			const effectiveParent =
+				parent.type === 'MemberExpression' ? parent.parent : parent;
 
 			if (parent.type === 'MemberExpression') {
 				checkMemberExpression(report, node, options);
 			} else if (
-				parent.type === 'Property'
-				|| parent.type === 'AssignmentPattern'
+				parent.type === 'Property' ||
+				parent.type === 'AssignmentPattern'
 			) {
 				if (parent.parent.type === 'ObjectPattern') {
 					const finished = checkObjectPattern(report, node, options);
@@ -119,23 +123,21 @@ const create = context => {
 					}
 				}
 
-				if (
-					!options.checkProperties
-				) {
+				if (!options.checkProperties) {
 					return;
 				}
 
 				// Don't check right hand side of AssignmentExpression to prevent duplicate warnings
 				if (
-					Boolean(keyword)
-					&& !ALLOWED_PARENT_TYPES.has(effectiveParent.type)
-					&& !(parent.right === node)
-					&& !isShorthandPropertyAssignmentPatternLeft(node)
+					Boolean(keyword) &&
+					!ALLOWED_PARENT_TYPES.has(effectiveParent.type) &&
+					!(parent.right === node) &&
+					!isShorthandPropertyAssignmentPatternLeft(node)
 				) {
 					report(node, keyword);
 				}
 
-			// Check if it's an import specifier
+				// Check if it's an import specifier
 			} else if (
 				[
 					'ImportSpecifier',
@@ -148,10 +150,10 @@ const create = context => {
 					report(node, keyword);
 				}
 
-			// Report anything that is invalid that isn't a CallExpression
+				// Report anything that is invalid that isn't a CallExpression
 			} else if (
-				Boolean(keyword)
-				&& !ALLOWED_PARENT_TYPES.has(effectiveParent.type)
+				Boolean(keyword) &&
+				!ALLOWED_PARENT_TYPES.has(effectiveParent.type)
 			) {
 				report(node, keyword);
 			}

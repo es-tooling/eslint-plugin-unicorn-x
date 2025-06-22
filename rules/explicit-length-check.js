@@ -9,38 +9,41 @@ const TYPE_NON_ZERO = 'non-zero';
 const TYPE_ZERO = 'zero';
 const MESSAGE_ID_SUGGESTION = 'suggestion';
 const messages = {
-	[TYPE_NON_ZERO]: 'Use `.{{property}} {{code}}` when checking {{property}} is not zero.',
-	[TYPE_ZERO]: 'Use `.{{property}} {{code}}` when checking {{property}} is zero.',
-	[MESSAGE_ID_SUGGESTION]: 'Replace `.{{property}}` with `.{{property}} {{code}}`.',
+	[TYPE_NON_ZERO]:
+		'Use `.{{property}} {{code}}` when checking {{property}} is not zero.',
+	[TYPE_ZERO]:
+		'Use `.{{property}} {{code}}` when checking {{property}} is zero.',
+	[MESSAGE_ID_SUGGESTION]:
+		'Replace `.{{property}}` with `.{{property}} {{code}}`.',
 };
 
 const isCompareRight = (node, operator, value) =>
-	node.type === 'BinaryExpression'
-	&& node.operator === operator
-	&& isLiteral(node.right, value);
+	node.type === 'BinaryExpression' &&
+	node.operator === operator &&
+	isLiteral(node.right, value);
 const isCompareLeft = (node, operator, value) =>
-	node.type === 'BinaryExpression'
-	&& node.operator === operator
-	&& isLiteral(node.left, value);
+	node.type === 'BinaryExpression' &&
+	node.operator === operator &&
+	isLiteral(node.left, value);
 const nonZeroStyles = new Map([
 	[
 		'greater-than',
 		{
 			code: '> 0',
-			test: node => isCompareRight(node, '>', 0),
+			test: (node) => isCompareRight(node, '>', 0),
 		},
 	],
 	[
 		'not-equal',
 		{
 			code: '!== 0',
-			test: node => isCompareRight(node, '!==', 0),
+			test: (node) => isCompareRight(node, '!==', 0),
 		},
 	],
 ]);
 const zeroStyle = {
 	code: '=== 0',
-	test: node => isCompareRight(node, '===', 0),
+	test: (node) => isCompareRight(node, '===', 0),
 };
 
 function getLengthCheckNode(node) {
@@ -49,17 +52,17 @@ function getLengthCheckNode(node) {
 	// Zero length check
 	if (
 		// `foo.length === 0`
-		isCompareRight(node, '===', 0)
+		isCompareRight(node, '===', 0) ||
 		// `foo.length == 0`
-		|| isCompareRight(node, '==', 0)
+		isCompareRight(node, '==', 0) ||
 		// `foo.length < 1`
-		|| isCompareRight(node, '<', 1)
+		isCompareRight(node, '<', 1) ||
 		// `0 === foo.length`
-		|| isCompareLeft(node, '===', 0)
+		isCompareLeft(node, '===', 0) ||
 		// `0 == foo.length`
-		|| isCompareLeft(node, '==', 0)
+		isCompareLeft(node, '==', 0) ||
 		// `1 > foo.length`
-		|| isCompareLeft(node, '>', 1)
+		isCompareLeft(node, '>', 1)
 	) {
 		return {isZeroLengthCheck: true, node};
 	}
@@ -67,21 +70,21 @@ function getLengthCheckNode(node) {
 	// Non-Zero length check
 	if (
 		// `foo.length !== 0`
-		isCompareRight(node, '!==', 0)
+		isCompareRight(node, '!==', 0) ||
 		// `foo.length != 0`
-		|| isCompareRight(node, '!=', 0)
+		isCompareRight(node, '!=', 0) ||
 		// `foo.length > 0`
-		|| isCompareRight(node, '>', 0)
+		isCompareRight(node, '>', 0) ||
 		// `foo.length >= 1`
-		|| isCompareRight(node, '>=', 1)
+		isCompareRight(node, '>=', 1) ||
 		// `0 !== foo.length`
-		|| isCompareLeft(node, '!==', 0)
+		isCompareLeft(node, '!==', 0) ||
 		// `0 !== foo.length`
-		|| isCompareLeft(node, '!=', 0)
+		isCompareLeft(node, '!=', 0) ||
 		// `0 < foo.length`
-		|| isCompareLeft(node, '<', 0)
+		isCompareLeft(node, '<', 0) ||
 		// `1 <= foo.length`
-		|| isCompareLeft(node, '<=', 1)
+		isCompareLeft(node, '<=', 1)
 	) {
 		return {isZeroLengthCheck: false, node};
 	}
@@ -114,16 +117,17 @@ function create(context) {
 
 		let fixed = `${sourceCode.getText(lengthNode)} ${code}`;
 		if (
-			!isParenthesized(node, sourceCode)
-			&& node.type === 'UnaryExpression'
-			&& (node.parent.type === 'UnaryExpression' || node.parent.type === 'AwaitExpression')
+			!isParenthesized(node, sourceCode) &&
+			node.type === 'UnaryExpression' &&
+			(node.parent.type === 'UnaryExpression' ||
+				node.parent.type === 'AwaitExpression')
 		) {
 			fixed = `(${fixed})`;
 		}
 
-		const fix = function * (fixer) {
+		const fix = function* (fixer) {
 			yield fixer.replaceText(node, fixed);
-			yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+			yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 		};
 
 		const problem = {
@@ -152,24 +156,32 @@ function create(context) {
 				!isMemberExpression(memberExpression, {
 					properties: ['length', 'size'],
 					optional: false,
-				})
-				|| memberExpression.object.type === 'ThisExpression'
+				}) ||
+				memberExpression.object.type === 'ThisExpression'
 			) {
 				return;
 			}
 
 			const lengthNode = memberExpression;
-			const staticValue = getStaticValue(lengthNode, sourceCode.getScope(lengthNode));
-			if (staticValue && (!Number.isInteger(staticValue.value) || staticValue.value < 0)) {
+			const staticValue = getStaticValue(
+				lengthNode,
+				sourceCode.getScope(lengthNode),
+			);
+			if (
+				staticValue &&
+				(!Number.isInteger(staticValue.value) || staticValue.value < 0)
+			) {
 				// Ignore known, non-positive-integer length properties.
 				return;
 			}
 
 			let node;
 			let autoFix = true;
-			let {isZeroLengthCheck, node: lengthCheckNode} = getLengthCheckNode(lengthNode);
+			let {isZeroLengthCheck, node: lengthCheckNode} =
+				getLengthCheckNode(lengthNode);
 			if (lengthCheckNode) {
-				const {isNegative, node: ancestor} = getBooleanAncestor(lengthCheckNode);
+				const {isNegative, node: ancestor} =
+					getBooleanAncestor(lengthCheckNode);
 				node = ancestor;
 				if (isNegative) {
 					isZeroLengthCheck = !isZeroLengthCheck;
@@ -180,10 +192,10 @@ function create(context) {
 					isZeroLengthCheck = isNegative;
 					node = ancestor;
 				} else if (
-					isLogicalExpression(lengthNode.parent)
-					&& !(
-						lengthNode.parent.operator === '||'
-						&& isNodeValueNumber(lengthNode.parent.right, context)
+					isLogicalExpression(lengthNode.parent) &&
+					!(
+						lengthNode.parent.operator === '||' &&
+						isNodeValueNumber(lengthNode.parent.right, context)
 					)
 				) {
 					isZeroLengthCheck = isNegative;
@@ -223,7 +235,8 @@ const config = {
 	meta: {
 		type: 'problem',
 		docs: {
-			description: 'Enforce explicitly comparing the `length` or `size` property of a value.',
+			description:
+				'Enforce explicitly comparing the `length` or `size` property of a value.',
 			recommended: true,
 		},
 		fixable: 'code',

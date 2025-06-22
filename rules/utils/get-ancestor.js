@@ -1,7 +1,7 @@
 // TODO: Support more types
 function getPredicate(options) {
 	if (typeof options === 'string') {
-		return node => node.type === options;
+		return (node) => node.type === options;
 	}
 }
 

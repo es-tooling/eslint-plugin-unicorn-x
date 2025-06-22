@@ -10,23 +10,24 @@ const messages = {
 	[MESSAGE_ID_NUMBER]: 'Prefer `Date.now()` over `Number(new Date())`.',
 };
 
-const isNewDate = node => isNewExpression(node, {name: 'Date', argumentsLength: 0});
+const isNewDate = (node) =>
+	isNewExpression(node, {name: 'Date', argumentsLength: 0});
 
 const getProblem = (node, problem, sourceCode) => ({
 	node,
 	messageId: MESSAGE_ID_DEFAULT,
-	* fix(fixer) {
+	*fix(fixer) {
 		yield fixer.replaceText(node, 'Date.now()');
 
 		if (node.type === 'UnaryExpression') {
-			yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+			yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 		}
 	},
 	...problem,
 });
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(callExpression) {
 		// `new Date().{getTime,valueOf}()`
 		if (
@@ -35,8 +36,8 @@ const create = context => ({
 				argumentsLength: 0,
 				optionalCall: false,
 				optionalMember: false,
-			})
-			&& isNewDate(callExpression.callee.object)
+			}) &&
+			isNewDate(callExpression.callee.object)
 		) {
 			const method = callExpression.callee.property;
 			return getProblem(callExpression, {
@@ -52,8 +53,8 @@ const create = context => ({
 				names: ['Number', 'BigInt'],
 				argumentsLength: 1,
 				optional: false,
-			})
-			&& isNewDate(callExpression.arguments[0])
+			}) &&
+			isNewDate(callExpression.arguments[0])
 		) {
 			const {name} = callExpression.callee;
 			if (name === 'Number') {
@@ -67,16 +68,15 @@ const create = context => ({
 	},
 	UnaryExpression(unaryExpression) {
 		// https://github.com/estree/estree/blob/master/es5.md#unaryoperator
-		if (
-			unaryExpression.operator !== '+'
-			&& unaryExpression.operator !== '-'
-		) {
+		if (unaryExpression.operator !== '+' && unaryExpression.operator !== '-') {
 			return;
 		}
 
 		if (isNewDate(unaryExpression.argument)) {
 			return getProblem(
-				unaryExpression.operator === '-' ? unaryExpression.argument : unaryExpression,
+				unaryExpression.operator === '-'
+					? unaryExpression.argument
+					: unaryExpression,
 				{},
 				context.sourceCode,
 			);
@@ -84,11 +84,11 @@ const create = context => ({
 	},
 	AssignmentExpression(assignmentExpression) {
 		if (
-			assignmentExpression.operator !== '-='
-			&& assignmentExpression.operator !== '*='
-			&& assignmentExpression.operator !== '/='
-			&& assignmentExpression.operator !== '%='
-			&& assignmentExpression.operator !== '**='
+			assignmentExpression.operator !== '-=' &&
+			assignmentExpression.operator !== '*=' &&
+			assignmentExpression.operator !== '/=' &&
+			assignmentExpression.operator !== '%=' &&
+			assignmentExpression.operator !== '**='
 		) {
 			return;
 		}
@@ -97,13 +97,13 @@ const create = context => ({
 			return getProblem(assignmentExpression.right);
 		}
 	},
-	* BinaryExpression(binaryExpression) {
+	*BinaryExpression(binaryExpression) {
 		if (
-			binaryExpression.operator !== '-'
-			&& binaryExpression.operator !== '*'
-			&& binaryExpression.operator !== '/'
-			&& binaryExpression.operator !== '%'
-			&& binaryExpression.operator !== '**'
+			binaryExpression.operator !== '-' &&
+			binaryExpression.operator !== '*' &&
+			binaryExpression.operator !== '/' &&
+			binaryExpression.operator !== '%' &&
+			binaryExpression.operator !== '**'
 		) {
 			return;
 		}
@@ -122,7 +122,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `Date.now()` to get the number of milliseconds since the Unix Epoch.',
+			description:
+				'Prefer `Date.now()` to get the number of milliseconds since the Unix Epoch.',
 			recommended: true,
 		},
 		fixable: 'code',

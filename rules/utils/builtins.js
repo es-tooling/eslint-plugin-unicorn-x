@@ -21,10 +21,4 @@ export const enforceNew = [
 	...typedArray,
 ];
 
-export const disallowNew = [
-	'BigInt',
-	'Boolean',
-	'Number',
-	'String',
-	'Symbol',
-];
+export const disallowNew = ['BigInt', 'Boolean', 'Number', 'String', 'Symbol'];

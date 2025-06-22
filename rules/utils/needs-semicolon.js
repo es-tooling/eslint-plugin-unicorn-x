@@ -30,8 +30,8 @@ Determines if a semicolon needs to be inserted before `code`, in order to avoid 
 */
 export default function needsSemicolon(tokenBefore, sourceCode, code) {
 	if (
-		code === ''
-		|| (code && !charactersMightNeedsSemicolon.has(code.charAt(0)))
+		code === '' ||
+		(code && !charactersMightNeedsSemicolon.has(code.charAt(0)))
 	) {
 		return false;
 	}
@@ -55,7 +55,9 @@ export default function needsSemicolon(tokenBefore, sourceCode, code) {
 		if (value === ')') {
 			switch (lastBlockNode.type) {
 				case 'IfStatement': {
-					if (sourceCode.getTokenBefore(lastBlockNode.consequent) === tokenBefore) {
+					if (
+						sourceCode.getTokenBefore(lastBlockNode.consequent) === tokenBefore
+					) {
 						return false;
 					}
 
@@ -68,7 +70,10 @@ export default function needsSemicolon(tokenBefore, sourceCode, code) {
 				case 'WhileStatement':
 				case 'DoWhileStatement':
 				case 'WithStatement': {
-					if (lastBlockNode.body && sourceCode.getTokenBefore(lastBlockNode.body) === tokenBefore) {
+					if (
+						lastBlockNode.body &&
+						sourceCode.getTokenBefore(lastBlockNode.body) === tokenBefore
+					) {
 						return false;
 					}
 

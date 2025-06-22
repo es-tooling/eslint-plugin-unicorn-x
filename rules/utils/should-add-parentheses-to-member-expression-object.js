@@ -8,7 +8,10 @@ Check if parentheses should to be added to a `node` when it's used as an `object
 @param {SourceCode} sourceCode - The source code object.
 @returns {boolean}
 */
-export default function shouldAddParenthesesToMemberExpressionObject(node, sourceCode) {
+export default function shouldAddParenthesesToMemberExpressionObject(
+	node,
+	sourceCode,
+) {
 	switch (node.type) {
 		// This is not a full list. Some other nodes like `FunctionDeclaration` don't need parentheses,
 		// but it's not possible to be in the place we are checking at this point.

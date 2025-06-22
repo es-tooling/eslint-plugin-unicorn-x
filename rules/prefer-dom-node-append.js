@@ -14,15 +14,15 @@ const create = () => ({
 				method: 'appendChild',
 				argumentsLength: 1,
 				optionalCall: false,
-			})
-			|| isNodeValueNotDomNode(node.callee.object)
-			|| isNodeValueNotDomNode(node.arguments[0])
+			}) ||
+			isNodeValueNotDomNode(node.callee.object) ||
+			isNodeValueNotDomNode(node.arguments[0])
 		) {
 			return;
 		}
 
 		const fix = isValueNotUsable(node)
-			? fixer => fixer.replaceText(node.callee.property, 'append')
+			? (fixer) => fixer.replaceText(node.callee.property, 'append')
 			: undefined;
 
 		return {

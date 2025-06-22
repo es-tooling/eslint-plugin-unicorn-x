@@ -8,7 +8,8 @@ const ERROR_UNKNOWN = 'error-unknown';
 const SUGGESTION = 'suggestion';
 const messages = {
 	[ERROR]: '`new Buffer()` is deprecated, use `Buffer.{{method}}()` instead.',
-	[ERROR_UNKNOWN]: '`new Buffer()` is deprecated, use `Buffer.alloc()` or `Buffer.from()` instead.',
+	[ERROR_UNKNOWN]:
+		'`new Buffer()` is deprecated, use `Buffer.alloc()` or `Buffer.from()` instead.',
 	[SUGGESTION]: 'Switch to `Buffer.{{replacement}}()`.',
 };
 
@@ -22,7 +23,10 @@ const inferMethod = (bufferArguments, scope) => {
 		return;
 	}
 
-	if (firstArgument.type === 'ArrayExpression' || firstArgument.type === 'TemplateLiteral') {
+	if (
+		firstArgument.type === 'ArrayExpression' ||
+		firstArgument.type === 'TemplateLiteral'
+	) {
 		return 'from';
 	}
 
@@ -33,24 +37,21 @@ const inferMethod = (bufferArguments, scope) => {
 	const staticResult = getStaticValue(firstArgument, scope);
 	if (staticResult) {
 		const {value} = staticResult;
-		if (
-			typeof value === 'string'
-			|| Array.isArray(value)
-		) {
+		if (typeof value === 'string' || Array.isArray(value)) {
 			return 'from';
 		}
 	}
 };
 
 function fix(node, sourceCode, method) {
-	return function * (fixer) {
+	return function* (fixer) {
 		yield fixer.insertTextAfter(node.callee, `.${method}`);
-		yield * switchNewExpressionToCallExpression(node, sourceCode, fixer);
+		yield* switchNewExpressionToCallExpression(node, sourceCode, fixer);
 	};
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 	return {
 		NewExpression(node) {
@@ -72,7 +73,7 @@ const create = context => {
 			return {
 				node,
 				messageId: ERROR_UNKNOWN,
-				suggest: ['from', 'alloc'].map(replacement => ({
+				suggest: ['from', 'alloc'].map((replacement) => ({
 					messageId: SUGGESTION,
 					data: {replacement},
 					fix: fix(node, sourceCode, replacement),
@@ -88,7 +89,8 @@ const config = {
 	meta: {
 		type: 'problem',
 		docs: {
-			description: 'Enforce the use of `Buffer.from()` and `Buffer.alloc()` instead of the deprecated `new Buffer()`.',
+			description:
+				'Enforce the use of `Buffer.from()` and `Buffer.alloc()` instead of the deprecated `new Buffer()`.',
 			recommended: true,
 		},
 		fixable: 'code',

@@ -2,23 +2,28 @@ import stripIndent from 'strip-indent';
 import indentString from 'indent-string';
 import esquery from 'esquery';
 import {replaceTemplateElement} from './fix/index.js';
-import {isMethodCall, isCallExpression, isTaggedTemplateLiteral} from './ast/index.js';
+import {
+	isMethodCall,
+	isCallExpression,
+	isTaggedTemplateLiteral,
+} from './ast/index.js';
 import {isNodeMatches} from './utils/index.js';
 
 const MESSAGE_ID_IMPROPERLY_INDENTED_TEMPLATE = 'template-indent';
 const messages = {
-	[MESSAGE_ID_IMPROPERLY_INDENTED_TEMPLATE]: 'Templates should be properly indented.',
+	[MESSAGE_ID_IMPROPERLY_INDENTED_TEMPLATE]:
+		'Templates should be properly indented.',
 };
 
-const isJestInlineSnapshot = node =>
+const isJestInlineSnapshot = (node) =>
 	isMethodCall(node.parent, {
 		method: 'toMatchInlineSnapshot',
 		argumentsLength: 1,
 		optionalCall: false,
 		optionalMember: false,
-	})
-	&& node.parent.arguments[0] === node
-	&& isCallExpression(node.parent.callee.object, {
+	}) &&
+	node.parent.arguments[0] === node &&
+	isCallExpression(node.parent.callee.object, {
 		name: 'expect',
 		argumentsLength: 1,
 		optionalCall: false,
@@ -26,7 +31,7 @@ const isJestInlineSnapshot = node =>
 	});
 
 const parsedEsquerySelectors = new Map();
-const parseEsquerySelector = selector => {
+const parseEsquerySelector = (selector) => {
 	if (!parsedEsquerySelectors.has(selector)) {
 		parsedEsquerySelectors.set(selector, esquery.parse(selector));
 	}
@@ -35,7 +40,7 @@ const parseEsquerySelector = selector => {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 	const options = {
 		tags: ['outdent', 'dedent', 'gql', 'sql', 'html', 'styled'],
@@ -45,13 +50,13 @@ const create = context => {
 		...context.options[0],
 	};
 
-	options.comments = options.comments.map(comment => comment.toLowerCase());
+	options.comments = options.comments.map((comment) => comment.toLowerCase());
 
 	/** @param {import('@babel/core').types.TemplateLiteral} node */
-	const getProblem = node => {
+	const getProblem = (node) => {
 		const delimiter = '__PLACEHOLDER__' + Math.random();
 		const joined = node.quasis
-			.map(quasi => {
+			.map((quasi) => {
 				const untrimmedText = sourceCode.getText(quasi);
 				return untrimmedText.slice(1, quasi.tail ? -1 : -2);
 			})
@@ -79,13 +84,16 @@ const create = context => {
 		}
 
 		const dedented = stripIndent(joined);
-		const trimmed = dedented.replaceAll(new RegExp(`^${eol}|${eol}[ \t]*$`, 'g'), '');
+		const trimmed = dedented.replaceAll(
+			new RegExp(`^${eol}|${eol}[ \t]*$`, 'g'),
+			'',
+		);
 
-		const fixed
-			= eol
-				+ indentString(trimmed, 1, {indent: parentMargin + indent})
-				+ eol
-				+ parentMargin;
+		const fixed =
+			eol +
+			indentString(trimmed, 1, {indent: parentMargin + indent}) +
+			eol +
+			parentMargin;
 
 		if (fixed === joined) {
 			return;
@@ -94,16 +102,24 @@ const create = context => {
 		return {
 			node,
 			messageId: MESSAGE_ID_IMPROPERLY_INDENTED_TEMPLATE,
-			fix: fixer => fixed
-				.split(delimiter)
-				.map((replacement, index) => replaceTemplateElement(fixer, node.quasis[index], replacement)),
+			fix: (fixer) =>
+				fixed
+					.split(delimiter)
+					.map((replacement, index) =>
+						replaceTemplateElement(fixer, node.quasis[index], replacement),
+					),
 		};
 	};
 
-	const shouldIndent = node => {
+	const shouldIndent = (node) => {
 		if (options.comments.length > 0) {
-			const previousToken = sourceCode.getTokenBefore(node, {includeComments: true});
-			if (previousToken?.type === 'Block' && options.comments.includes(previousToken.value.trim().toLowerCase())) {
+			const previousToken = sourceCode.getTokenBefore(node, {
+				includeComments: true,
+			});
+			if (
+				previousToken?.type === 'Block' &&
+				options.comments.includes(previousToken.value.trim().toLowerCase())
+			) {
 				return true;
 			}
 		}
@@ -113,24 +129,28 @@ const create = context => {
 		}
 
 		if (
-			options.tags.length > 0
-			&& isTaggedTemplateLiteral(node, options.tags)
+			options.tags.length > 0 &&
+			isTaggedTemplateLiteral(node, options.tags)
 		) {
 			return true;
 		}
 
 		if (
-			options.functions.length > 0
-			&& node.parent.type === 'CallExpression'
-			&& node.parent.arguments.includes(node)
-			&& isNodeMatches(node.parent.callee, options.functions)
+			options.functions.length > 0 &&
+			node.parent.type === 'CallExpression' &&
+			node.parent.arguments.includes(node) &&
+			isNodeMatches(node.parent.callee, options.functions)
 		) {
 			return true;
 		}
 
 		if (options.selectors.length > 0) {
 			const ancestors = sourceCode.getAncestors(node).reverse();
-			if (options.selectors.some(selector => esquery.matches(node, parseEsquerySelector(selector), ancestors))) {
+			if (
+				options.selectors.some((selector) =>
+					esquery.matches(node, parseEsquerySelector(selector), ancestors),
+				)
+			) {
 				return true;
 			}
 		}

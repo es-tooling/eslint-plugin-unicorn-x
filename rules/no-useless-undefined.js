@@ -28,47 +28,45 @@ const compareFunctionNames = new Set([
 	'strictSame',
 	'strictNotSame',
 ]);
-const shouldIgnore = node => {
+const shouldIgnore = (node) => {
 	let name;
 
 	if (node.type === 'Identifier') {
 		name = node.name;
 	} else if (
-		node.type === 'MemberExpression'
-		&& node.computed === false
-		&& node.property.type === 'Identifier'
+		node.type === 'MemberExpression' &&
+		node.computed === false &&
+		node.property.type === 'Identifier'
 	) {
 		name = node.property.name;
 	}
 
-	return compareFunctionNames.has(name)
+	return (
+		compareFunctionNames.has(name) ||
 		// `array.push(undefined)`
-		|| name === 'push'
+		name === 'push' ||
 		// `array.unshift(undefined)`
-		|| name === 'unshift'
+		name === 'unshift' ||
 		// `array.includes(undefined)`
-		|| name === 'includes'
-
+		name === 'includes' ||
 		// `set.add(undefined)`
-		|| name === 'add'
+		name === 'add' ||
 		// `set.has(undefined)`
-		|| name === 'has'
-
+		name === 'has' ||
 		// `map.set(foo, undefined)`
-		|| name === 'set'
-
+		name === 'set' ||
 		// `React.createContext(undefined)`
-		|| name === 'createContext'
+		name === 'createContext' ||
 		// `setState(undefined)`
-		|| /^set[A-Z]/.test(name)
+		/^set[A-Z]/.test(name) ||
 		// React 19 useRef
-		|| name === 'useRef'
-
+		name === 'useRef' ||
 		// https://vuejs.org/api/reactivity-core.html#ref
-		|| name === 'ref';
+		name === 'ref'
+	);
 };
 
-const getFunction = scope => {
+const getFunction = (scope) => {
 	for (; scope; scope = scope.upper) {
 		if (scope.type === 'function') {
 			return scope.block;
@@ -76,18 +74,18 @@ const getFunction = scope => {
 	}
 };
 
-const isFunctionBindCall = node =>
-	!node.optional
-	&& node.callee.type === 'MemberExpression'
-	&& !node.callee.computed
-	&& node.callee.property.type === 'Identifier'
-	&& node.callee.property.name === 'bind';
+const isFunctionBindCall = (node) =>
+	!node.optional &&
+	node.callee.type === 'MemberExpression' &&
+	!node.callee.computed &&
+	node.callee.property.type === 'Identifier' &&
+	node.callee.property.name === 'bind';
 
-const isTypeScriptFile = context =>
+const isTypeScriptFile = (context) =>
 	/\.(?:ts|mts|cts|tsx)$/i.test(context.physicalFilename);
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	const getProblem = (node, fix, checkFunctionReturnType) => {
@@ -115,46 +113,46 @@ const create = context => {
 		replaceNodeOrTokenAndSpacesBefore(node, '', fixer, sourceCode);
 
 	// `return undefined`
-	context.on('Identifier', node => {
+	context.on('Identifier', (node) => {
 		if (
-			isUndefined(node)
-			&& node.parent.type === 'ReturnStatement'
-			&& node.parent.argument === node
+			isUndefined(node) &&
+			node.parent.type === 'ReturnStatement' &&
+			node.parent.argument === node
 		) {
 			return getProblem(
 				node,
-				fixer => removeNodeAndLeadingSpace(node, fixer),
+				(fixer) => removeNodeAndLeadingSpace(node, fixer),
 				/* CheckFunctionReturnType */ true,
 			);
 		}
 	});
 
 	// `yield undefined`
-	context.on('Identifier', node => {
+	context.on('Identifier', (node) => {
 		if (
-			isUndefined(node)
-			&& node.parent.type === 'YieldExpression'
-			&& !node.parent.delegate
-			&& node.parent.argument === node
+			isUndefined(node) &&
+			node.parent.type === 'YieldExpression' &&
+			!node.parent.delegate &&
+			node.parent.argument === node
 		) {
-			return getProblem(
-				node,
-				fixer => removeNodeAndLeadingSpace(node, fixer),
+			return getProblem(node, (fixer) =>
+				removeNodeAndLeadingSpace(node, fixer),
 			);
 		}
 	});
 
 	// `() => undefined`
 	if (options.checkArrowFunctionBody) {
-		context.on('Identifier', node => {
+		context.on('Identifier', (node) => {
 			if (
-				isUndefined(node)
-				&& node.parent.type === 'ArrowFunctionExpression'
-				&& node.parent.body === node
+				isUndefined(node) &&
+				node.parent.type === 'ArrowFunctionExpression' &&
+				node.parent.body === node
 			) {
 				return getProblem(
 					node,
-					fixer => replaceNodeOrTokenAndSpacesBefore(node, ' {}', fixer, sourceCode),
+					(fixer) =>
+						replaceNodeOrTokenAndSpacesBefore(node, ' {}', fixer, sourceCode),
 					/* CheckFunctionReturnType */ true,
 				);
 			}
@@ -162,35 +160,35 @@ const create = context => {
 	}
 
 	// `let foo = undefined` / `var foo = undefined`
-	context.on('Identifier', node => {
+	context.on('Identifier', (node) => {
 		if (
-			isUndefined(node)
-			&& node.parent.type === 'VariableDeclarator'
-			&& node.parent.init === node
-			&& node.parent.parent.type === 'VariableDeclaration'
-			&& node.parent.parent.kind !== 'const'
-			&& node.parent.parent.declarations.includes(node.parent)
+			isUndefined(node) &&
+			node.parent.type === 'VariableDeclarator' &&
+			node.parent.init === node &&
+			node.parent.parent.type === 'VariableDeclaration' &&
+			node.parent.parent.kind !== 'const' &&
+			node.parent.parent.declarations.includes(node.parent)
 		) {
 			const [, start] = sourceCode.getRange(node.parent.id);
 			const [, end] = sourceCode.getRange(node);
 			return getProblem(
 				node,
-				fixer => fixer.removeRange([start, end]),
+				(fixer) => fixer.removeRange([start, end]),
 				/* CheckFunctionReturnType */ true,
 			);
 		}
 	});
 
 	// `const {foo = undefined} = {}`
-	context.on('Identifier', node => {
+	context.on('Identifier', (node) => {
 		if (
-			isUndefined(node)
-			&& node.parent.type === 'AssignmentPattern'
-			&& node.parent.right === node
+			isUndefined(node) &&
+			node.parent.type === 'AssignmentPattern' &&
+			node.parent.right === node
 		) {
 			return getProblem(
 				node,
-				function * (fixer) {
+				function* (fixer) {
 					const assignmentPattern = node.parent;
 					const {left} = assignmentPattern;
 					const [, start] = sourceCode.getRange(left);
@@ -198,16 +196,14 @@ const create = context => {
 
 					yield fixer.removeRange([start, end]);
 					if (
-						(left.typeAnnotation || isTypeScriptFile(context))
-						&& !left.optional
-						&& isFunction(assignmentPattern.parent)
-						&& assignmentPattern.parent.params.includes(assignmentPattern)
+						(left.typeAnnotation || isTypeScriptFile(context)) &&
+						!left.optional &&
+						isFunction(assignmentPattern.parent) &&
+						assignmentPattern.parent.params.includes(assignmentPattern)
 					) {
-						yield (
-							left.typeAnnotation
-								? fixer.insertTextBefore(left.typeAnnotation, '?')
-								: fixer.insertTextAfter(left, '?')
-						);
+						yield left.typeAnnotation
+							? fixer.insertTextBefore(left.typeAnnotation, '?')
+							: fixer.insertTextAfter(left, '?');
 					}
 				},
 				/* CheckFunctionReturnType */ true,
@@ -219,7 +215,7 @@ const create = context => {
 		return;
 	}
 
-	context.on('CallExpression', node => {
+	context.on('CallExpression', (node) => {
 		if (shouldIgnore(node.callee)) {
 			return;
 		}
@@ -258,7 +254,8 @@ const create = context => {
 				let [start] = sourceCode.getRange(firstUndefined);
 				let [, end] = sourceCode.getRange(lastUndefined);
 
-				const previousArgument = argumentNodes[argumentNodes.length - undefinedArguments.length - 1];
+				const previousArgument =
+					argumentNodes[argumentNodes.length - undefinedArguments.length - 1];
 
 				if (previousArgument) {
 					[, start] = sourceCode.getRange(previousArgument);
