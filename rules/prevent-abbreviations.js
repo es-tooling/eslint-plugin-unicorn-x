@@ -48,23 +48,26 @@ const prepareOptions = ({
 } = {}) => {
 	const mergedReplacements = new Map();
 
-	for (const [discouragedName, replacement] of Object.entries(replacements)) {
-		mergedReplacements.set(
-			discouragedName,
-			new Map(Object.entries(replacement)),
-		);
-	}
+	const allKeys = new Set(
+		extendDefaultReplacements
+			? [...Object.keys(defaultReplacements), ...Object.keys(replacements)]
+			: Object.keys(replacements),
+	);
 
-	if (extendDefaultReplacements) {
-		for (const [discouragedName, replacement] of Object.entries(
-			defaultReplacements,
-		)) {
-			if (!mergedReplacements.has(discouragedName)) {
-				mergedReplacements.set(
-					discouragedName,
-					new Map(Object.entries(replacement)),
-				);
-			}
+	for (const key of allKeys) {
+		const userReplacement = replacements[key];
+		const defaultReplacement = defaultReplacements[key];
+
+		if (userReplacement !== false) {
+			mergedReplacements.set(
+				key,
+				new Map(
+					Object.entries({
+						...(extendDefaultReplacements ? defaultReplacement : {}),
+						...userReplacement,
+					}),
+				),
+			);
 		}
 	}
 

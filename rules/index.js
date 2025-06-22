@@ -1,6 +1,4 @@
-// Generated file, DO NOT edit
 import {createRule} from './utils/rule.js';
-
 import betterRegex from './better-regex.js';
 import catchErrorName from './catch-error-name.js';
 import consistentAssert from './consistent-assert.js';
@@ -60,6 +58,7 @@ import noUnnecessarySliceEnd from './no-unnecessary-slice-end.js';
 import noUnreadableArrayDestructuring from './no-unreadable-array-destructuring.js';
 import noUnreadableIife from './no-unreadable-iife.js';
 import noUnusedProperties from './no-unused-properties.js';
+import noUselessErrorCaptureStackTrace from './no-useless-error-capture-stack-trace.js';
 import noUselessFallbackInSpread from './no-useless-fallback-in-spread.js';
 import noUselessLengthCheck from './no-useless-length-check.js';
 import noUselessPromiseResolveReject from './no-useless-promise-resolve-reject.js';
@@ -77,6 +76,7 @@ import preferArrayIndexOf from './prefer-array-index-of.js';
 import preferArraySome from './prefer-array-some.js';
 import preferAt from './prefer-at.js';
 import preferBlobReadingMethods from './prefer-blob-reading-methods.js';
+import preferClassFields from './prefer-class-fields.js';
 import preferCodePoint from './prefer-code-point.js';
 import preferDateNow from './prefer-date-now.js';
 import preferDefaultParameters from './prefer-default-parameters.js';
@@ -285,6 +285,10 @@ const rules = {
 		noUnusedProperties,
 		'no-unused-properties',
 	),
+	'no-useless-error-capture-stack-trace': createRule(
+		noUselessErrorCaptureStackTrace,
+		'no-useless-error-capture-stack-trace',
+	),
 	'no-useless-fallback-in-spread': createRule(
 		noUselessFallbackInSpread,
 		'no-useless-fallback-in-spread',
@@ -332,6 +336,7 @@ const rules = {
 		preferBlobReadingMethods,
 		'prefer-blob-reading-methods',
 	),
+	'prefer-class-fields': createRule(preferClassFields, 'prefer-class-fields'),
 	'prefer-code-point': createRule(preferCodePoint, 'prefer-code-point'),
 	'prefer-date-now': createRule(preferDateNow, 'prefer-date-now'),
 	'prefer-default-parameters': createRule(

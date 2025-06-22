@@ -1,11 +1,6 @@
-import isShadowed from './utils/is-shadowed.js';
 import assertToken from './utils/assert-token.js';
 import {getCallExpressionTokens} from './utils/index.js';
-import {
-	isStaticRequire,
-	isReferenceIdentifier,
-	isFunction,
-} from './ast/index.js';
+import {isStaticRequire, isFunction} from './ast/index.js';
 import {
 	removeParentheses,
 	replaceReferenceIdentifier,
@@ -68,6 +63,14 @@ const suggestions = new Map([
 			},
 		],
 	],
+]);
+
+const commonJsGlobals = new Set([
+	'exports',
+	'require',
+	'module',
+	'__filename',
+	'__dirname',
 ]);
 
 function fixRequireCall(node, sourceCode) {
@@ -297,14 +300,8 @@ function create(context) {
 
 	context.on('Identifier', (node) => {
 		if (
-			!isReferenceIdentifier(node, [
-				'exports',
-				'require',
-				'module',
-				'__filename',
-				'__dirname',
-			]) ||
-			isShadowed(sourceCode.getScope(node), node)
+			!commonJsGlobals.has(node.name) ||
+			!context.sourceCode.isGlobalReference(node)
 		) {
 			return;
 		}

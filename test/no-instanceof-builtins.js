@@ -23,8 +23,8 @@ const strictStrategyInvalid = [
 	'foo instanceof SyntaxError',
 	'foo instanceof TypeError',
 	'foo instanceof URIError',
-	'foo instanceof InternalError',
 	'foo instanceof AggregateError',
+	'foo instanceof SuppressedError',
 
 	// Collection types
 	'foo instanceof Map',
@@ -101,8 +101,8 @@ test.snapshot({
 		'err instanceof SyntaxError',
 		'err instanceof TypeError',
 		'err instanceof URIError',
-		'err instanceof InternalError',
 		'err instanceof AggregateError',
+		'err instanceof SuppressedError',
 	].map((code) => ({
 		code,
 		options: [{useErrorIsError: true, strategy: 'strict'}],

@@ -1,6 +1,5 @@
 import {getStaticValue} from '@eslint-community/eslint-utils';
 import regjsparser from 'regjsparser';
-import escapeString from './utils/escape-string.js';
 import {isRegexLiteral, isNewExpression, isMethodCall} from './ast/index.js';
 
 const {parse: parseRegExp} = regjsparser;
@@ -11,6 +10,8 @@ const messages = {
 		'Prefer `String#replaceAll()` over `String#replace()`.',
 	[MESSAGE_ID_USE_STRING]: 'This pattern can be replaced with {{replacement}}.',
 };
+
+const QUOTE = "'";
 
 function getPatternReplacement(node) {
 	if (!isRegexLiteral(node)) {
@@ -40,10 +41,46 @@ function getPatternReplacement(node) {
 		return;
 	}
 
-	// TODO: Preserve escape
-	const string = String.fromCodePoint(...parts.map((part) => part.codePoint));
+	return (
+		QUOTE +
+		parts
+			.map((part) => {
+				const {kind, codePoint, raw} = part;
 
-	return escapeString(string);
+				if (kind === 'controlLetter') {
+					if (codePoint === 13) {
+						return String.raw`\r`;
+					}
+
+					if (codePoint === 10) {
+						return String.raw`\n`;
+					}
+
+					if (codePoint === 9) {
+						return String.raw`\t`;
+					}
+
+					return `\\u{${codePoint.toString(16)}}`;
+				}
+
+				if (kind === 'octal') {
+					return `\\u{${codePoint.toString(16)}}`;
+				}
+
+				let character = raw;
+				if (kind === 'identifier') {
+					character = character.slice(1);
+				}
+
+				if (character === QUOTE || character === '\\') {
+					return `\\${character}`;
+				}
+
+				return character;
+			})
+			.join('') +
+		QUOTE
+	);
 }
 
 const isRegExpWithGlobalFlag = (node, scope) => {

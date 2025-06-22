@@ -13,6 +13,19 @@ exports[`invalid(0): 'new AggregateError(errors)' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(0): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed,)
+"
+`;
+
+exports[`invalid(0): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed,)
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Pass a message to the \`SuppressedError\` constructor.
+"
+`;
+
 exports[`invalid(0): 'throw new Error()' > Code 1`] = `
 "
   1 | throw new Error()
@@ -36,6 +49,19 @@ exports[`invalid(1): 'AggregateError(errors)' > Error 1/1 1`] = `
 "
 > 1 | AggregateError(errors)
     | ^^^^^^^^^^^^^^^^^^^^^^ Pass a message to the \`AggregateError\` constructor.
+"
+`;
+
+exports[`invalid(1): 'new SuppressedError(error,)' > Code 1`] = `
+"
+  1 | new SuppressedError(error,)
+"
+`;
+
+exports[`invalid(1): 'new SuppressedError(error,)' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error,)
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Pass a message to the \`SuppressedError\` constructor.
 "
 `;
 
@@ -65,6 +91,19 @@ exports[`invalid(2): 'new AggregateError(errors, "")' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(2): 'new SuppressedError()' > Code 1`] = `
+"
+  1 | new SuppressedError()
+"
+`;
+
+exports[`invalid(2): 'new SuppressedError()' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError()
+    | ^^^^^^^^^^^^^^^^^^^^^ Pass a message to the \`SuppressedError\` constructor.
+"
+`;
+
 exports[`invalid(2): 'throw new Error(\\'\\')' > Code 1`] = `
 "
   1 | throw new Error('')
@@ -75,6 +114,19 @@ exports[`invalid(2): 'throw new Error(\\'\\')' > Error 1/1 1`] = `
 "
 > 1 | throw new Error('')
     |                 ^^ Error message should not be an empty string.
+"
+`;
+
+exports[`invalid(3): 'SuppressedError(error, suppressed,)' > Code 1`] = `
+"
+  1 | SuppressedError(error, suppressed,)
+"
+`;
+
+exports[`invalid(3): 'SuppressedError(error, suppressed,)' > Error 1/1 1`] = `
+"
+> 1 | SuppressedError(error, suppressed,)
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Pass a message to the \`SuppressedError\` constructor.
 "
 `;
 
@@ -104,6 +156,19 @@ exports[`invalid(3): 'throw new Error(\`\`)' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(4): 'SuppressedError(error,)' > Code 1`] = `
+"
+  1 | SuppressedError(error,)
+"
+`;
+
+exports[`invalid(4): 'SuppressedError(error,)' > Error 1/1 1`] = `
+"
+> 1 | SuppressedError(error,)
+    | ^^^^^^^^^^^^^^^^^^^^^^^ Pass a message to the \`SuppressedError\` constructor.
+"
+`;
+
 exports[`invalid(4): 'const err = new Error();\\nthrow err;' > Code 1`] = `
 "
   1 | const err = new Error();
@@ -129,6 +194,19 @@ exports[`invalid(4): 'new AggregateError(errors, "", extraA…' > Error 1/1 1`] 
 "
 > 1 | new AggregateError(errors, "", extraArgument)
     |                            ^^ Error message should not be an empty string.
+"
+`;
+
+exports[`invalid(5): 'SuppressedError()' > Code 1`] = `
+"
+  1 | SuppressedError()
+"
+`;
+
+exports[`invalid(5): 'SuppressedError()' > Error 1/1 1`] = `
+"
+> 1 | SuppressedError()
+    | ^^^^^^^^^^^^^^^^^ Pass a message to the \`SuppressedError\` constructor.
 "
 `;
 
@@ -194,6 +272,19 @@ exports[`invalid(6): 'new AggregateError(errors, [])' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(6): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, "")
+"
+`;
+
+exports[`invalid(6): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, "")
+    |                                        ^^ Error message should not be an empty string.
+"
+`;
+
 exports[`invalid(7): 'const foo = new TypeError()' > Code 1`] = `
 "
   1 | const foo = new TypeError()
@@ -217,6 +308,19 @@ exports[`invalid(7): 'new AggregateError(errors, [foo])' > Error 1/1 1`] = `
 "
 > 1 | new AggregateError(errors, [foo])
     |                            ^^^^^ Error message should be a string.
+"
+`;
+
+exports[`invalid(7): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, \`\`)
+"
+`;
+
+exports[`invalid(7): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, \`\`)
+    |                                        ^^ Error message should not be an empty string.
 "
 `;
 
@@ -246,10 +350,30 @@ exports[`invalid(8): 'new AggregateError(errors, [0][0])' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(8): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, "", options)
+"
+`;
+
+exports[`invalid(8): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, "", options)
+    |                                        ^^ Error message should not be an empty string.
+"
+`;
+
 exports[`invalid(9): 'const errorMessage = Object.freeze({e…' > Code 1`] = `
 "
   1 | const errorMessage = Object.freeze({errorMessage: 1}).errorMessage;
   2 | throw new Error(errorMessage)
+"
+`;
+
+exports[`invalid(9): 'const errorMessage = Object.freeze({e…' > Code 2`] = `
+"
+  1 | const errorMessage = Object.freeze({errorMessage: 1}).errorMessage;
+  2 | throw new SuppressedError(error, suppressed, errorMessage)
 "
 `;
 
@@ -258,6 +382,14 @@ exports[`invalid(9): 'const errorMessage = Object.freeze({e…' > Error 1/1 1`] 
   1 | const errorMessage = Object.freeze({errorMessage: 1}).errorMessage;
 > 2 | throw new Error(errorMessage)
     |                 ^^^^^^^^^^^^ Error message should be a string.
+"
+`;
+
+exports[`invalid(9): 'const errorMessage = Object.freeze({e…' > Error 1/1 2`] = `
+"
+  1 | const errorMessage = Object.freeze({errorMessage: 1}).errorMessage;
+> 2 | throw new SuppressedError(error, suppressed, errorMessage)
+    |                                              ^^^^^^^^^^^^ Error message should be a string.
 "
 `;
 
@@ -287,6 +419,19 @@ exports[`invalid(10): 'new AggregateError(errors, {foo})' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(10): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, [])
+"
+`;
+
+exports[`invalid(10): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, [])
+    |                                        ^^ Error message should be a string.
+"
+`;
+
 exports[`invalid(10): 'throw new Error([])' > Code 1`] = `
 "
   1 | throw new Error([])
@@ -310,6 +455,19 @@ exports[`invalid(11): 'new AggregateError(errors, {foo: 0}.f…' > Error 1/1 1`]
 "
 > 1 | new AggregateError(errors, {foo: 0}.foo)
     |                            ^^^^^^^^^^^^ Error message should be a string.
+"
+`;
+
+exports[`invalid(11): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, [foo])
+"
+`;
+
+exports[`invalid(11): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, [foo])
+    |                                        ^^^^^ Error message should be a string.
 "
 `;
 
@@ -339,6 +497,19 @@ exports[`invalid(12): 'new AggregateError(errors, lineNumber…' > Error 1/1 1`]
 "
 `;
 
+exports[`invalid(12): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, [0][0])
+"
+`;
+
+exports[`invalid(12): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, [0][0])
+    |                                        ^^^^^^ Error message should be a string.
+"
+`;
+
 exports[`invalid(12): 'throw new Error([0][0])' > Code 1`] = `
 "
   1 | throw new Error([0][0])
@@ -365,6 +536,19 @@ exports[`invalid(13): 'const error = new AggregateError;' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(13): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, {})
+"
+`;
+
+exports[`invalid(13): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, {})
+    |                                        ^^ Error message should be a string.
+"
+`;
+
 exports[`invalid(13): 'throw new Error({})' > Code 1`] = `
 "
   1 | throw new Error({})
@@ -375,6 +559,19 @@ exports[`invalid(13): 'throw new Error({})' > Error 1/1 1`] = `
 "
 > 1 | throw new Error({})
     |                 ^^ Error message should be a string.
+"
+`;
+
+exports[`invalid(14): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, {foo})
+"
+`;
+
+exports[`invalid(14): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, {foo})
+    |                                        ^^^^^ Error message should be a string.
 "
 `;
 
@@ -391,6 +588,19 @@ exports[`invalid(14): 'throw new Error({foo})' > Error 1/1 1`] = `
 "
 `;
 
+exports[`invalid(15): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, {foo: 0}.foo)
+"
+`;
+
+exports[`invalid(15): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, {foo: 0}.foo)
+    |                                        ^^^^^^^^^^^^ Error message should be a string.
+"
+`;
+
 exports[`invalid(15): 'throw new Error({foo: 0}.foo)' > Code 1`] = `
 "
   1 | throw new Error({foo: 0}.foo)
@@ -401,6 +611,19 @@ exports[`invalid(15): 'throw new Error({foo: 0}.foo)' > Error 1/1 1`] = `
 "
 > 1 | throw new Error({foo: 0}.foo)
     |                 ^^^^^^^^^^^^ Error message should be a string.
+"
+`;
+
+exports[`invalid(16): 'new SuppressedError(error, suppressed…' > Code 1`] = `
+"
+  1 | new SuppressedError(error, suppressed, lineNumber=2)
+"
+`;
+
+exports[`invalid(16): 'new SuppressedError(error, suppressed…' > Error 1/1 1`] = `
+"
+> 1 | new SuppressedError(error, suppressed, lineNumber=2)
+    |                                        ^^^^^^^^^^^^ Error message should be a string.
 "
 `;
 
@@ -427,6 +650,19 @@ exports[`invalid(17): 'const error = new RangeError;' > Error 1/1 1`] = `
 "
 > 1 | const error = new RangeError;
     |               ^^^^^^^^^^^^^^ Pass a message to the \`RangeError\` constructor.
+"
+`;
+
+exports[`invalid(17): 'const error = new SuppressedError;' > Code 1`] = `
+"
+  1 | const error = new SuppressedError;
+"
+`;
+
+exports[`invalid(17): 'const error = new SuppressedError;' > Error 1/1 1`] = `
+"
+> 1 | const error = new SuppressedError;
+    |               ^^^^^^^^^^^^^^^^^^^ Pass a message to the \`SuppressedError\` constructor.
 "
 `;
 

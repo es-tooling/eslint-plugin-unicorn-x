@@ -22,6 +22,7 @@ const config = [
 			'.cache-eslint-remote-tester',
 			'eslint-remote-tester-results',
 			'test/integration/{fixtures,fixtures-local}/**',
+			'**/*.ts',
 		],
 	},
 	{
@@ -64,6 +65,9 @@ const config = [
 		},
 	},
 	{
+		files: [
+			'**/*.js',
+		],
 		plugins: {
 			jsdoc,
 		},

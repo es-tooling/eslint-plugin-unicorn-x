@@ -218,7 +218,6 @@ const config = {
 			description: 'Prefer default parameters over reassignment.',
 			recommended: true,
 		},
-		fixable: 'code',
 		hasSuggestions: true,
 		messages: {
 			[MESSAGE_ID]: 'Prefer default parameters over reassignment.',
