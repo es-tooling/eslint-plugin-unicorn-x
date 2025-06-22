@@ -13,7 +13,7 @@ const messages = {
 const DEFAULT_SPECIFIER_NAME = Symbol.for('default');
 const NAMESPACE_SPECIFIER_NAME = Symbol('NAMESPACE_SPECIFIER_NAME');
 
-const getSpecifierName = node => {
+const getSpecifierName = (node) => {
 	switch (node.type) {
 		case 'Identifier': {
 			return Symbol.for(node.name);
@@ -26,17 +26,19 @@ const getSpecifierName = node => {
 	}
 };
 
-const isTypeExport = specifier => specifier.exportKind === 'type' || specifier.parent.exportKind === 'type';
+const isTypeExport = (specifier) =>
+	specifier.exportKind === 'type' || specifier.parent.exportKind === 'type';
 
-const isTypeImport = specifier => specifier.importKind === 'type' || specifier.parent.importKind === 'type';
+const isTypeImport = (specifier) =>
+	specifier.importKind === 'type' || specifier.parent.importKind === 'type';
 
-function * removeImportOrExport(node, fixer, sourceCode) {
+function* removeImportOrExport(node, fixer, sourceCode) {
 	switch (node.type) {
 		case 'ImportSpecifier':
 		case 'ExportSpecifier':
 		case 'ImportDefaultSpecifier':
 		case 'ImportNamespaceSpecifier': {
-			yield * removeSpecifier(node, fixer, sourceCode);
+			yield* removeSpecifier(node, fixer, sourceCode);
 			return;
 		}
 
@@ -53,7 +55,7 @@ function * removeImportOrExport(node, fixer, sourceCode) {
 function getSourceAndAssertionsText(declaration, sourceCode) {
 	const keywordFromToken = sourceCode.getTokenBefore(
 		declaration.source,
-		token => token.type === 'Identifier' && token.value === 'from',
+		(token) => token.type === 'Identifier' && token.value === 'from',
 	);
 	const [start] = sourceCode.getRange(keywordFromToken);
 	const [, end] = sourceCode.getRange(declaration);
@@ -75,25 +77,35 @@ function getFixFunction({
 	let exportDeclaration;
 	if (shouldExportAsType) {
 		// If a type export declaration already exists, reuse it, else use a value export declaration with an inline type specifier.
-		exportDeclaration = exportDeclarations.find(({source, exportKind}) => source.value === sourceValue && exportKind === 'type');
+		exportDeclaration = exportDeclarations.find(
+			({source, exportKind}) =>
+				source.value === sourceValue && exportKind === 'type',
+		);
 	}
 
-	exportDeclaration ||= exportDeclarations.find(({source, exportKind}) => source.value === sourceValue && exportKind !== 'type');
+	exportDeclaration ||= exportDeclarations.find(
+		({source, exportKind}) =>
+			source.value === sourceValue && exportKind !== 'type',
+	);
 
 	/** @param {import('eslint').Rule.RuleFixer} fixer */
-	return function * (fixer) {
+	return function* (fixer) {
 		if (imported.name === NAMESPACE_SPECIFIER_NAME) {
 			yield fixer.insertTextAfter(
 				program,
 				`\nexport * as ${exported.text} ${getSourceAndAssertionsText(importDeclaration, sourceCode)}`,
 			);
 		} else {
-			let specifierText = exported.name === imported.name
-				? exported.text
-				: `${imported.text} as ${exported.text}`;
+			let specifierText =
+				exported.name === imported.name
+					? exported.text
+					: `${imported.text} as ${exported.text}`;
 
 			// Add an inline type specifier if the value is a type and the export deceleration is a value deceleration
-			if (shouldExportAsType && (!exportDeclaration || exportDeclaration.exportKind !== 'type')) {
+			if (
+				shouldExportAsType &&
+				(!exportDeclaration || exportDeclaration.exportKind !== 'type')
+			) {
 				specifierText = `type ${specifierText}`;
 			}
 
@@ -104,7 +116,10 @@ function getFixFunction({
 				if (lastSpecifier) {
 					yield fixer.insertTextAfter(lastSpecifier, `, ${specifierText}`);
 				} else {
-					const openingBraceToken = sourceCode.getFirstToken(exportDeclaration, isOpeningBraceToken);
+					const openingBraceToken = sourceCode.getFirstToken(
+						exportDeclaration,
+						isOpeningBraceToken,
+					);
 					yield fixer.insertTextAfter(openingBraceToken, specifierText);
 				}
 			} else {
@@ -116,10 +131,10 @@ function getFixFunction({
 		}
 
 		if (imported.variable.references.length === 1) {
-			yield * removeImportOrExport(imported.node, fixer, sourceCode);
+			yield* removeImportOrExport(imported.node, fixer, sourceCode);
 		}
 
-		yield * removeImportOrExport(exported.node, fixer, sourceCode);
+		yield* removeImportOrExport(exported.node, fixer, sourceCode);
 	};
 }
 
@@ -146,15 +161,15 @@ function getExported(identifier, sourceCode) {
 
 		case 'VariableDeclarator': {
 			if (
-				parent.init === identifier
-				&& parent.id.type === 'Identifier'
-				&& !parent.id.typeAnnotation
-				&& parent.parent.type === 'VariableDeclaration'
-				&& parent.parent.kind === 'const'
-				&& parent.parent.declarations.length === 1
-				&& parent.parent.declarations[0] === parent
-				&& parent.parent.parent.type === 'ExportNamedDeclaration'
-				&& isVariableUnused(parent, sourceCode)
+				parent.init === identifier &&
+				parent.id.type === 'Identifier' &&
+				!parent.id.typeAnnotation &&
+				parent.parent.type === 'VariableDeclaration' &&
+				parent.parent.kind === 'const' &&
+				parent.parent.declarations.length === 1 &&
+				parent.parent.declarations[0] === parent &&
+				parent.parent.parent.type === 'ExportNamedDeclaration' &&
+				isVariableUnused(parent, sourceCode)
 			) {
 				return {
 					node: parent.parent.parent,
@@ -179,10 +194,12 @@ function isVariableUnused(node, sourceCode) {
 	}
 
 	const [{identifiers, references}] = variables;
-	return identifiers.length === 1
-		&& identifiers[0] === node.id
-		&& references.length === 1
-		&& references[0].identifier === node.id;
+	return (
+		identifiers.length === 1 &&
+		identifiers[0] === node.id &&
+		references.length === 1 &&
+		references[0].identifier === node.id
+	);
 }
 
 function getImported(variable, sourceCode) {
@@ -240,7 +257,10 @@ function getExports(imported, sourceCode) {
 		export default foo;
 		```
 		*/
-		if (imported.name === NAMESPACE_SPECIFIER_NAME && exported.name === DEFAULT_SPECIFIER_NAME) {
+		if (
+			imported.name === NAMESPACE_SPECIFIER_NAME &&
+			exported.name === DEFAULT_SPECIFIER_NAME
+		) {
 			continue;
 		}
 
@@ -265,7 +285,10 @@ const schema = [
 /** @param {import('eslint').Rule.RuleContext} context */
 function create(context) {
 	const {sourceCode} = context;
-	const {ignoreUsedVariables} = {ignoreUsedVariables: false, ...context.options[0]};
+	const {ignoreUsedVariables} = {
+		ignoreUsedVariables: false,
+		...context.options[0],
+	};
 	const importDeclarations = new Set();
 	const exportDeclarations = [];
 
@@ -281,15 +304,21 @@ function create(context) {
 				exportDeclarations.push(node);
 			}
 		},
-		* 'Program:exit'(program) {
+		*'Program:exit'(program) {
 			for (const importDeclaration of importDeclarations) {
 				let variables = sourceCode.getDeclaredVariables(importDeclaration);
 
-				if (variables.some(variable => variable.defs.length !== 1 || variable.defs[0].parent !== importDeclaration)) {
+				if (
+					variables.some(
+						(variable) =>
+							variable.defs.length !== 1 ||
+							variable.defs[0].parent !== importDeclaration,
+					)
+				) {
 					continue;
 				}
 
-				variables = variables.map(variable => {
+				variables = variables.map((variable) => {
 					const imported = getImported(variable, sourceCode);
 					const exports = getExports(imported, sourceCode);
 
@@ -301,14 +330,18 @@ function create(context) {
 				});
 
 				if (
-					ignoreUsedVariables
-					&& variables.some(({variable, exports}) => variable.references.length !== exports.length)
+					ignoreUsedVariables &&
+					variables.some(
+						({variable, exports}) =>
+							variable.references.length !== exports.length,
+					)
 				) {
 					continue;
 				}
 
-				const shouldUseSuggestion = ignoreUsedVariables
-					&& variables.some(({variable}) => variable.references.length === 0);
+				const shouldUseSuggestion =
+					ignoreUsedVariables &&
+					variables.some(({variable}) => variable.references.length === 0);
 
 				for (const {imported, exports} of variables) {
 					for (const exported of exports) {

@@ -25,14 +25,7 @@ export default function isMemberExpression(node, options) {
 		options = {properties: options};
 	}
 
-	let {
-		property,
-		properties,
-		object,
-		objects,
-		optional,
-		computed,
-	} = {
+	let {property, properties, object, objects, optional, computed} = {
 		property: '',
 		properties: [],
 		object: '',
@@ -48,23 +41,18 @@ export default function isMemberExpression(node, options) {
 	}
 
 	if (
-		(optional === true && (node.optional !== optional))
-		|| (
-			optional === false
+		(optional === true && node.optional !== optional) ||
+		(optional === false &&
 			// `node.optional` can be `undefined` in some parsers
-			&& node.optional
-		)
+			node.optional)
 	) {
 		return false;
 	}
 
-	if (
-		Array.isArray(properties)
-		&& properties.length > 0
-	) {
+	if (Array.isArray(properties) && properties.length > 0) {
 		if (
-			node.property.type !== 'Identifier'
-			|| !properties.includes(node.property.name)
+			node.property.type !== 'Identifier' ||
+			!properties.includes(node.property.name)
 		) {
 			return false;
 		}
@@ -73,23 +61,18 @@ export default function isMemberExpression(node, options) {
 	}
 
 	if (
-		(computed === true && (node.computed !== computed))
-		|| (
-			computed === false
+		(computed === true && node.computed !== computed) ||
+		(computed === false &&
 			// `node.computed` can be `undefined` in some parsers
-			&& node.computed
-		)
+			node.computed)
 	) {
 		return false;
 	}
 
 	if (
-		Array.isArray(objects)
-		&& objects.length > 0
-		&& (
-			node.object.type !== 'Identifier'
-			|| !objects.includes(node.object.name)
-		)
+		Array.isArray(objects) &&
+		objects.length > 0 &&
+		(node.object.type !== 'Identifier' || !objects.includes(node.object.name))
 	) {
 		return false;
 	}

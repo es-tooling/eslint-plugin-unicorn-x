@@ -7,31 +7,33 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(callExpression) {
-		if (!(
-			isMethodCall(callExpression, {
-				method: 'removeEventListener',
-				minimumArguments: 2,
-				optionalCall: false,
-				optionalMember: false,
-			})
-			&& callExpression.arguments[0].type !== 'SpreadElement'
-			&& (
-				callExpression.arguments[1].type === 'FunctionExpression'
-				|| callExpression.arguments[1].type === 'ArrowFunctionExpression'
-				|| isMethodCall(callExpression.arguments[1], {
-					method: 'bind',
+		if (
+			!(
+				isMethodCall(callExpression, {
+					method: 'removeEventListener',
+					minimumArguments: 2,
 					optionalCall: false,
 					optionalMember: false,
-				})
+				}) &&
+				callExpression.arguments[0].type !== 'SpreadElement' &&
+				(callExpression.arguments[1].type === 'FunctionExpression' ||
+					callExpression.arguments[1].type === 'ArrowFunctionExpression' ||
+					isMethodCall(callExpression.arguments[1], {
+						method: 'bind',
+						optionalCall: false,
+						optionalMember: false,
+					}))
 			)
-		)) {
+		) {
 			return;
 		}
 
 		const [, listener] = callExpression.arguments;
-		if (['ArrowFunctionExpression', 'FunctionExpression'].includes(listener.type)) {
+		if (
+			['ArrowFunctionExpression', 'FunctionExpression'].includes(listener.type)
+		) {
 			return {
 				node: listener,
 				loc: getFunctionHeadLocation(listener, context.sourceCode),
@@ -52,7 +54,8 @@ const config = {
 	meta: {
 		type: 'problem',
 		docs: {
-			description: 'Prevent calling `EventTarget#removeEventListener()` with the result of an expression.',
+			description:
+				'Prevent calling `EventTarget#removeEventListener()` with the result of an expression.',
 			recommended: true,
 		},
 		messages,

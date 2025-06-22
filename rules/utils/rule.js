@@ -1,6 +1,6 @@
 import getDocumentationUrl from './get-documentation-url.js';
 
-const isIterable = object => typeof object?.[Symbol.iterator] === 'function';
+const isIterable = (object) => typeof object?.[Symbol.iterator] === 'function';
 
 class FixAbortError extends Error {
 	name = 'FixAbortError';
@@ -12,7 +12,7 @@ const fixOptions = {
 };
 
 function wrapFixFunction(fix) {
-	return fixer => {
+	return (fixer) => {
 		const result = fix(fixer, fixOptions);
 
 		if (isIterable(result)) {
@@ -70,7 +70,7 @@ function reportProblems(create) {
 		return create;
 	}
 
-	const wrapped = context => {
+	const wrapped = (context) => {
 		const listeners = {};
 		const addListener = (selector, listener) => {
 			listeners[selector] ??= [];
@@ -81,7 +81,9 @@ function reportProblems(create) {
 			get(target, property, receiver) {
 				if (property === 'on') {
 					return (selectorOrSelectors, listener) => {
-						const selectors = Array.isArray(selectorOrSelectors) ? selectorOrSelectors : [selectorOrSelectors];
+						const selectors = Array.isArray(selectorOrSelectors)
+							? selectorOrSelectors
+							: [selectorOrSelectors];
 						for (const selector of selectors) {
 							addListener(selector, listener);
 						}
@@ -90,7 +92,9 @@ function reportProblems(create) {
 
 				if (property === 'onExit') {
 					return (selectorOrSelectors, listener) => {
-						const selectors = Array.isArray(selectorOrSelectors) ? selectorOrSelectors : [selectorOrSelectors];
+						const selectors = Array.isArray(selectorOrSelectors)
+							? selectorOrSelectors
+							: [selectorOrSelectors];
 						for (const selector of selectors) {
 							addListener(`${selector}:exit`, listener);
 						}
@@ -101,21 +105,22 @@ function reportProblems(create) {
 			},
 		});
 
-		for (const [selector, listener] of Object.entries(create(contextProxy) ?? {})) {
+		for (const [selector, listener] of Object.entries(
+			create(contextProxy) ?? {},
+		)) {
 			addListener(selector, listener);
 		}
 
 		return Object.fromEntries(
-			Object.entries(listeners)
-				.map(([selector, listeners]) => [
-					selector,
-					// Listener arguments can be `codePath, node` or `node`
-					(...listenerArguments) => {
-						for (const listener of listeners) {
-							reportListenerProblems(listener(...listenerArguments), context);
-						}
-					},
-				]),
+			Object.entries(listeners).map(([selector, listeners]) => [
+				selector,
+				// Listener arguments can be `codePath, node` or `node`
+				(...listenerArguments) => {
+					for (const listener of listeners) {
+						reportListenerProblems(listener(...listenerArguments), context);
+					}
+				},
+			]),
 		);
 	};
 
@@ -125,16 +130,14 @@ function reportProblems(create) {
 }
 
 export function checkVueTemplate(create, options) {
-	const {
-		visitScriptBlock,
-	} = {
+	const {visitScriptBlock} = {
 		visitScriptBlock: true,
 		...options,
 	};
 
 	create = reportProblems(create);
 
-	const wrapped = context => {
+	const wrapped = (context) => {
 		const listeners = create(context);
 		const {parserServices} = context.sourceCode;
 

@@ -20,9 +20,9 @@ function enforceNewExpression({node, path: [name]}, sourceCode) {
 	if (name === 'Object') {
 		const {parent} = node;
 		if (
-			parent.type === 'BinaryExpression'
-			&& (parent.operator === '===' || parent.operator === '!==')
-			&& (parent.left === node || parent.right === node)
+			parent.type === 'BinaryExpression' &&
+			(parent.operator === '===' || parent.operator === '!==') &&
+			(parent.left === node || parent.right === node)
 		) {
 			return;
 		}
@@ -31,9 +31,9 @@ function enforceNewExpression({node, path: [name]}, sourceCode) {
 	// `Date()` returns a string representation of the current date and time, exactly as `new Date().toString()` does.
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#return_value
 	if (name === 'Date') {
-		function * fix(fixer) {
+		function* fix(fixer) {
 			yield fixer.replaceText(node, 'String(new Date())');
-			yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+			yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 		}
 
 		const problem = {
@@ -41,7 +41,10 @@ function enforceNewExpression({node, path: [name]}, sourceCode) {
 			messageId: MESSAGE_ID_ERROR_DATE,
 		};
 
-		if (sourceCode.getCommentsInside(node).length === 0 && node.arguments.length === 0) {
+		if (
+			sourceCode.getCommentsInside(node).length === 0 &&
+			node.arguments.length === 0
+		) {
 			problem.fix = fix;
 		} else {
 			problem.suggest = [
@@ -59,7 +62,8 @@ function enforceNewExpression({node, path: [name]}, sourceCode) {
 		node,
 		messageId: 'enforce',
 		data: {name},
-		fix: fixer => switchCallExpressionToNewExpression(node, sourceCode, fixer),
+		fix: (fixer) =>
+			switchCallExpressionToNewExpression(node, sourceCode, fixer),
 	};
 }
 
@@ -71,8 +75,8 @@ function enforceCallExpression({node, path: [name]}, sourceCode) {
 	};
 
 	if (name !== 'String' && name !== 'Boolean' && name !== 'Number') {
-		problem.fix = function * (fixer) {
-			yield * switchNewExpressionToCallExpression(node, sourceCode, fixer);
+		problem.fix = function* (fixer) {
+			yield* switchNewExpressionToCallExpression(node, sourceCode, fixer);
 		};
 	}
 
@@ -80,25 +84,25 @@ function enforceCallExpression({node, path: [name]}, sourceCode) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 	const newExpressionTracker = new GlobalReferenceTracker({
 		objects: builtins.disallowNew,
 		type: GlobalReferenceTracker.CONSTRUCT,
-		handle: reference => enforceCallExpression(reference, sourceCode),
+		handle: (reference) => enforceCallExpression(reference, sourceCode),
 	});
 	const callExpressionTracker = new GlobalReferenceTracker({
 		objects: builtins.enforceNew,
 		type: GlobalReferenceTracker.CALL,
-		handle: reference => enforceNewExpression(reference, sourceCode),
+		handle: (reference) => enforceNewExpression(reference, sourceCode),
 	});
 
 	return {
-		* 'Program:exit'(program) {
+		*'Program:exit'(program) {
 			const scope = sourceCode.getScope(program);
 
-			yield * newExpressionTracker.track(scope);
-			yield * callExpressionTracker.track(scope);
+			yield* newExpressionTracker.track(scope);
+			yield* callExpressionTracker.track(scope);
 		},
 	};
 };
@@ -109,7 +113,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Enforce the use of `new` for all builtins, except `String`, `Number`, `Boolean`, `Symbol` and `BigInt`.',
+			description:
+				'Enforce the use of `new` for all builtins, except `String`, `Number`, `Boolean`, `Symbol` and `BigInt`.',
 			recommended: true,
 		},
 		fixable: 'code',

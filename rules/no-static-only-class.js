@@ -9,13 +9,13 @@ const messages = {
 };
 
 const isEqualToken = ({type, value}) => type === 'Punctuator' && value === '=';
-const isDeclarationOfExportDefaultDeclaration = node =>
-	node.type === 'ClassDeclaration'
-	&& node.parent.type === 'ExportDefaultDeclaration'
-	&& node.parent.declaration === node;
+const isDeclarationOfExportDefaultDeclaration = (node) =>
+	node.type === 'ClassDeclaration' &&
+	node.parent.type === 'ExportDefaultDeclaration' &&
+	node.parent.declaration === node;
 
-const isPropertyDefinition = node => node.type === 'PropertyDefinition';
-const isMethodDefinition = node => node.type === 'MethodDefinition';
+const isPropertyDefinition = (node) => node.type === 'PropertyDefinition';
+const isMethodDefinition = (node) => node.type === 'MethodDefinition';
 
 function isStaticMember(node) {
 	const {
@@ -39,10 +39,10 @@ function isStaticMember(node) {
 
 	// TypeScript class
 	if (
-		isDeclare
-		|| isReadonly
-		|| accessibility !== undefined
-		|| (Array.isArray(decorators) && decorators.length > 0)
+		isDeclare ||
+		isReadonly ||
+		accessibility !== undefined ||
+		(Array.isArray(decorators) && decorators.length > 0)
 	) {
 		return false;
 	}
@@ -50,7 +50,7 @@ function isStaticMember(node) {
 	return true;
 }
 
-function * switchClassMemberToObjectProperty(node, sourceCode, fixer) {
+function* switchClassMemberToObjectProperty(node, sourceCode, fixer) {
 	const staticToken = sourceCode.getFirstToken(node);
 	assertToken(staticToken, {
 		expected: {type: 'Keyword', value: 'static'},
@@ -79,11 +79,9 @@ function * switchClassMemberToObjectProperty(node, sourceCode, fixer) {
 		}
 	}
 
-	yield (
-		hasSemicolonToken
-			? fixer.replaceText(maybeSemicolonToken, ',')
-			: fixer.insertTextAfter(node, ',')
-	);
+	yield hasSemicolonToken
+		? fixer.replaceText(maybeSemicolonToken, ',')
+		: fixer.insertTextAfter(node, ',');
 }
 
 function switchClassToObject(node, sourceCode) {
@@ -98,9 +96,9 @@ function switchClassToObject(node, sourceCode) {
 	} = node;
 
 	if (
-		isDeclare
-		|| isAbstract
-		|| (Array.isArray(classImplements) && classImplements.length > 0)
+		isDeclare ||
+		isAbstract ||
+		(Array.isArray(classImplements) && classImplements.length > 0)
 	) {
 		return;
 	}
@@ -117,18 +115,16 @@ function switchClassToObject(node, sourceCode) {
 
 	for (const node of body.body) {
 		if (
-			isPropertyDefinition(node)
-			&& (
-				node.typeAnnotation
+			isPropertyDefinition(node) &&
+			(node.typeAnnotation ||
 				// This is a stupid way to check if `value` of `PropertyDefinition` uses `this`
-				|| (node.value && sourceCode.getText(node.value).includes('this'))
-			)
+				(node.value && sourceCode.getText(node.value).includes('this')))
 		) {
 			return;
 		}
 	}
 
-	return function * (fixer) {
+	return function* (fixer) {
 		const classToken = sourceCode.getFirstToken(node);
 		/* c8 ignore next */
 		assertToken(classToken, {
@@ -150,10 +146,16 @@ function switchClassToObject(node, sourceCode) {
 				```
 			*/
 			if (
-				type === 'ClassExpression'
-				&& parent.type === 'ReturnStatement'
-				&& sourceCode.getLoc(body).start.line !== sourceCode.getLoc(parent).start.line
-				&& sourceCode.text.slice(sourceCode.getRange(classToken)[1], sourceCode.getRange(body)[0]).trim()
+				type === 'ClassExpression' &&
+				parent.type === 'ReturnStatement' &&
+				sourceCode.getLoc(body).start.line !==
+					sourceCode.getLoc(parent).start.line &&
+				sourceCode.text
+					.slice(
+						sourceCode.getRange(classToken)[1],
+						sourceCode.getRange(body)[0],
+					)
+					.trim()
 			) {
 				yield fixer.replaceText(classToken, '{');
 
@@ -181,19 +183,19 @@ function switchClassToObject(node, sourceCode) {
 		}
 
 		for (const node of body.body) {
-			yield * switchClassMemberToObjectProperty(node, sourceCode, fixer);
+			yield* switchClassMemberToObjectProperty(node, sourceCode, fixer);
 		}
 	};
 }
 
 function create(context) {
-	context.on(['ClassDeclaration', 'ClassExpression'], node => {
+	context.on(['ClassDeclaration', 'ClassExpression'], (node) => {
 		if (
-			node.superClass
-			|| (node.decorators && node.decorators.length > 0)
-			|| node.body.type !== 'ClassBody'
-			|| node.body.body.length === 0
-			|| node.body.body.some(node => !isStaticMember(node))
+			node.superClass ||
+			(node.decorators && node.decorators.length > 0) ||
+			node.body.type !== 'ClassBody' ||
+			node.body.body.length === 0 ||
+			node.body.body.some((node) => !isStaticMember(node))
 		) {
 			return;
 		}

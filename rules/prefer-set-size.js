@@ -7,7 +7,7 @@ const messages = {
 	[MESSAGE_ID]: 'Prefer using `Set#size` instead of `Array#length`.',
 };
 
-const isNewSet = node => isNewExpression(node, {name: 'Set'});
+const isNewSet = (node) => isNewExpression(node, {name: 'Set'});
 
 function isSet(node, scope) {
 	if (isNewSet(node)) {
@@ -31,33 +31,35 @@ function isSet(node, scope) {
 	}
 
 	const declarator = definition.node;
-	return declarator.type === 'VariableDeclarator'
-		&& declarator.id.type === 'Identifier'
-		&& isNewSet(definition.node.init);
+	return (
+		declarator.type === 'VariableDeclarator' &&
+		declarator.id.type === 'Identifier' &&
+		isNewSet(definition.node.init)
+	);
 }
 
 // `[...set].length` -> `set.size`
 function fix(sourceCode, lengthAccessNodes) {
-	const {
-		object: arrayExpression,
-		property,
-	} = lengthAccessNodes;
+	const {object: arrayExpression, property} = lengthAccessNodes;
 	const set = arrayExpression.elements[0].argument;
 
-	if (sourceCode.getCommentsInside(arrayExpression).length > sourceCode.getCommentsInside(set).length) {
+	if (
+		sourceCode.getCommentsInside(arrayExpression).length >
+		sourceCode.getCommentsInside(set).length
+	) {
 		return;
 	}
 
 	/** @param {import('eslint').Rule.RuleFixer} fixer */
-	return function * (fixer) {
+	return function* (fixer) {
 		yield fixer.replaceText(property, 'size');
 		yield fixer.replaceText(arrayExpression, sourceCode.getText(set));
-		yield * fixSpaceAroundKeyword(fixer, lengthAccessNodes, sourceCode);
+		yield* fixSpaceAroundKeyword(fixer, lengthAccessNodes, sourceCode);
 	};
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
@@ -66,10 +68,10 @@ const create = context => {
 				!isMemberExpression(node, {
 					property: 'length',
 					optional: false,
-				})
-				|| node.object.type !== 'ArrayExpression'
-				|| node.object.elements.length !== 1
-				|| node.object.elements[0]?.type !== 'SpreadElement'
+				}) ||
+				node.object.type !== 'ArrayExpression' ||
+				node.object.elements.length !== 1 ||
+				node.object.elements[0]?.type !== 'SpreadElement'
 			) {
 				return;
 			}

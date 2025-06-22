@@ -8,17 +8,11 @@ const messages = {
 	[SUGGESTION_MESSAGE_ID]: 'Replace `{{match}}` with `{{suggest}}`.',
 };
 
-const ignoredIdentifier = new Set([
-	'gql',
-	'html',
-	'svg',
-]);
+const ignoredIdentifier = new Set(['gql', 'html', 'svg']);
 
-const ignoredMemberExpressionObject = new Set([
-	'styled',
-]);
+const ignoredMemberExpressionObject = new Set(['styled']);
 
-const isIgnoredTag = node => {
+const isIgnoredTag = (node) => {
 	if (!node.parent || !node.parent.parent || !node.parent.parent.tag) {
 		return false;
 	}
@@ -32,8 +26,8 @@ const isIgnoredTag = node => {
 	if (tag.type === 'MemberExpression') {
 		const {object} = tag;
 		if (
-			object.type === 'Identifier'
-			&& ignoredMemberExpressionObject.has(object.name)
+			object.type === 'Identifier' &&
+			ignoredMemberExpressionObject.has(object.name)
 		) {
 			return true;
 		}
@@ -43,25 +37,24 @@ const isIgnoredTag = node => {
 };
 
 function getReplacements(patterns) {
-	return Object.entries(patterns)
-		.map(([match, options]) => {
-			if (typeof options === 'string') {
-				options = {
-					suggest: options,
-				};
-			}
-
-			return {
-				match,
-				regex: new RegExp(match, 'gu'),
-				fix: true,
-				...options,
+	return Object.entries(patterns).map(([match, options]) => {
+		if (typeof options === 'string') {
+			options = {
+				suggest: options,
 			};
-		});
+		}
+
+		return {
+			match,
+			regex: new RegExp(match, 'gu'),
+			fix: true,
+			...options,
+		};
+	});
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {patterns} = {
 		patterns: {},
 		...context.options[0],
@@ -72,7 +65,7 @@ const create = context => {
 		return;
 	}
 
-	context.on(['Literal', 'TemplateElement'], node => {
+	context.on(['Literal', 'TemplateElement'], (node) => {
 		const {type, value, raw} = node;
 
 		let string;
@@ -92,7 +85,13 @@ const create = context => {
 			return;
 		}
 
-		const {fix: autoFix, message = defaultMessage, match, suggest, regex} = replacement;
+		const {
+			fix: autoFix,
+			message = defaultMessage,
+			match,
+			suggest,
+			regex,
+		} = replacement;
 		const problem = {
 			node,
 			message,
@@ -103,19 +102,23 @@ const create = context => {
 		};
 
 		const fixed = string.replace(regex, suggest);
-		const fix = type === 'Literal'
-			? fixer => {
-				const [quote] = raw;
-				return fixer.replaceText(
-					node,
-					node.parent.type === 'JSXAttribute' ? quote + fixed + quote : escapeString(fixed, quote),
-				);
-			}
-			: fixer => replaceTemplateElement(
-				fixer,
-				node,
-				escapeTemplateElementRaw(fixed),
-			);
+		const fix =
+			type === 'Literal'
+				? (fixer) => {
+						const [quote] = raw;
+						return fixer.replaceText(
+							node,
+							node.parent.type === 'JSXAttribute'
+								? quote + fixed + quote
+								: escapeString(fixed, quote),
+						);
+					}
+				: (fixer) =>
+						replaceTemplateElement(
+							fixer,
+							node,
+							escapeTemplateElementRaw(fixed),
+						);
 
 		if (autoFix) {
 			problem.fix = fix;
@@ -146,9 +149,7 @@ const schema = [
 						},
 						{
 							type: 'object',
-							required: [
-								'suggest',
-							],
+							required: ['suggest'],
 							properties: {
 								suggest: {
 									type: 'string',

@@ -1,7 +1,10 @@
 import {isParenthesized, getStaticValue} from '@eslint-community/eslint-utils';
 import {checkVueTemplate} from './utils/rule.js';
 import {isRegexLiteral, isNewExpression, isMethodCall} from './ast/index.js';
-import {isBooleanNode, shouldAddParenthesesToMemberExpressionObject} from './utils/index.js';
+import {
+	isBooleanNode,
+	shouldAddParenthesesToMemberExpressionObject,
+} from './utils/index.js';
 
 const REGEXP_EXEC = 'regexp-exec';
 const STRING_MATCH = 'string-match';
@@ -15,13 +18,14 @@ const messages = {
 const cases = [
 	{
 		type: REGEXP_EXEC,
-		test: node => isMethodCall(node, {
-			method: 'exec',
-			argumentsLength: 1,
-			optionalCall: false,
-			optionalMember: false,
-		}),
-		getNodes: node => ({
+		test: (node) =>
+			isMethodCall(node, {
+				method: 'exec',
+				argumentsLength: 1,
+				optionalCall: false,
+				optionalMember: false,
+			}),
+		getNodes: (node) => ({
 			stringNode: node.arguments[0],
 			methodNode: node.callee.property,
 			regexpNode: node.callee.object,
@@ -30,25 +34,26 @@ const cases = [
 	},
 	{
 		type: STRING_MATCH,
-		test: node => isMethodCall(node, {
-			method: 'match',
-			argumentsLength: 1,
-			optionalCall: false,
-			optionalMember: false,
-		}),
-		getNodes: node => ({
+		test: (node) =>
+			isMethodCall(node, {
+				method: 'match',
+				argumentsLength: 1,
+				optionalCall: false,
+				optionalMember: false,
+			}),
+		getNodes: (node) => ({
 			stringNode: node.callee.object,
 			methodNode: node.callee.property,
 			regexpNode: node.arguments[0],
 		}),
-		* fix(fixer, {stringNode, methodNode, regexpNode}, sourceCode) {
+		*fix(fixer, {stringNode, methodNode, regexpNode}, sourceCode) {
 			yield fixer.replaceText(methodNode, 'test');
 
 			let stringText = sourceCode.getText(stringNode);
 			if (
-				!isParenthesized(regexpNode, sourceCode)
+				!isParenthesized(regexpNode, sourceCode) &&
 				// Only `SequenceExpression` need add parentheses
-				&& stringNode.type === 'SequenceExpression'
+				stringNode.type === 'SequenceExpression'
 			) {
 				stringText = `(${stringText})`;
 			}
@@ -57,8 +62,8 @@ const cases = [
 
 			let regexpText = sourceCode.getText(regexpNode);
 			if (
-				!isParenthesized(stringNode, sourceCode)
-				&& shouldAddParenthesesToMemberExpressionObject(regexpNode, sourceCode)
+				!isParenthesized(stringNode, sourceCode) &&
+				shouldAddParenthesesToMemberExpressionObject(regexpNode, sourceCode)
 			) {
 				regexpText = `(${regexpText})`;
 			}
@@ -70,7 +75,8 @@ const cases = [
 	},
 ];
 
-const isRegExpNode = node => isRegexLiteral(node) || isNewExpression(node, {name: 'RegExp'});
+const isRegExpNode = (node) =>
+	isRegexLiteral(node) || isNewExpression(node, {name: 'RegExp'});
 
 const isRegExpWithoutGlobalFlag = (node, scope) => {
 	if (isRegexLiteral(node)) {
@@ -86,14 +92,13 @@ const isRegExpWithoutGlobalFlag = (node, scope) => {
 
 	const {value} = staticResult;
 	return (
-		Object.prototype.toString.call(value) === '[object RegExp]'
-		&& !value.global
+		Object.prototype.toString.call(value) === '[object RegExp]' && !value.global
 	);
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
-	* CallExpression(node) {
+const create = (context) => ({
+	*CallExpression(node) {
 		if (!isBooleanNode(node)) {
 			return;
 		}
@@ -116,11 +121,11 @@ const create = context => ({
 			};
 
 			const {sourceCode} = context;
-			const fixFunction = fixer => fix(fixer, nodes, sourceCode);
+			const fixFunction = (fixer) => fix(fixer, nodes, sourceCode);
 
 			if (
-				isRegExpNode(regexpNode)
-				|| isRegExpWithoutGlobalFlag(regexpNode, sourceCode.getScope(regexpNode))
+				isRegExpNode(regexpNode) ||
+				isRegExpWithoutGlobalFlag(regexpNode, sourceCode.getScope(regexpNode))
 			) {
 				problem.fix = fixFunction;
 			} else {
@@ -143,7 +148,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `RegExp#test()` over `String#match()` and `RegExp#exec()`.',
+			description:
+				'Prefer `RegExp#test()` over `String#match()` and `RegExp#exec()`.',
 			recommended: true,
 		},
 		fixable: 'code',

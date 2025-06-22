@@ -7,7 +7,8 @@ Checks if the given identifier node is shadowed in the given scope.
 */
 export default function isUnresolvedVariable(node, context) {
 	const scope = context.sourceCode.getScope(node);
-	const reference = scope.references
-		.find(reference => reference.identifier === node);
+	const reference = scope.references.find(
+		(reference) => reference.identifier === node,
+	);
 	return !reference.resolved;
 }

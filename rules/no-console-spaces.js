@@ -3,45 +3,40 @@ import {isStringLiteral, isMethodCall} from './ast/index.js';
 
 const MESSAGE_ID = 'no-console-spaces';
 const messages = {
-	[MESSAGE_ID]: 'Do not use {{position}} space between `console.{{method}}` parameters.',
+	[MESSAGE_ID]:
+		'Do not use {{position}} space between `console.{{method}}` parameters.',
 };
 
 // Find exactly one leading space, allow exactly one space
-const hasLeadingSpace = value => value.length > 1 && value.charAt(0) === ' ' && value.charAt(1) !== ' ';
+const hasLeadingSpace = (value) =>
+	value.length > 1 && value.charAt(0) === ' ' && value.charAt(1) !== ' ';
 
 // Find exactly one trailing space, allow exactly one space
-const hasTrailingSpace = value => value.length > 1 && value.at(-1) === ' ' && value.at(-2) !== ' ';
+const hasTrailingSpace = (value) =>
+	value.length > 1 && value.at(-1) === ' ' && value.at(-2) !== ' ';
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 	const getProblem = (node, method, position) => {
 		const [start, end] = sourceCode.getRange(node);
-		const index = position === 'leading'
-			? start + 1
-			: end - 2;
+		const index = position === 'leading' ? start + 1 : end - 2;
 		const range = [index, index + 1];
 
 		return {
 			loc: toLocation(range, sourceCode),
 			messageId: MESSAGE_ID,
 			data: {method, position},
-			fix: fixer => fixer.removeRange(range),
+			fix: (fixer) => fixer.removeRange(range),
 		};
 	};
 
 	return {
-		* CallExpression(node) {
+		*CallExpression(node) {
 			if (
 				!isMethodCall(node, {
 					object: 'console',
-					methods: [
-						'log',
-						'debug',
-						'info',
-						'warn',
-						'error',
-					],
+					methods: ['log', 'debug', 'info', 'warn', 'error'],
 					minimumArguments: 1,
 					optionalCall: false,
 					optionalMember: false,
@@ -78,7 +73,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Do not use leading/trailing space between `console.log` parameters.',
+			description:
+				'Do not use leading/trailing space between `console.log` parameters.',
 			recommended: true,
 		},
 		fixable: 'code',

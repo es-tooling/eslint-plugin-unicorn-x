@@ -8,7 +8,7 @@ const messages = {
 	[MESSAGE_ID_SUGGESTION]: 'Replace `{{value}}` with `{{replacement}}`.',
 };
 
-const getReplacement = encoding => {
+const getReplacement = (encoding) => {
 	switch (encoding.toLowerCase()) {
 		// eslint-disable-next-line unicorn/text-encoding-identifier-case
 		case 'utf-8':
@@ -24,14 +24,14 @@ const getReplacement = encoding => {
 };
 
 // `fs.{readFile,readFileSync}()`
-const isFsReadFileEncoding = node =>
+const isFsReadFileEncoding = (node) =>
 	isMethodCall(node.parent, {
 		methods: ['readFile', 'readFileSync'],
 		optionalCall: false,
 		optionalMember: false,
-	})
-	&& node.parent.arguments[1] === node
-	&& node.parent.arguments[0].type !== 'SpreadElement';
+	}) &&
+	node.parent.arguments[1] === node &&
+	node.parent.arguments[0].type !== 'SpreadElement';
 
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = () => ({
@@ -42,15 +42,15 @@ const create = () => ({
 
 		if (
 			// eslint-disable-next-line unicorn/text-encoding-identifier-case
-			node.value === 'utf-8'
-			&& node.parent.type === 'JSXAttribute'
-			&& node.parent.value === node
-			&& node.parent.name.type === 'JSXIdentifier'
-			&& node.parent.name.name.toLowerCase() === 'charset'
-			&& node.parent.parent.type === 'JSXOpeningElement'
-			&& node.parent.parent.attributes.includes(node.parent)
-			&& node.parent.parent.name.type === 'JSXIdentifier'
-			&& node.parent.parent.name.name.toLowerCase() === 'meta'
+			node.value === 'utf-8' &&
+			node.parent.type === 'JSXAttribute' &&
+			node.parent.value === node &&
+			node.parent.name.type === 'JSXIdentifier' &&
+			node.parent.name.name.toLowerCase() === 'charset' &&
+			node.parent.parent.type === 'JSXOpeningElement' &&
+			node.parent.parent.attributes.includes(node.parent) &&
+			node.parent.parent.name.type === 'JSXIdentifier' &&
+			node.parent.parent.name.name.toLowerCase() === 'meta'
 		) {
 			return;
 		}
@@ -64,7 +64,7 @@ const create = () => ({
 		}
 
 		/** @param {import('eslint').Rule.RuleFixer} fixer */
-		const fix = fixer => replaceStringRaw(fixer, node, replacement);
+		const fix = (fixer) => replaceStringRaw(fixer, node, replacement);
 
 		const problem = {
 			node,
@@ -83,7 +83,7 @@ const create = () => ({
 		problem.suggest = [
 			{
 				messageId: MESSAGE_ID_SUGGESTION,
-				fix: fixer => replaceStringRaw(fixer, node, replacement),
+				fix: (fixer) => replaceStringRaw(fixer, node, replacement),
 			},
 		];
 

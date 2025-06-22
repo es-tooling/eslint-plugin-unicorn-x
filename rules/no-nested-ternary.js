@@ -4,29 +4,32 @@ const MESSAGE_ID_TOO_DEEP = 'too-deep';
 const MESSAGE_ID_SHOULD_PARENTHESIZED = 'should-parenthesized';
 const messages = {
 	[MESSAGE_ID_TOO_DEEP]: 'Do not nest ternary expressions.',
-	[MESSAGE_ID_SHOULD_PARENTHESIZED]: 'Nest ternary expression should be parenthesized.',
+	[MESSAGE_ID_SHOULD_PARENTHESIZED]:
+		'Nest ternary expression should be parenthesized.',
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	ConditionalExpression(node) {
-		if ([
-			node.test,
-			node.consequent,
-			node.alternate,
-		].some(node => node.type === 'ConditionalExpression')) {
+		if (
+			[node.test, node.consequent, node.alternate].some(
+				(node) => node.type === 'ConditionalExpression',
+			)
+		) {
 			return;
 		}
 
 		const {sourceCode} = context;
 		const ancestors = sourceCode.getAncestors(node).reverse();
-		const nestLevel = ancestors.findIndex(node => node.type !== 'ConditionalExpression');
+		const nestLevel = ancestors.findIndex(
+			(node) => node.type !== 'ConditionalExpression',
+		);
 
 		if (nestLevel === 1 && !isParenthesized(node, sourceCode)) {
 			return {
 				node,
 				messageId: MESSAGE_ID_SHOULD_PARENTHESIZED,
-				fix: fixer => [
+				fix: (fixer) => [
 					fixer.insertTextBefore(node, '('),
 					fixer.insertTextAfter(node, ')'),
 				],

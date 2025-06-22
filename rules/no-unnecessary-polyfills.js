@@ -24,7 +24,7 @@ const prefixes = '(mdn-polyfills/|polyfill-)';
 const suffixes = '(-polyfill)';
 const delimiter = String.raw`(\.|-|\.prototype\.|/)?`;
 
-const polyfills = Object.keys(compatData).map(feature => {
+const polyfills = Object.keys(compatData).map((feature) => {
 	let [ecmaVersion, constructorName, methodName = ''] = feature.split('.');
 
 	if (ecmaVersion === 'es') {
@@ -38,7 +38,8 @@ const polyfills = Object.keys(compatData).map(feature => {
 
 	const patterns = [
 		`^((${prefixes}?(`,
-		methodName && `(${ecmaVersion}${delimiter}${constructorName}${delimiter}${methodName})|`, // Ex: es6-array-copy-within
+		methodName &&
+			`(${ecmaVersion}${delimiter}${constructorName}${delimiter}${methodName})|`, // Ex: es6-array-copy-within
 		methodName && `(${constructorName}${delimiter}${methodName})|`, // Ex: array-copy-within
 		`(${ecmaVersion}${delimiter}${constructorName}))`, // Ex: es6-array
 		`${suffixes}?)|`,
@@ -68,7 +69,10 @@ function getTargets(options, dirname) {
 }
 
 function create(context) {
-	const targets = getTargets(context.options[0], path.dirname(context.filename));
+	const targets = getTargets(
+		context.options[0],
+		path.dirname(context.filename),
+	);
 	if (!targets) {
 		return {};
 	}
@@ -81,25 +85,33 @@ function create(context) {
 		return {};
 	}
 
-	const checkFeatures = features => !features.every(feature => unavailableFeatures.includes(feature));
+	const checkFeatures = (features) =>
+		!features.every((feature) => unavailableFeatures.includes(feature));
 
 	return {
 		Literal(node) {
 			if (
 				!(
-					(['ImportDeclaration', 'ImportExpression'].includes(node.parent.type) && node.parent.source === node)
-					|| (isStaticRequire(node.parent) && node.parent.arguments[0] === node)
+					(['ImportDeclaration', 'ImportExpression'].includes(
+						node.parent.type,
+					) &&
+						node.parent.source === node) ||
+					(isStaticRequire(node.parent) && node.parent.arguments[0] === node)
 				)
 			) {
 				return;
 			}
 
 			const importedModule = node.value;
-			if (typeof importedModule !== 'string' || ['.', '/'].includes(importedModule[0])) {
+			if (
+				typeof importedModule !== 'string' ||
+				['.', '/'].includes(importedModule[0])
+			) {
 				return;
 			}
 
-			const coreJsModuleFeatures = coreJsEntries[importedModule.replace('core-js-pure', 'core-js')];
+			const coreJsModuleFeatures =
+				coreJsEntries[importedModule.replace('core-js-pure', 'core-js')];
 
 			if (coreJsModuleFeatures) {
 				if (coreJsModuleFeatures.length > 1) {
@@ -119,10 +131,13 @@ function create(context) {
 				return;
 			}
 
-			const polyfill = polyfills.find(({pattern}) => pattern.test(importedModule));
+			const polyfill = polyfills.find(({pattern}) =>
+				pattern.test(importedModule),
+			);
 			if (polyfill) {
 				const [, namespace, method = ''] = polyfill.feature.split('.');
-				const features = coreJsEntries[`core-js/full/${namespace}${method && '/'}${method}`];
+				const features =
+					coreJsEntries[`core-js/full/${namespace}${method && '/'}${method}`];
 
 				if (features && checkFeatures(features)) {
 					return {node, messageId: MESSAGE_ID_POLYFILL};
@@ -161,7 +176,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Enforce the use of built-in methods instead of unnecessary polyfills.',
+			description:
+				'Enforce the use of built-in methods instead of unnecessary polyfills.',
 			recommended: true,
 		},
 		schema,

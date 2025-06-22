@@ -1,4 +1,7 @@
-import {isOpeningParenToken, isClosingParenToken} from '@eslint-community/eslint-utils';
+import {
+	isOpeningParenToken,
+	isClosingParenToken,
+} from '@eslint-community/eslint-utils';
 import assertToken from './utils/assert-token.js';
 
 const MESSAGE_ID_WITH_NAME = 'with-name';
@@ -9,7 +12,7 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CatchClause(catchClause) {
 		const node = catchClause.param;
 		if (!node) {
@@ -19,7 +22,7 @@ const create = context => ({
 		const {sourceCode} = context;
 		const variables = sourceCode.getDeclaredVariables(node.parent);
 
-		if (variables.some(variable => variable.references.length > 0)) {
+		if (variables.some((variable) => variable.references.length > 0)) {
 			return;
 		}
 
@@ -27,9 +30,10 @@ const create = context => ({
 
 		return {
 			node,
-			messageId: type === 'Identifier' ? MESSAGE_ID_WITH_NAME : MESSAGE_ID_WITHOUT_NAME,
+			messageId:
+				type === 'Identifier' ? MESSAGE_ID_WITH_NAME : MESSAGE_ID_WITHOUT_NAME,
 			data: {name},
-			* fix(fixer) {
+			*fix(fixer) {
 				const tokenBefore = sourceCode.getTokenBefore(node);
 				assertToken(tokenBefore, {
 					test: isOpeningParenToken,
@@ -50,10 +54,16 @@ const create = context => ({
 
 				const [, endOfClosingParenthesis] = sourceCode.getRange(tokenAfter);
 				const [startOfCatchClauseBody] = sourceCode.getRange(parent.body);
-				const text = sourceCode.text.slice(endOfClosingParenthesis, startOfCatchClauseBody);
+				const text = sourceCode.text.slice(
+					endOfClosingParenthesis,
+					startOfCatchClauseBody,
+				);
 				const leadingSpacesLength = text.length - text.trimStart().length;
 				if (leadingSpacesLength !== 0) {
-					yield fixer.removeRange([endOfClosingParenthesis, endOfClosingParenthesis + leadingSpacesLength]);
+					yield fixer.removeRange([
+						endOfClosingParenthesis,
+						endOfClosingParenthesis + leadingSpacesLength,
+					]);
 				}
 			},
 		};

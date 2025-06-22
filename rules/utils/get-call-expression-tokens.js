@@ -1,4 +1,7 @@
-import {isOpeningParenToken, isCommaToken} from '@eslint-community/eslint-utils';
+import {
+	isOpeningParenToken,
+	isCommaToken,
+} from '@eslint-community/eslint-utils';
 
 /** @typedef {import('estree').CallExpression} CallExpression */
 /** @typedef {import('eslint').AST.Token} Token */
@@ -15,12 +18,17 @@ Get the `openingParenthesisToken`, `closingParenthesisToken`, and `trailingComma
 }}
 */
 export default function getCallExpressionTokens(sourceCode, callExpression) {
-	const openingParenthesisToken = sourceCode.getTokenAfter(callExpression.callee, isOpeningParenToken);
-	const [
-		penultimateToken,
-		closingParenthesisToken,
-	] = sourceCode.getLastTokens(callExpression, 2);
-	const trailingCommaToken = isCommaToken(penultimateToken) ? penultimateToken : undefined;
+	const openingParenthesisToken = sourceCode.getTokenAfter(
+		callExpression.callee,
+		isOpeningParenToken,
+	);
+	const [penultimateToken, closingParenthesisToken] = sourceCode.getLastTokens(
+		callExpression,
+		2,
+	);
+	const trailingCommaToken = isCommaToken(penultimateToken)
+		? penultimateToken
+		: undefined;
 
 	return {
 		openingParenthesisToken,

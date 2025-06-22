@@ -9,12 +9,14 @@ function getObjectLengthOrInfinityDescription(node, object) {
 	}
 
 	// `Number.POSITIVE_INFINITY`
-	if (isMemberExpression(node, {
-		object: 'Number',
-		property: 'POSITIVE_INFINITY',
-		computed: false,
-		optional: false,
-	})) {
+	if (
+		isMemberExpression(node, {
+			object: 'Number',
+			property: 'POSITIVE_INFINITY',
+			computed: false,
+			optional: false,
+		})
+	) {
 		return 'Number.POSITIVE_INFINITY';
 	}
 
@@ -25,10 +27,12 @@ function getObjectLengthOrInfinityDescription(node, object) {
 	}
 
 	// `object.length`
-	if (!(
-		isMemberExpression(node, {property: 'length', computed: false})
-		&& isSameReference(object, node.object)
-	)) {
+	if (
+		!(
+			isMemberExpression(node, {property: 'length', computed: false}) &&
+			isSameReference(object, node.object)
+		)
+	) {
 		return;
 	}
 
@@ -37,12 +41,14 @@ function getObjectLengthOrInfinityDescription(node, object) {
 
 /** @param {import('eslint').Rule.RuleContext} context */
 function listen(context, {methods, messageId}) {
-	context.on('CallExpression', callExpression => {
-		if (!isMethodCall(callExpression, {
-			methods,
-			argumentsLength: 2,
-			optionalCall: false,
-		})) {
+	context.on('CallExpression', (callExpression) => {
+		if (
+			!isMethodCall(callExpression, {
+				methods,
+				argumentsLength: 2,
+				optionalCall: false,
+			})
+		) {
 			return;
 		}
 
@@ -72,7 +78,7 @@ function listen(context, {methods, messageId}) {
 			messageId,
 			data: messageData,
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			fix: fixer => removeArgument(fixer, secondArgument, context.sourceCode),
+			fix: (fixer) => removeArgument(fixer, secondArgument, context.sourceCode),
 		};
 	});
 }

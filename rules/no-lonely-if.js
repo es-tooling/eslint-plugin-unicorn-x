@@ -1,23 +1,28 @@
-import {isParenthesized, isNotSemicolonToken} from '@eslint-community/eslint-utils';
+import {
+	isParenthesized,
+	isNotSemicolonToken,
+} from '@eslint-community/eslint-utils';
 import {needsSemicolon} from './utils/index.js';
 import {removeSpacesAfter} from './fix/index.js';
 
 const MESSAGE_ID = 'no-lonely-if';
 const messages = {
-	[MESSAGE_ID]: 'Unexpected `if` as the only statement in a `if` block without `else`.',
+	[MESSAGE_ID]:
+		'Unexpected `if` as the only statement in a `if` block without `else`.',
 };
 
-const isIfStatementWithoutAlternate = node => node.type === 'IfStatement' && !node.alternate;
+const isIfStatementWithoutAlternate = (node) =>
+	node.type === 'IfStatement' && !node.alternate;
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#Table
 // Lower precedence than `&&`
-const needParenthesis = node => (
-	(node.type === 'LogicalExpression' && (node.operator === '||' || node.operator === '??'))
-	|| node.type === 'ConditionalExpression'
-	|| node.type === 'AssignmentExpression'
-	|| node.type === 'YieldExpression'
-	|| node.type === 'SequenceExpression'
-);
+const needParenthesis = (node) =>
+	(node.type === 'LogicalExpression' &&
+		(node.operator === '||' || node.operator === '??')) ||
+	node.type === 'ConditionalExpression' ||
+	node.type === 'AssignmentExpression' ||
+	node.type === 'YieldExpression' ||
+	node.type === 'SequenceExpression';
 
 function getIfStatementTokens(node, sourceCode) {
 	const tokens = {};
@@ -37,7 +42,7 @@ function getIfStatementTokens(node, sourceCode) {
 }
 
 function fix(innerIfStatement, sourceCode) {
-	return function * (fixer) {
+	return function* (fixer) {
 		const outerIfStatement = (
 			innerIfStatement.parent.type === 'BlockStatement'
 				? innerIfStatement.parent
@@ -62,7 +67,9 @@ function fix(innerIfStatement, sourceCode) {
 			yield removeSpacesAfter(outer.openingBraceToken, sourceCode, fixer);
 			yield fixer.remove(outer.closingBraceToken);
 
-			const tokenBefore = sourceCode.getTokenBefore(outer.closingBraceToken, {includeComments: true});
+			const tokenBefore = sourceCode.getTokenBefore(outer.closingBraceToken, {
+				includeComments: true,
+			});
 			yield removeSpacesAfter(tokenBefore, sourceCode, fixer);
 		}
 
@@ -77,11 +84,11 @@ function fix(innerIfStatement, sourceCode) {
 		yield fixer.insertTextAfter(outer.closingParenthesisToken, ' && ');
 
 		// Remove `()` if `test` don't need it
-		for (const {test, openingParenthesisToken, closingParenthesisToken} of [outer, inner]) {
-			if (
-				isParenthesized(test, sourceCode)
-				|| !needParenthesis(test)
-			) {
+		for (const {test, openingParenthesisToken, closingParenthesisToken} of [
+			outer,
+			inner,
+		]) {
+			if (isParenthesized(test, sourceCode) || !needParenthesis(test)) {
 				yield fixer.remove(openingParenthesisToken);
 				yield fixer.remove(closingParenthesisToken);
 			}
@@ -96,7 +103,10 @@ function fix(innerIfStatement, sourceCode) {
 			const lastToken = sourceCode.getLastToken(inner.consequent);
 			if (isNotSemicolonToken(lastToken)) {
 				const nextToken = sourceCode.getTokenAfter(outer);
-				if (nextToken && needsSemicolon(lastToken, sourceCode, nextToken.value)) {
+				if (
+					nextToken &&
+					needsSemicolon(lastToken, sourceCode, nextToken.value)
+				) {
 					yield fixer.insertTextBefore(nextToken, ';');
 				}
 			}
@@ -105,26 +115,22 @@ function fix(innerIfStatement, sourceCode) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	IfStatement(ifStatement) {
-		if (!(
-			isIfStatementWithoutAlternate(ifStatement)
-			&& (
+		if (
+			!(
+				isIfStatementWithoutAlternate(ifStatement) &&
 				// `if (a) { if (b) {} }`
-				(
-					ifStatement.parent.type === 'BlockStatement'
-					&& ifStatement.parent.body.length === 1
-					&& ifStatement.parent.body[0] === ifStatement
-					&& isIfStatementWithoutAlternate(ifStatement.parent.parent)
-					&& ifStatement.parent.parent.consequent === ifStatement.parent
-				)
-				// `if (a) if (b) {}`
-				|| (
-					isIfStatementWithoutAlternate(ifStatement.parent)
-					&& ifStatement.parent.consequent === ifStatement
-				)
+				((ifStatement.parent.type === 'BlockStatement' &&
+					ifStatement.parent.body.length === 1 &&
+					ifStatement.parent.body[0] === ifStatement &&
+					isIfStatementWithoutAlternate(ifStatement.parent.parent) &&
+					ifStatement.parent.parent.consequent === ifStatement.parent) ||
+					// `if (a) if (b) {}`
+					(isIfStatementWithoutAlternate(ifStatement.parent) &&
+						ifStatement.parent.consequent === ifStatement))
 			)
-		)) {
+		) {
 			return;
 		}
 
@@ -142,7 +148,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Disallow `if` statements as the only statement in `if` blocks without `else`.',
+			description:
+				'Disallow `if` statements as the only statement in `if` blocks without `else`.',
 			recommended: true,
 		},
 		fixable: 'code',

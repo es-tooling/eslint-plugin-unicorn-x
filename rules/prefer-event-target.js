@@ -1,23 +1,24 @@
 import {findVariable} from '@eslint-community/eslint-utils';
 import {getAncestor} from './utils/index.js';
-import {isStaticRequire, isStringLiteral, isMemberExpression} from './ast/index.js';
+import {
+	isStaticRequire,
+	isStringLiteral,
+	isMemberExpression,
+} from './ast/index.js';
 
 const MESSAGE_ID = 'prefer-event-target';
 const messages = {
 	[MESSAGE_ID]: 'Prefer `EventTarget` over `EventEmitter`.',
 };
 
-const packagesShouldBeIgnored = new Set([
-	'@angular/core',
-	'eventemitter3',
-]);
+const packagesShouldBeIgnored = new Set(['@angular/core', 'eventemitter3']);
 
-const isConstVariableDeclarationId = node =>
-	node.parent.type === 'VariableDeclarator'
-	&& node.parent.id === node
-	&& node.parent.parent.type === 'VariableDeclaration'
-	&& node.parent.parent.kind === 'const'
-	&& node.parent.parent.declarations.includes(node.parent);
+const isConstVariableDeclarationId = (node) =>
+	node.parent.type === 'VariableDeclarator' &&
+	node.parent.id === node &&
+	node.parent.parent.type === 'VariableDeclaration' &&
+	node.parent.parent.kind === 'const' &&
+	node.parent.parent.declarations.includes(node.parent);
 
 function isAwaitImportOrRequireFromIgnoredPackages(node) {
 	if (!node) {
@@ -27,7 +28,10 @@ function isAwaitImportOrRequireFromIgnoredPackages(node) {
 	let source;
 	if (isStaticRequire(node)) {
 		[source] = node.arguments;
-	} else if (node.type === 'AwaitExpression' && node.argument.type === 'ImportExpression') {
+	} else if (
+		node.type === 'AwaitExpression' &&
+		node.argument.type === 'ImportExpression'
+	) {
 		({source} = node.argument);
 	}
 
@@ -50,23 +54,27 @@ function isFromIgnoredPackage(node) {
 
 	// `const {EventEmitter} = ...`
 	if (
-		node.parent.type === 'Property'
-		&& node.parent.value === node
-		&& node.parent.key.type === 'Identifier'
-		&& node.parent.key.name === 'EventEmitter'
-		&& node.parent.parent.type === 'ObjectPattern'
-		&& node.parent.parent.properties.includes(node.parent)
-		&& isConstVariableDeclarationId(node.parent.parent)
-		&& isAwaitImportOrRequireFromIgnoredPackages(node.parent.parent.parent.init)
+		node.parent.type === 'Property' &&
+		node.parent.value === node &&
+		node.parent.key.type === 'Identifier' &&
+		node.parent.key.name === 'EventEmitter' &&
+		node.parent.parent.type === 'ObjectPattern' &&
+		node.parent.parent.properties.includes(node.parent) &&
+		isConstVariableDeclarationId(node.parent.parent) &&
+		isAwaitImportOrRequireFromIgnoredPackages(node.parent.parent.parent.init)
 	) {
 		return true;
 	}
 
 	// `const EventEmitter = (...).EventEmitter`
 	if (
-		isConstVariableDeclarationId(node)
-		&& isMemberExpression(node.parent.init, {property: 'EventEmitter', optional: false, computed: false})
-		&& isAwaitImportOrRequireFromIgnoredPackages(node.parent.init.object)
+		isConstVariableDeclarationId(node) &&
+		isMemberExpression(node.parent.init, {
+			property: 'EventEmitter',
+			optional: false,
+			computed: false,
+		}) &&
+		isAwaitImportOrRequireFromIgnoredPackages(node.parent.init.object)
 	) {
 		return true;
 	}
@@ -75,18 +83,17 @@ function isFromIgnoredPackage(node) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	Identifier(node) {
-		if (!(
-			node.name === 'EventEmitter'
-			&& (
-				(
-					(node.parent.type === 'ClassDeclaration' || node.parent.type === 'ClassExpression')
-					&& node.parent.superClass === node
-				)
-				|| (node.parent.type === 'NewExpression' && node.parent.callee === node)
+		if (
+			!(
+				node.name === 'EventEmitter' &&
+				(((node.parent.type === 'ClassDeclaration' ||
+					node.parent.type === 'ClassExpression') &&
+					node.parent.superClass === node) ||
+					(node.parent.type === 'NewExpression' && node.parent.callee === node))
 			)
-		)) {
+		) {
 			return;
 		}
 

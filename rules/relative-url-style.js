@@ -23,8 +23,12 @@ const isSafeToAddDotSlashToUrl = (url, base) => {
 	return false;
 };
 
-const isSafeToAddDotSlash = (url, bases = TEST_URL_BASES) => bases.every(base => isSafeToAddDotSlashToUrl(url, base));
-const isSafeToRemoveDotSlash = (url, bases = TEST_URL_BASES) => bases.every(base => isSafeToAddDotSlashToUrl(url.slice(DOT_SLASH.length), base));
+const isSafeToAddDotSlash = (url, bases = TEST_URL_BASES) =>
+	bases.every((base) => isSafeToAddDotSlashToUrl(url, base));
+const isSafeToRemoveDotSlash = (url, bases = TEST_URL_BASES) =>
+	bases.every((base) =>
+		isSafeToAddDotSlashToUrl(url.slice(DOT_SLASH.length), base),
+	);
 
 function canAddDotSlash(node, sourceCode) {
 	const url = node.value;
@@ -36,8 +40,8 @@ function canAddDotSlash(node, sourceCode) {
 	const staticValueResult = getStaticValue(baseNode, sourceCode.getScope(node));
 
 	if (
-		typeof staticValueResult?.value === 'string'
-		&& isSafeToAddDotSlash(url, [staticValueResult.value])
+		typeof staticValueResult?.value === 'string' &&
+		isSafeToAddDotSlash(url, [staticValueResult.value])
 	) {
 		return true;
 	}
@@ -55,8 +59,8 @@ function canRemoveDotSlash(node, sourceCode) {
 	const staticValueResult = getStaticValue(baseNode, sourceCode.getScope(node));
 
 	if (
-		typeof staticValueResult?.value === 'string'
-		&& isSafeToRemoveDotSlash(node.value, [staticValueResult.value])
+		typeof staticValueResult?.value === 'string' &&
+		isSafeToRemoveDotSlash(node.value, [staticValueResult.value])
 	) {
 		return true;
 	}
@@ -70,7 +74,8 @@ function addDotSlash(node, sourceCode) {
 	}
 
 	const insertPosition = sourceCode.getRange(node)[0] + 1; // After quote
-	return fixer => fixer.insertTextAfterRange([insertPosition, insertPosition], DOT_SLASH);
+	return (fixer) =>
+		fixer.insertTextAfterRange([insertPosition, insertPosition], DOT_SLASH);
 }
 
 function removeDotSlash(node, sourceCode) {
@@ -79,11 +84,11 @@ function removeDotSlash(node, sourceCode) {
 	}
 
 	const start = sourceCode.getRange(node)[0] + 1; // After quote
-	return fixer => fixer.removeRange([start, start + 2]);
+	return (fixer) => fixer.removeRange([start, start + 2]);
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const style = context.options[0] || 'never';
 
 	const listeners = {};
@@ -91,10 +96,12 @@ const create = context => {
 	// TemplateLiteral are not always safe to remove `./`, but if it's starts with `./` we'll report
 	if (style === 'never') {
 		listeners.TemplateLiteral = function (node) {
-			if (!(
-				isNewExpression(node.parent, {name: 'URL', argumentsLength: 2})
-				&& node.parent.arguments[0] === node
-			)) {
+			if (
+				!(
+					isNewExpression(node.parent, {name: 'URL', argumentsLength: 2}) &&
+					node.parent.arguments[0] === node
+				)
+			) {
 				return;
 			}
 
@@ -120,16 +127,21 @@ const create = context => {
 	}
 
 	listeners.Literal = function (node) {
-		if (!(
-			isStringLiteral(node)
-			&& isNewExpression(node.parent, {name: 'URL', argumentsLength: 2})
-			&& node.parent.arguments[0] === node
-		)) {
+		if (
+			!(
+				isStringLiteral(node) &&
+				isNewExpression(node.parent, {name: 'URL', argumentsLength: 2}) &&
+				node.parent.arguments[0] === node
+			)
+		) {
 			return;
 		}
 
 		const {sourceCode} = context;
-		const fix = (style === 'never' ? removeDotSlash : addDotSlash)(node, sourceCode);
+		const fix = (style === 'never' ? removeDotSlash : addDotSlash)(
+			node,
+			sourceCode,
+		);
 
 		if (!fix) {
 			return;

@@ -13,10 +13,10 @@ function isNotReference(node) {
 			return (
 				// `function foo(Identifier) {}`
 				// `const foo = function(Identifier) {}`
-				parent.params.includes(node)
+				parent.params.includes(node) ||
 				// `function Identifier() {}`
 				// `const foo = function Identifier() {}`
-				|| parent.id === node
+				parent.id === node
 			);
 		}
 
@@ -48,19 +48,14 @@ function isNotReference(node) {
 		// `const {foo: Identifier} = {}`
 		case 'Property': {
 			return (
-				(
-					!parent.computed
-					&& parent.key === node
-					&& (
-						(parent.parent.type === 'ObjectExpression' || parent.parent.type === 'ObjectPattern')
-						&& parent.parent.properties.includes(parent)
-					)
-				)
-				|| (
-					parent.value === node
-					&& parent.parent.type === 'ObjectPattern'
-					&& parent.parent.properties.includes(parent)
-				)
+				(!parent.computed &&
+					parent.key === node &&
+					(parent.parent.type === 'ObjectExpression' ||
+						parent.parent.type === 'ObjectPattern') &&
+					parent.parent.properties.includes(parent)) ||
+				(parent.value === node &&
+					parent.parent.type === 'ObjectPattern' &&
+					parent.parent.properties.includes(parent))
 			);
 		}
 
@@ -98,13 +93,13 @@ function isNotReference(node) {
 		// `import {foo as Identifier} from 'foo'`
 		// `import {Identifier as foo} from 'foo'`
 		case 'ImportSpecifier': {
-			return (parent.local === node || parent.imported === node);
+			return parent.local === node || parent.imported === node;
 		}
 
 		// `export {foo as Identifier}`
 		// `export {Identifier as foo}`
 		case 'ExportSpecifier': {
-			return (parent.local === node || parent.exported === node);
+			return parent.local === node || parent.exported === node;
 		}
 
 		// TypeScript

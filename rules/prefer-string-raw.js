@@ -32,23 +32,24 @@ function unescapeBackslash(raw) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	// eslint-disable-next-line complexity
-	context.on('Literal', node => {
+	context.on('Literal', (node) => {
 		if (
-			!isStringLiteral(node)
-			|| isDirective(node.parent)
-			|| (
-				(
-					node.parent.type === 'ImportDeclaration'
-					|| node.parent.type === 'ExportNamedDeclaration'
-					|| node.parent.type === 'ExportAllDeclaration'
-				) && node.parent.source === node
-			)
-			|| (node.parent.type === 'Property' && !node.parent.computed && node.parent.key === node)
-			|| (node.parent.type === 'JSXAttribute' && node.parent.value === node)
-			|| (node.parent.type === 'TSEnumMember' && (node.parent.initializer === node || node.parent.id === node))
-			|| (node.parent.type === 'ImportAttribute' && (node.parent.key === node || node.parent.value === node))
+			!isStringLiteral(node) ||
+			isDirective(node.parent) ||
+			((node.parent.type === 'ImportDeclaration' ||
+				node.parent.type === 'ExportNamedDeclaration' ||
+				node.parent.type === 'ExportAllDeclaration') &&
+				node.parent.source === node) ||
+			(node.parent.type === 'Property' &&
+				!node.parent.computed &&
+				node.parent.key === node) ||
+			(node.parent.type === 'JSXAttribute' && node.parent.value === node) ||
+			(node.parent.type === 'TSEnumMember' &&
+				(node.parent.initializer === node || node.parent.id === node)) ||
+			(node.parent.type === 'ImportAttribute' &&
+				(node.parent.key === node || node.parent.value === node))
 		) {
 			return;
 		}
@@ -56,11 +57,11 @@ const create = context => {
 		const {sourceCode} = context;
 		const {raw} = node;
 		if (
-			raw.at(-2) === BACKSLASH
-			|| !raw.includes(BACKSLASH + BACKSLASH)
-			|| raw.includes('`')
-			|| raw.includes('${')
-			|| sourceCode.getLoc(node).start.line !== sourceCode.getLoc(node).end.line
+			raw.at(-2) === BACKSLASH ||
+			!raw.includes(BACKSLASH + BACKSLASH) ||
+			raw.includes('`') ||
+			raw.includes('${') ||
+			sourceCode.getLoc(node).start.line !== sourceCode.getLoc(node).end.line
 		) {
 			return;
 		}
@@ -73,9 +74,9 @@ const create = context => {
 		return {
 			node,
 			messageId: MESSAGE_ID,
-			* fix(fixer) {
+			*fix(fixer) {
 				yield fixer.replaceText(node, `String.raw\`${unescaped}\``);
-				yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+				yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 			},
 		};
 	});

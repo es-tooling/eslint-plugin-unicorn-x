@@ -1,26 +1,34 @@
-import {isParenthesized, getParenthesizedRange, toLocation} from './utils/index.js';
+import {
+	isParenthesized,
+	getParenthesizedRange,
+	toLocation,
+} from './utils/index.js';
 
 const MESSAGE_ID_ERROR = 'no-unreadable-iife';
 const messages = {
-	[MESSAGE_ID_ERROR]: 'IIFE with parenthesized arrow function body is considered unreadable.',
+	[MESSAGE_ID_ERROR]:
+		'IIFE with parenthesized arrow function body is considered unreadable.',
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(callExpression) {
 		const {sourceCode} = context;
 
 		if (
-			callExpression.callee.type !== 'ArrowFunctionExpression'
-			|| callExpression.callee.body.type === 'BlockStatement'
-			|| !isParenthesized(callExpression.callee.body, sourceCode)
+			callExpression.callee.type !== 'ArrowFunctionExpression' ||
+			callExpression.callee.body.type === 'BlockStatement' ||
+			!isParenthesized(callExpression.callee.body, sourceCode)
 		) {
 			return;
 		}
 
 		return {
 			node: callExpression,
-			loc: toLocation(getParenthesizedRange(callExpression.callee.body, sourceCode), sourceCode),
+			loc: toLocation(
+				getParenthesizedRange(callExpression.callee.body, sourceCode),
+				sourceCode,
+			),
 			messageId: MESSAGE_ID_ERROR,
 		};
 	},

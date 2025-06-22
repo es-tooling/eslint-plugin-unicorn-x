@@ -23,7 +23,7 @@ const cases = [
 	// `{get [computedKey]() {}}`,
 	{
 		selector: 'ObjectExpression',
-		* getNodes(node, context) {
+		*getNodes(node, context) {
 			for (const property of node.properties) {
 				if (property.type === 'Property' && isPropertyThen(property, context)) {
 					yield property.key;
@@ -38,7 +38,7 @@ const cases = [
 	// `class Foo {static get then() {}}`,
 	{
 		selectors: ['PropertyDefinition', 'MethodDefinition'],
-		* getNodes(node, context) {
+		*getNodes(node, context) {
 			if (getPropertyName(node, context.sourceCode.getScope(node)) === 'then') {
 				yield node.key;
 			}
@@ -49,8 +49,13 @@ const cases = [
 	// `foo[computedKey] = …`
 	{
 		selector: 'MemberExpression',
-		* getNodes(node, context) {
-			if (!(node.parent.type === 'AssignmentExpression' && node.parent.left === node)) {
+		*getNodes(node, context) {
+			if (
+				!(
+					node.parent.type === 'AssignmentExpression' &&
+					node.parent.left === node
+				)
+			) {
 				return;
 			}
 
@@ -64,17 +69,18 @@ const cases = [
 	// `Reflect.defineProperty(foo, 'then', …)`
 	{
 		selector: 'CallExpression',
-		* getNodes(node, context) {
-			if (!(
-				isMethodCall(node, {
-					objects: ['Object', 'Reflect'],
-					method: 'defineProperty',
-					minimumArguments: 3,
-					optionalCall: false,
-					optionalMember: false,
-				})
-				&& node.arguments[0].type !== 'SpreadElement'
-			)) {
+		*getNodes(node, context) {
+			if (
+				!(
+					isMethodCall(node, {
+						objects: ['Object', 'Reflect'],
+						method: 'defineProperty',
+						minimumArguments: 3,
+						optionalCall: false,
+						optionalMember: false,
+					}) && node.arguments[0].type !== 'SpreadElement'
+				)
+			) {
 				return;
 			}
 
@@ -88,25 +94,26 @@ const cases = [
 	// `Object.fromEntries([['then', …]])`
 	{
 		selector: 'CallExpression',
-		* getNodes(node, context) {
-			if (!(
-				isMethodCall(node, {
-					object: 'Object',
-					method: 'fromEntries',
-					argumentsLength: 1,
-					optionalCall: false,
-					optionalMember: false,
-				})
-				&& node.arguments[0].type === 'ArrayExpression'
-			)) {
+		*getNodes(node, context) {
+			if (
+				!(
+					isMethodCall(node, {
+						object: 'Object',
+						method: 'fromEntries',
+						argumentsLength: 1,
+						optionalCall: false,
+						optionalMember: false,
+					}) && node.arguments[0].type === 'ArrayExpression'
+				)
+			) {
 				return;
 			}
 
 			for (const pairs of node.arguments[0].elements) {
 				if (
-					pairs?.type === 'ArrayExpression'
-					&& pairs.elements[0]
-					&& pairs.elements[0].type !== 'SpreadElement'
+					pairs?.type === 'ArrayExpression' &&
+					pairs.elements[0] &&
+					pairs.elements[0].type !== 'SpreadElement'
 				) {
 					const [key] = pairs.elements;
 
@@ -121,11 +128,11 @@ const cases = [
 	// `export {then}`
 	{
 		selector: 'Identifier',
-		* getNodes(node) {
+		*getNodes(node) {
 			if (
-				node.name === 'then'
-				&& node.parent.type === 'ExportSpecifier'
-				&& node.parent.exported === node
+				node.name === 'then' &&
+				node.parent.type === 'ExportSpecifier' &&
+				node.parent.exported === node
 			) {
 				yield node;
 			}
@@ -136,13 +143,14 @@ const cases = [
 	// `export class then {}`,
 	{
 		selector: 'Identifier',
-		* getNodes(node) {
+		*getNodes(node) {
 			if (
-				node.name === 'then'
-				&& (node.parent.type === 'FunctionDeclaration' || node.parent.type === 'ClassDeclaration')
-				&& node.parent.id === node
-				&& node.parent.parent.type === 'ExportNamedDeclaration'
-				&& node.parent.parent.declaration === node.parent
+				node.name === 'then' &&
+				(node.parent.type === 'FunctionDeclaration' ||
+					node.parent.type === 'ClassDeclaration') &&
+				node.parent.id === node &&
+				node.parent.parent.type === 'ExportNamedDeclaration' &&
+				node.parent.parent.declaration === node.parent
 			) {
 				yield node;
 			}
@@ -152,14 +160,19 @@ const cases = [
 	// `export const … = …`;
 	{
 		selector: 'VariableDeclaration',
-		* getNodes(node, context) {
-			if (!(node.parent.type === 'ExportNamedDeclaration' && node.parent.declaration === node)) {
+		*getNodes(node, context) {
+			if (
+				!(
+					node.parent.type === 'ExportNamedDeclaration' &&
+					node.parent.declaration === node
+				)
+			) {
 				return;
 			}
 
 			for (const variable of context.sourceCode.getDeclaredVariables(node)) {
 				if (variable.name === 'then') {
-					yield * variable.identifiers;
+					yield* variable.identifiers;
 				}
 			}
 		},
@@ -168,9 +181,9 @@ const cases = [
 ];
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	for (const {selector, selectors, messageId, getNodes} of cases) {
-		context.on(selector ?? selectors, function * (node) {
+		context.on(selector ?? selectors, function* (node) {
 			for (const problematicNode of getNodes(node, context)) {
 				yield {node: problematicNode, messageId};
 			}

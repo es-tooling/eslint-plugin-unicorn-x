@@ -1,21 +1,22 @@
 import {isCallExpression, isMethodCall} from './ast/index.js';
 import {removeParentheses} from './fix/index.js';
-import {isNodeMatchesNameOrPath, getCallExpressionTokens} from './utils/index.js';
+import {
+	isNodeMatchesNameOrPath,
+	getCallExpressionTokens,
+} from './utils/index.js';
 
 const MESSAGE_ID_ERROR = 'prefer-structured-clone/error';
 const MESSAGE_ID_SUGGESTION = 'prefer-structured-clone/suggestion';
 const messages = {
-	[MESSAGE_ID_ERROR]: 'Prefer `structuredClone(…)` over `{{description}}` to create a deep clone.',
+	[MESSAGE_ID_ERROR]:
+		'Prefer `structuredClone(…)` over `{{description}}` to create a deep clone.',
 	[MESSAGE_ID_SUGGESTION]: 'Switch to `structuredClone(…)`.',
 };
 
-const lodashCloneDeepFunctions = [
-	'_.cloneDeep',
-	'lodash.cloneDeep',
-];
+const lodashCloneDeepFunctions = ['_.cloneDeep', 'lodash.cloneDeep'];
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {functions: configFunctions} = {
 		functions: [],
 		...context.options[0],
@@ -23,25 +24,29 @@ const create = context => {
 	const functions = [...configFunctions, ...lodashCloneDeepFunctions];
 
 	// `JSON.parse(JSON.stringify(…))`
-	context.on('CallExpression', callExpression => {
-		if (!(
-			// `JSON.stringify()`
-			isMethodCall(callExpression, {
-				object: 'JSON',
-				method: 'parse',
-				argumentsLength: 1,
-				optionalCall: false,
-				optionalMember: false,
-			})
-			// `JSON.parse()`
-			&& isMethodCall(callExpression.arguments[0], {
-				object: 'JSON',
-				method: 'stringify',
-				argumentsLength: 1,
-				optionalCall: false,
-				optionalMember: false,
-			})
-		)) {
+	context.on('CallExpression', (callExpression) => {
+		if (
+			!(
+				// `JSON.stringify()`
+				(
+					isMethodCall(callExpression, {
+						object: 'JSON',
+						method: 'parse',
+						argumentsLength: 1,
+						optionalCall: false,
+						optionalMember: false,
+					}) &&
+					// `JSON.parse()`
+					isMethodCall(callExpression.arguments[0], {
+						object: 'JSON',
+						method: 'stringify',
+						argumentsLength: 1,
+						optionalCall: false,
+						optionalMember: false,
+					})
+				)
+			)
+		) {
 			return;
 		}
 
@@ -62,11 +67,11 @@ const create = context => {
 			suggest: [
 				{
 					messageId: MESSAGE_ID_SUGGESTION,
-					* fix(fixer) {
+					*fix(fixer) {
 						yield fixer.replaceText(jsonParse.callee, 'structuredClone');
 
 						yield fixer.remove(jsonStringify.callee);
-						yield * removeParentheses(jsonStringify.callee, fixer, sourceCode);
+						yield* removeParentheses(jsonStringify.callee, fixer, sourceCode);
 
 						const {
 							openingParenthesisToken,
@@ -86,16 +91,20 @@ const create = context => {
 	});
 
 	// `_.cloneDeep(foo)`
-	context.on('CallExpression', callExpression => {
-		if (!isCallExpression(callExpression, {
-			argumentsLength: 1,
-			optional: false,
-		})) {
+	context.on('CallExpression', (callExpression) => {
+		if (
+			!isCallExpression(callExpression, {
+				argumentsLength: 1,
+				optional: false,
+			})
+		) {
 			return;
 		}
 
 		const {callee} = callExpression;
-		const matchedFunction = functions.find(nameOrPath => isNodeMatchesNameOrPath(callee, nameOrPath));
+		const matchedFunction = functions.find((nameOrPath) =>
+			isNodeMatchesNameOrPath(callee, nameOrPath),
+		);
 
 		if (!matchedFunction) {
 			return;
@@ -110,7 +119,7 @@ const create = context => {
 			suggest: [
 				{
 					messageId: MESSAGE_ID_SUGGESTION,
-					fix: fixer => fixer.replaceText(callee, 'structuredClone'),
+					fix: (fixer) => fixer.replaceText(callee, 'structuredClone'),
 				},
 			],
 		};

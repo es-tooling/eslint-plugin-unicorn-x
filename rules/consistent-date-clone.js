@@ -7,7 +7,7 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	NewExpression(newExpression) {
 		if (!isNewExpression(newExpression, {name: 'Date', argumentsLength: 1})) {
 			return;
@@ -15,12 +15,14 @@ const create = context => ({
 
 		const [callExpression] = newExpression.arguments;
 
-		if (!isMethodCall(callExpression, {
-			method: 'getTime',
-			argumentsLength: 0,
-			optionalCall: false,
-			optionalMember: false,
-		})) {
+		if (
+			!isMethodCall(callExpression, {
+				method: 'getTime',
+				argumentsLength: 0,
+				optionalCall: false,
+				optionalMember: false,
+			})
+		) {
 			return;
 		}
 
@@ -32,7 +34,7 @@ const create = context => ({
 				end: sourceCode.getLoc(callExpression).end,
 			},
 			messageId: MESSAGE_ID_ERROR,
-			fix: fixer => removeMethodCall(fixer, callExpression, sourceCode),
+			fix: (fixer) => removeMethodCall(fixer, callExpression, sourceCode),
 		};
 	},
 });
@@ -43,7 +45,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer passing `Date` directly to the constructor when cloning.',
+			description:
+				'Prefer passing `Date` directly to the constructor when cloning.',
 			recommended: true,
 		},
 		fixable: 'code',
