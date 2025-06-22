@@ -11,7 +11,6 @@ const config = [
 		'n/no-unsupported-features/es-syntax',
 		'eslint-plugin/require-meta-default-options',
 		'internal/no-restricted-property-access',
-		'@stylistic/max-len',
 	]),
 	{
 		linterOptions: {
