@@ -7,8 +7,8 @@ const builtinErrors = [
 	'SyntaxError',
 	'TypeError',
 	'URIError',
-	'InternalError',
 	'AggregateError',
+	'SuppressedError',
 ];
 
 export default builtinErrors;

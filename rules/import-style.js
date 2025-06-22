@@ -150,36 +150,28 @@ const create = (context) => {
 
 	const stylesMap = new Map();
 
-	for (const [moduleName, style] of Object.entries(styles)) {
-		stylesMap.set(
-			moduleName,
-			new Set(
-				Object.entries(style)
-					.filter(([, isAllowed]) => isAllowed)
-					.map(([style]) => style),
-			),
-		);
-	}
+	const allKeys = new Set(
+		extendDefaultStyles
+			? [...Object.keys(defaultStyles), ...Object.keys(styles)]
+			: Object.keys(styles),
+	);
 
-	if (extendDefaultStyles) {
-		for (const [moduleName, style] of Object.entries(defaultStyles)) {
-			const existingStyles = stylesMap.get(moduleName);
-			if (existingStyles) {
-				for (const [styleName, isAllowed] of Object.entries(style)) {
-					if (isAllowed) {
-						existingStyles.add(styleName);
-					}
-				}
-			} else {
-				stylesMap.set(
-					moduleName,
-					new Set(
-						Object.entries(style)
-							.filter(([, isAllowed]) => isAllowed)
-							.map(([style]) => style),
-					),
-				);
-			}
+	for (const key of allKeys) {
+		const userStyle = styles[key];
+		const defaultStyle = defaultStyles[key];
+
+		if (userStyle !== false) {
+			stylesMap.set(
+				key,
+				new Set(
+					Object.entries({
+						...(extendDefaultStyles ? defaultStyle : {}),
+						...userStyle,
+					})
+						.filter(([, isAllowed]) => isAllowed)
+						.map(([style]) => style),
+				),
+			);
 		}
 	}
 

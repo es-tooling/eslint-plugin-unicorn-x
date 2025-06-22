@@ -30,7 +30,6 @@ const create = (context) => {
 				}
 			}
 		},
-
 		// `class Foo {then}`,
 		// `class Foo {static then}`,
 		// `class Foo {get then() {}}`,

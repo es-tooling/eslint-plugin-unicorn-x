@@ -9,7 +9,7 @@ export {isArrayPrototypeProperty} from './array-or-object-prototype-property.js'
 
 export {isNodeMatches, isNodeMatchesNameOrPath} from './is-node-matches.js';
 
-export {isBooleanNode} from './boolean.js';
+export {isBooleanNode, getBooleanAncestor} from './boolean.js';
 
 export {default as cartesianProductSamples} from './cartesian-product-samples.js';
 export {default as escapeString} from './escape-string.js';
@@ -30,7 +30,7 @@ export {default as isNodeValueNotFunction} from './is-node-value-not-function.js
 export {default as isOnSameLine} from './is-on-same-line.js';
 export {default as isSameIdentifier} from './is-same-identifier.js';
 export {default as isSameReference} from './is-same-reference.js';
-export {default as isShadowed} from './is-shadowed.js';
+export {default as isUnresolvedVariable} from './is-unresolved-variable.js';
 export {default as isShorthandImportLocal} from './is-shorthand-import-local.js';
 export {default as isShorthandPropertyValue} from './is-shorthand-property-value.js';
 export {default as isValueNotUsable} from './is-value-not-usable.js';
@@ -42,3 +42,4 @@ export {default as shouldAddParenthesesToMemberExpressionObject} from './should-
 export {default as singular} from './singular.js';
 export {default as toLocation} from './to-location.js';
 export {default as getAncestor} from './get-ancestor.js';
+export * from './string-cases.js';

@@ -733,20 +733,20 @@ exports[`invalid(6): 'fooStrict instanceof Array' > Output 1`] = `
 "
 `;
 
-exports[`invalid(7): 'err instanceof InternalError' > Code 1`] = `
+exports[`invalid(7): 'err instanceof AggregateError' > Code 1`] = `
 "
-  1 | err instanceof InternalError
-"
-`;
-
-exports[`invalid(7): 'err instanceof InternalError' > Error 1/1 1`] = `
-"
-> 1 | err instanceof InternalError
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+  1 | err instanceof AggregateError
 "
 `;
 
-exports[`invalid(7): 'err instanceof InternalError' > Options 1`] = `
+exports[`invalid(7): 'err instanceof AggregateError' > Error 1/1 1`] = `
+"
+> 1 | err instanceof AggregateError
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+"
+`;
+
+exports[`invalid(7): 'err instanceof AggregateError' > Options 1`] = `
 "
 [
   {
@@ -944,20 +944,20 @@ exports[`invalid(8): '(\\n\\t// comment\\n\\t((\\n\\t\\t// comment…' > Output 
 "
 `;
 
-exports[`invalid(8): 'err instanceof AggregateError' > Code 1`] = `
+exports[`invalid(8): 'err instanceof SuppressedError' > Code 1`] = `
 "
-  1 | err instanceof AggregateError
-"
-`;
-
-exports[`invalid(8): 'err instanceof AggregateError' > Error 1/1 1`] = `
-"
-> 1 | err instanceof AggregateError
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+  1 | err instanceof SuppressedError
 "
 `;
 
-exports[`invalid(8): 'err instanceof AggregateError' > Options 1`] = `
+exports[`invalid(8): 'err instanceof SuppressedError' > Error 1/1 1`] = `
+"
+> 1 | err instanceof SuppressedError
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+"
+`;
+
+exports[`invalid(8): 'err instanceof SuppressedError' > Options 1`] = `
 "
 [
   {
@@ -1220,20 +1220,20 @@ exports[`invalid(14): '<script>foo instanceof Function</scri…' > Output 1`] = 
 "
 `;
 
-exports[`invalid(14): 'fooStrict instanceof InternalError' > Code 1`] = `
+exports[`invalid(14): 'fooStrict instanceof AggregateError' > Code 1`] = `
 "
-  1 | fooStrict instanceof InternalError
-"
-`;
-
-exports[`invalid(14): 'fooStrict instanceof InternalError' > Error 1/1 1`] = `
-"
-> 1 | fooStrict instanceof InternalError
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+  1 | fooStrict instanceof AggregateError
 "
 `;
 
-exports[`invalid(14): 'fooStrict instanceof InternalError' > Options 1`] = `
+exports[`invalid(14): 'fooStrict instanceof AggregateError' > Error 1/1 1`] = `
+"
+> 1 | fooStrict instanceof AggregateError
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+"
+`;
+
+exports[`invalid(14): 'fooStrict instanceof AggregateError' > Options 1`] = `
 "
 [
   {
@@ -1243,20 +1243,20 @@ exports[`invalid(14): 'fooStrict instanceof InternalError' > Options 1`] = `
 "
 `;
 
-exports[`invalid(15): 'fooStrict instanceof AggregateError' > Code 1`] = `
+exports[`invalid(15): 'fooStrict instanceof SuppressedError' > Code 1`] = `
 "
-  1 | fooStrict instanceof AggregateError
-"
-`;
-
-exports[`invalid(15): 'fooStrict instanceof AggregateError' > Error 1/1 1`] = `
-"
-> 1 | fooStrict instanceof AggregateError
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+  1 | fooStrict instanceof SuppressedError
 "
 `;
 
-exports[`invalid(15): 'fooStrict instanceof AggregateError' > Options 1`] = `
+exports[`invalid(15): 'fooStrict instanceof SuppressedError' > Error 1/1 1`] = `
+"
+> 1 | fooStrict instanceof SuppressedError
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid using \`instanceof\` for type checking as it can lead to unreliable results.
+"
+`;
+
+exports[`invalid(15): 'fooStrict instanceof SuppressedError' > Options 1`] = `
 "
 [
   {

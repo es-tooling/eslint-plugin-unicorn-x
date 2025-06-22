@@ -1,5 +1,4 @@
 import {getStaticValue} from '@eslint-community/eslint-utils';
-import isShadowed from './utils/is-shadowed.js';
 import {isCallOrNewExpression} from './ast/index.js';
 import builtinErrors from './shared/builtin-errors.js';
 
@@ -13,25 +12,29 @@ const messages = {
 	[MESSAGE_ID_NOT_STRING]: 'Error message should be a string.',
 };
 
+const messageArgumentIndexes = new Map([
+	['AggregateError', 1],
+	['SuppressedError', 2],
+]);
+
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = (context) => {
 	context.on(['CallExpression', 'NewExpression'], (expression) => {
 		if (
-			!isCallOrNewExpression(expression, {
-				names: builtinErrors,
-				optional: false,
-			})
+			!(
+				isCallOrNewExpression(expression, {
+					names: builtinErrors,
+					optional: false,
+				}) && context.sourceCode.isGlobalReference(expression.callee)
+			)
 		) {
 			return;
 		}
 
-		const scope = context.sourceCode.getScope(expression);
-		if (isShadowed(scope, expression.callee)) {
-			return;
-		}
-
 		const constructorName = expression.callee.name;
-		const messageArgumentIndex = constructorName === 'AggregateError' ? 1 : 0;
+		const messageArgumentIndex = messageArgumentIndexes.has(constructorName)
+			? messageArgumentIndexes.get(constructorName)
+			: 0;
 		const callArguments = expression.arguments;
 
 		// If message is `SpreadElement` or there is `SpreadElement` before message
@@ -62,7 +65,10 @@ const create = (context) => {
 			};
 		}
 
-		const staticResult = getStaticValue(node, scope);
+		const staticResult = getStaticValue(
+			node,
+			context.sourceCode.getScope(node),
+		);
 
 		// We don't know the value of `message`
 		if (!staticResult) {

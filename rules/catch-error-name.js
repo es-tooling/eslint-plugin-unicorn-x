@@ -1,5 +1,6 @@
 import {isRegExp} from 'node:util/types';
 import {findVariable} from '@eslint-community/eslint-utils';
+import {upperFirst} from 'scule';
 import {getAvailableVariableName} from './utils/index.js';
 import {renameVariable} from './fix/index.js';
 import {isMethodCall} from './ast/index.js';
@@ -47,7 +48,7 @@ const create = (context) => {
 		name === expectedName ||
 		ignore.some((regexp) => regexp.test(name)) ||
 		name.endsWith(expectedName) ||
-		name.endsWith(expectedName.charAt(0).toUpperCase() + expectedName.slice(1));
+		name.endsWith(upperFirst(expectedName));
 
 	return {
 		Identifier(node) {
