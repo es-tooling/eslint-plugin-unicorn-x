@@ -75,3 +75,41 @@ exports[`invalid(3): 'const foo = "foo \\\\x46";' > Output 1`] = `
   1 | const foo = String.raw\`foo \\x46\`;
 "
 `;
+
+exports[`invalid(4): 'a = \\'a\\\\b\\\\'\\'' > Code 1`] = `
+"
+  1 | a = 'a\\\\b\\''
+"
+`;
+
+exports[`invalid(4): 'a = \\'a\\\\b\\\\'\\'' > Error 1/1 1`] = `
+"
+> 1 | a = 'a\\\\b\\''
+    |     ^^^^^^^^ \`String.raw\` should be used to avoid escaping \`\\\`.
+"
+`;
+
+exports[`invalid(4): 'a = \\'a\\\\b\\\\'\\'' > Output 1`] = `
+"
+  1 | a = String.raw\`a\\b'\`
+"
+`;
+
+exports[`invalid(5): 'a = "a\\\\b\\""' > Code 1`] = `
+"
+  1 | a = "a\\\\b\\""
+"
+`;
+
+exports[`invalid(5): 'a = "a\\\\b\\""' > Error 1/1 1`] = `
+"
+> 1 | a = "a\\\\b\\""
+    |     ^^^^^^^^ \`String.raw\` should be used to avoid escaping \`\\\`.
+"
+`;
+
+exports[`invalid(5): 'a = "a\\\\b\\""' > Output 1`] = `
+"
+  1 | a = String.raw\`a\\b"\`
+"
+`;
