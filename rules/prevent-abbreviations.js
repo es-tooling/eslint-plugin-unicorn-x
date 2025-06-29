@@ -27,6 +27,7 @@ const messages = {
 
 const isUpperCase = (string) => string === string.toUpperCase();
 const isUpperFirst = (string) => isUpperCase(string[0]);
+const wordPattern = /(?=\P{Lowercase_Letter})|(?<=\P{Letter})/u;
 
 const prepareOptions = ({
 	checkProperties = false,
@@ -112,9 +113,11 @@ const getWordReplacements = (word, {replacements, allowList}) => {
 	let wordReplacement = [];
 	if (replacement) {
 		const transform = isUpperFirst(word) ? upperFirst : lowerFirst;
-		wordReplacement = [...replacement.keys()]
-			.filter((name) => replacement.get(name))
-			.map((name) => transform(name));
+		for (const key of replacement.keys()) {
+			if (replacement.get(key)) {
+				wordReplacement.push(transform(key));
+			}
+		}
 	}
 
 	return wordReplacement.length > 0 ? wordReplacement.sort() : [];
@@ -143,9 +146,7 @@ const getNameReplacements = (name, options, limit = 3) => {
 	}
 
 	// Split words
-	const words = name
-		.split(/(?=\P{Lowercase_Letter})|(?<=\P{Letter})/u)
-		.filter(Boolean);
+	const words = name.split(wordPattern).filter((word) => word.length > 0);
 
 	let hasReplacements = false;
 	const combinations = words.map((word) => {
@@ -165,20 +166,30 @@ const getNameReplacements = (name, options, limit = 3) => {
 	}
 
 	const {total, samples} = cartesianProductSamples(combinations, limit);
+	const filteredSamples = [];
 
 	// `retVal` -> `['returnValue', 'Value']` -> `['returnValue']`
 	for (const parts of samples) {
-		for (let index = parts.length - 1; index > 0; index--) {
+		let sampleText = '';
+		for (let index = 0; index < parts.length; index++) {
 			const word = parts[index];
-			if (/^[A-Za-z]+$/.test(word) && parts[index - 1].endsWith(parts[index])) {
-				parts.splice(index, 1);
+			const previousWord = parts[index - 1];
+			if (
+				previousWord !== undefined &&
+				/^[A-Za-z]+$/.test(word) &&
+				previousWord.endsWith(word)
+			) {
+				continue;
 			}
+			sampleText += word;
 		}
+
+		filteredSamples.push(sampleText);
 	}
 
 	return {
 		total,
-		samples: samples.map((words) => words.join('')),
+		samples: filteredSamples,
 	};
 };
 
@@ -227,21 +238,9 @@ const isExportedIdentifier = (identifier) => {
 	}
 
 	if (
-		identifier.parent.type === 'FunctionDeclaration' &&
-		identifier.parent.id === identifier
-	) {
-		return identifier.parent.parent.type === 'ExportNamedDeclaration';
-	}
-
-	if (
-		identifier.parent.type === 'ClassDeclaration' &&
-		identifier.parent.id === identifier
-	) {
-		return identifier.parent.parent.type === 'ExportNamedDeclaration';
-	}
-
-	if (
-		identifier.parent.type === 'TSTypeAliasDeclaration' &&
+		(identifier.parent.type === 'FunctionDeclaration' ||
+			identifier.parent.type === 'ClassDeclaration' ||
+			identifier.parent.type === 'TSTypeAliasDeclaration') &&
 		identifier.parent.id === identifier
 	) {
 		return identifier.parent.parent.type === 'ExportNamedDeclaration';
@@ -261,14 +260,8 @@ const shouldFix = (variable) =>
 
 const isDefaultOrNamespaceImportName = (identifier) => {
 	if (
-		identifier.parent.type === 'ImportDefaultSpecifier' &&
-		identifier.parent.local === identifier
-	) {
-		return true;
-	}
-
-	if (
-		identifier.parent.type === 'ImportNamespaceSpecifier' &&
+		(identifier.parent.type === 'ImportDefaultSpecifier' ||
+			identifier.parent.type === 'ImportNamespaceSpecifier') &&
 		identifier.parent.local === identifier
 	) {
 		return true;
@@ -292,16 +285,6 @@ const isDefaultOrNamespaceImportName = (identifier) => {
 	}
 
 	return false;
-};
-
-const isClassVariable = (variable) => {
-	if (variable.defs.length !== 1) {
-		return false;
-	}
-
-	const [definition] = variable.defs;
-
-	return definition.type === 'ClassName';
 };
 
 const shouldReportIdentifierAsProperty = (identifier) => {
@@ -372,43 +355,44 @@ const create = (context) => {
 	const identifierToOuterClassVariable = new WeakMap();
 
 	const checkPossiblyWeirdClassVariable = (variable) => {
-		if (isClassVariable(variable)) {
-			if (variable.scope.type === 'class') {
-				// The inner class variable
-				const [definition] = variable.defs;
-				const outerClassVariable = identifierToOuterClassVariable.get(
-					definition.name,
-				);
-
-				if (!outerClassVariable) {
-					return checkVariable(variable);
-				}
-
-				// Create a normal-looking variable (like a `var` or a `function`)
-				// For which a single `variable` holds all references, unlike with a `class`
-				const combinedReferencesVariable = {
-					name: variable.name,
-					scope: variable.scope,
-					defs: variable.defs,
-					identifiers: variable.identifiers,
-					references: [
-						...variable.references,
-						...outerClassVariable.references,
-					],
-				};
-
-				// Call the common checker with the newly forged normalized class variable
-				return checkVariable(combinedReferencesVariable);
-			}
-
-			// The outer class variable, we save it for later, when it's inner counterpart is encountered
-			const [definition] = variable.defs;
-			identifierToOuterClassVariable.set(definition.name, variable);
-
+		if (variable.defs.length === 0) {
 			return;
 		}
 
-		return checkVariable(variable);
+		const [definition] = variable.defs;
+
+		if (variable.defs.length === 1 && definition.type === 'ClassName') {
+			if (variable.scope.type !== 'class') {
+				// The outer class variable, we save it for later, when it's inner counterpart is encountered
+				identifierToOuterClassVariable.set(definition.name, variable);
+
+				return;
+			}
+
+			// The inner class variable
+			const outerClassVariable = identifierToOuterClassVariable.get(
+				definition.name,
+			);
+
+			if (!outerClassVariable) {
+				return checkVariable(variable, definition);
+			}
+
+			// Create a normal-looking variable (like a `var` or a `function`)
+			// For which a single `variable` holds all references, unlike with a `class`
+			const combinedReferencesVariable = {
+				name: variable.name,
+				scope: variable.scope,
+				defs: variable.defs,
+				identifiers: variable.identifiers,
+				references: [...variable.references, ...outerClassVariable.references],
+			};
+
+			// Call the common checker with the newly forged normalized class variable
+			return checkVariable(combinedReferencesVariable, definition);
+		}
+
+		return checkVariable(variable, definition);
 	};
 
 	// Holds a map from a `Scope` to a `Set` of new variable names generated by our fixer.
@@ -420,37 +404,35 @@ const create = (context) => {
 			return !generatedNames || !generatedNames.has(name);
 		});
 
-	const checkVariable = (variable) => {
-		if (variable.defs.length === 0) {
+	const checkVariable = (variable, definition) => {
+		if (
+			options.checkDefaultAndNamespaceImports === 'internal' &&
+			isDefaultOrNamespaceImportName(definition.name) &&
+			!isInternalImport(definition)
+		) {
 			return;
 		}
 
-		const [definition] = variable.defs;
-
-		if (isDefaultOrNamespaceImportName(definition.name)) {
-			if (!options.checkDefaultAndNamespaceImports) {
-				return;
-			}
-
-			if (
-				options.checkDefaultAndNamespaceImports === 'internal' &&
-				!isInternalImport(definition)
-			) {
-				return;
-			}
+		if (
+			!options.checkDefaultAndNamespaceImports &&
+			isDefaultOrNamespaceImportName(definition.name)
+		) {
+			return;
 		}
 
-		if (isShorthandImportLocal(definition.name)) {
-			if (!options.checkShorthandImports) {
-				return;
-			}
+		if (
+			options.checkShorthandImports === 'internal' &&
+			isShorthandImportLocal(definition.name) &&
+			!isInternalImport(definition)
+		) {
+			return;
+		}
 
-			if (
-				options.checkShorthandImports === 'internal' &&
-				!isInternalImport(definition)
-			) {
-				return;
-			}
+		if (
+			!options.checkShorthandImports &&
+			isShorthandImportLocal(definition.name)
+		) {
+			return;
 		}
 
 		if (
