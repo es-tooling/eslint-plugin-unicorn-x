@@ -92,6 +92,39 @@ exports[`invalid(1): 'typeof a.b !== "undefined"' > Output 1`] = `
 "
 `;
 
+exports[`invalid(2): 'function parse() {\\n\\tswitch (typeof …' > Code 1`] = `
+"
+  1 | function parse() {
+  2 | 	switch (typeof value === 'undefined') {}
+  3 | }
+"
+`;
+
+exports[`invalid(2): 'function parse() {\\n\\tswitch (typeof …' > Error 1/1 1`] = `
+"
+  1 | function parse() {
+> 2 | 	switch (typeof value === 'undefined') {}
+    | 	        ^^^^^^ Compare with \`undefined\` directly instead of using \`typeof\`.
+  3 | }
+
+--------------------------------------------------------------------------------
+Suggestion 1/1: Switch to \`… === undefined\`.
+  1 | function parse() {
+  2 | 	switch (value === undefined) {}
+  3 | }
+"
+`;
+
+exports[`invalid(2): 'function parse() {\\n\\tswitch (typeof …' > Options 1`] = `
+"
+[
+  {
+    "checkGlobalVariables": true
+  }
+]
+"
+`;
+
 exports[`invalid(2): 'typeof a.b == "undefined"' > Code 1`] = `
 "
   1 | typeof a.b == "undefined"
@@ -108,6 +141,42 @@ exports[`invalid(2): 'typeof a.b == "undefined"' > Error 1/1 1`] = `
 exports[`invalid(2): 'typeof a.b == "undefined"' > Output 1`] = `
 "
   1 | a.b === undefined
+"
+`;
+
+exports[`invalid(3): '/* globals value: readonly */\\nfuncti…' > Code 1`] = `
+"
+  1 | /* globals value: readonly */
+  2 | function parse() {
+  3 | 	switch (typeof value === 'undefined') {}
+  4 | }
+"
+`;
+
+exports[`invalid(3): '/* globals value: readonly */\\nfuncti…' > Error 1/1 1`] = `
+"
+  1 | /* globals value: readonly */
+  2 | function parse() {
+> 3 | 	switch (typeof value === 'undefined') {}
+    | 	        ^^^^^^ Compare with \`undefined\` directly instead of using \`typeof\`.
+  4 | }
+
+--------------------------------------------------------------------------------
+Suggestion 1/1: Switch to \`… === undefined\`.
+  1 | /* globals value: readonly */
+  2 | function parse() {
+  3 | 	switch (value === undefined) {}
+  4 | }
+"
+`;
+
+exports[`invalid(3): '/* globals value: readonly */\\nfuncti…' > Options 1`] = `
+"
+[
+  {
+    "checkGlobalVariables": true
+  }
+]
 "
 `;
 
@@ -514,5 +583,30 @@ exports[`invalid(21): 'function a() {\\n\\treturn (typeof // U…' > Output 1`] 
   2 | 	return (// UnaryExpression is parenthesized
   3 | 		a.b) === undefined;
   4 | }
+"
+`;
+
+exports[`invalid(22): 'function parse(value) {\\n\\tswitch (ty…' > Code 1`] = `
+"
+  1 | function parse(value) {
+  2 | 	switch (typeof value === 'undefined') {}
+  3 | }
+"
+`;
+
+exports[`invalid(22): 'function parse(value) {\\n\\tswitch (ty…' > Error 1/1 1`] = `
+"
+  1 | function parse(value) {
+> 2 | 	switch (typeof value === 'undefined') {}
+    | 	        ^^^^^^ Compare with \`undefined\` directly instead of using \`typeof\`.
+  3 | }
+"
+`;
+
+exports[`invalid(22): 'function parse(value) {\\n\\tswitch (ty…' > Output 1`] = `
+"
+  1 | function parse(value) {
+  2 | 	switch (value === undefined) {}
+  3 | }
 "
 `;
