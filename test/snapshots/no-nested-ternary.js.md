@@ -9,14 +9,14 @@ exports[`invalid(0): 'const foo = i > 5 ? i < 100 ? true : …' > Code 1`] = `
 exports[`invalid(0): 'const foo = i > 5 ? i < 100 ? true : …' > Error 1/2 1`] = `
 "
 > 1 | const foo = i > 5 ? i < 100 ? true : false : i < 100 ? true : false;
-    |                     ^^^^^^^^^^^^^^^^^^^^^^ Nest ternary expression should be parenthesized.
+    |                     ^^^^^^^^^^^^^^^^^^^^^^ Nested ternary expression should be parenthesized.
 "
 `;
 
 exports[`invalid(0): 'const foo = i > 5 ? i < 100 ? true : …' > Error 2/2 1`] = `
 "
 > 1 | const foo = i > 5 ? i < 100 ? true : false : i < 100 ? true : false;
-    |                                              ^^^^^^^^^^^^^^^^^^^^^^ Nest ternary expression should be parenthesized.
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^ Nested ternary expression should be parenthesized.
 "
 `;
 

@@ -23,6 +23,7 @@ import noArrayCallbackReference from './no-array-callback-reference.js';
 import noArrayForEach from './no-array-for-each.js';
 import noArrayMethodThisArgument from './no-array-method-this-argument.js';
 import noArrayReduce from './no-array-reduce.js';
+import noArrayReverse from './no-array-reverse.js';
 import noAwaitExpressionMember from './no-await-expression-member.js';
 import noAwaitInPromiseMethods from './no-await-in-promise-methods.js';
 import noConsoleSpaces from './no-console-spaces.js';
@@ -124,6 +125,7 @@ import preferTypeError from './prefer-type-error.js';
 import preventAbbreviations from './prevent-abbreviations.js';
 import relativeUrlStyle from './relative-url-style.js';
 import requireArrayJoinSeparator from './require-array-join-separator.js';
+import requireModuleSpecifiers from './require-module-specifiers.js';
 import requireNumberToFixedDigitsArgument from './require-number-to-fixed-digits-argument.js';
 import requirePostMessageTargetOrigin from './require-post-message-target-origin.js';
 import stringContent from './string-content.js';
@@ -196,6 +198,7 @@ const rules = {
 		'no-array-method-this-argument',
 	),
 	'no-array-reduce': createRule(noArrayReduce, 'no-array-reduce'),
+	'no-array-reverse': createRule(noArrayReverse, 'no-array-reverse', true),
 	'no-await-expression-member': createRule(
 		noAwaitExpressionMember,
 		'no-await-expression-member',
@@ -471,6 +474,11 @@ const rules = {
 	'require-array-join-separator': createRule(
 		requireArrayJoinSeparator,
 		'require-array-join-separator',
+	),
+	'require-module-specifiers': createRule(
+		requireModuleSpecifiers,
+		'require-module-specifiers',
+		true,
 	),
 	'require-number-to-fixed-digits-argument': createRule(
 		requireNumberToFixedDigitsArgument,
