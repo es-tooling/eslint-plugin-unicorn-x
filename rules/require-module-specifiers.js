@@ -91,6 +91,7 @@ const create = (context) => {
 				{
 					messageId: MESSAGE_ID_SUGGESTION_REMOVE_DECLARATION,
 					fix: (fixer) => fixer.remove(importDeclaration),
+					data: problem.data,
 				},
 				{
 					messageId: MESSAGE_ID_SUGGESTION_TO_SIDE_EFFECT_IMPORT,
@@ -99,6 +100,7 @@ const create = (context) => {
 						yield fixer.remove(closingBraceToken);
 						yield fixer.remove(fromToken);
 					},
+					data: problem.data,
 				},
 			];
 
@@ -140,6 +142,7 @@ const create = (context) => {
 				{
 					messageId: MESSAGE_ID_SUGGESTION_REMOVE_DECLARATION,
 					fix: (fixer) => fixer.remove(exportDeclaration),
+					data: problem.data,
 				},
 				{
 					messageId: MESSAGE_ID_SUGGESTION_TO_SIDE_EFFECT_IMPORT,
@@ -150,6 +153,7 @@ const create = (context) => {
 						yield fixer.remove(closingBraceToken);
 						yield fixer.remove(fromToken);
 					},
+					data: problem.data,
 				},
 			];
 
