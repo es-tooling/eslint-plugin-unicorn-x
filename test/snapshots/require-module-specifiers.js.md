@@ -31,7 +31,7 @@ exports[`invalid(0): 'import {} from "foo";' > Error 1/1 1`] = `
     |        ^^ import statement without specifiers is not allowed.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: Remove this {{type}} statement.
+Suggestion 1/2: Remove this import statement.
   1 |
 
 --------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ exports[`invalid(1): 'import{}from"foo";' > Error 1/1 1`] = `
     |       ^^ import statement without specifiers is not allowed.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: Remove this {{type}} statement.
+Suggestion 1/2: Remove this import statement.
   1 |
 
 --------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ exports[`invalid(2): 'import {\\n} from "foo";' > Error 1/1 1`] = `
     | ^^ import statement without specifiers is not allowed.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: Remove this {{type}} statement.
+Suggestion 1/2: Remove this import statement.
   1 |
 
 --------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ exports[`invalid(4): 'export {} from "foo";' > Error 1/1 1`] = `
     |        ^^ export statement without specifiers is not allowed.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: Remove this {{type}} statement.
+Suggestion 1/2: Remove this export statement.
   1 |
 
 --------------------------------------------------------------------------------
@@ -214,7 +214,7 @@ exports[`invalid(5): 'export{}from"foo";' > Error 1/1 1`] = `
     |       ^^ export statement without specifiers is not allowed.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: Remove this {{type}} statement.
+Suggestion 1/2: Remove this export statement.
   1 |
 
 --------------------------------------------------------------------------------
@@ -261,7 +261,7 @@ exports[`invalid(6): 'export {\\n} from "foo";' > Error 1/1 1`] = `
     | ^^ export statement without specifiers is not allowed.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: Remove this {{type}} statement.
+Suggestion 1/2: Remove this export statement.
   1 |
 
 --------------------------------------------------------------------------------
@@ -302,7 +302,7 @@ exports[`invalid(7): 'export {} from "foo" with {type: "jso…' > Error 1/1 1`] 
     |        ^^ export statement without specifiers is not allowed.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: Remove this {{type}} statement.
+Suggestion 1/2: Remove this export statement.
   1 |
 
 --------------------------------------------------------------------------------
