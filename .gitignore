@@ -1,8 +1,6 @@
-node_modules
-yarn.lock
-coverage
-package-lock.json
+/node_modules
+/coverage
 /test/integration/fixtures
 .cache-eslint-remote-tester
-eslint-remote-tester-results
+/eslint-remote-tester-results
 *.log

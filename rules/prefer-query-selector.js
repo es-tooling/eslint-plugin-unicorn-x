@@ -13,9 +13,14 @@ const disallowedIdentifierNames = new Map([
 	['getElementsByName', 'querySelectorAll'],
 ]);
 
-const getReplacementForId = value => `#${value}`;
-const getReplacementForClass = value => value.match(/\S+/g).map(className => `.${className}`).join('');
-const getReplacementForName = (value, originQuote) => `[name=${wrapQuoted(value, originQuote)}]`;
+const getReplacementForId = (value) => `#${value}`;
+const getReplacementForClass = (value) =>
+	value
+		.match(/\S+/g)
+		.map((className) => `.${className}`)
+		.join('');
+const getReplacementForName = (value, originQuote) =>
+	`[name=${wrapQuoted(value, originQuote)}]`;
 
 const getQuotedReplacement = (node, value) => {
 	const leftQuote = node.raw.charAt(0);
@@ -25,7 +30,7 @@ const getQuotedReplacement = (node, value) => {
 
 const wrapQuoted = (value, originalQuote) => {
 	switch (originalQuote) {
-		case '\'': {
+		case "'": {
 			return `"${value}"`;
 		}
 
@@ -41,25 +46,31 @@ const wrapQuoted = (value, originalQuote) => {
 	}
 };
 
-function * getLiteralFix(fixer, node, identifierName) {
+function* getLiteralFix(fixer, node, identifierName) {
 	let replacement = node.raw;
 	if (identifierName === 'getElementById') {
 		replacement = getQuotedReplacement(node, getReplacementForId(node.value));
 	}
 
 	if (identifierName === 'getElementsByClassName') {
-		replacement = getQuotedReplacement(node, getReplacementForClass(node.value));
+		replacement = getQuotedReplacement(
+			node,
+			getReplacementForClass(node.value),
+		);
 	}
 
 	if (identifierName === 'getElementsByName') {
 		const quoted = node.raw.charAt(0);
-		replacement = getQuotedReplacement(node, getReplacementForName(node.value, quoted));
+		replacement = getQuotedReplacement(
+			node,
+			getReplacementForName(node.value, quoted),
+		);
 	}
 
 	yield fixer.replaceText(node, replacement);
 }
 
-function * getTemplateLiteralFix(fixer, node, identifierName) {
+function* getTemplateLiteralFix(fixer, node, identifierName) {
 	yield fixer.insertTextAfter(node, '`');
 	yield fixer.insertTextBefore(node, '`');
 
@@ -88,16 +99,14 @@ function * getTemplateLiteralFix(fixer, node, identifierName) {
 	}
 }
 
-const canBeFixed = node =>
-	isNullLiteral(node)
-	|| (isStringLiteral(node) && Boolean(node.value.trim()))
-	|| (
-		node.type === 'TemplateLiteral'
-		&& node.expressions.length === 0
-		&& node.quasis.some(templateElement => templateElement.value.cooked.trim())
-	);
+const canBeFixed = (node) =>
+	isNullLiteral(node) ||
+	(isStringLiteral(node) && Boolean(node.value.trim())) ||
+	(node.type === 'TemplateLiteral' &&
+		node.expressions.length === 0 &&
+		node.quasis.some((templateElement) => templateElement.value.cooked.trim()));
 
-const hasValue = node => {
+const hasValue = (node) => {
 	if (node.type === 'Literal') {
 		return node.value;
 	}
@@ -108,12 +117,14 @@ const hasValue = node => {
 const fix = (node, identifierName, preferredSelector) => {
 	const nodeToBeFixed = node.arguments[0];
 	if (identifierName === 'getElementsByTagName' || !hasValue(nodeToBeFixed)) {
-		return fixer => fixer.replaceText(node.callee.property, preferredSelector);
+		return (fixer) =>
+			fixer.replaceText(node.callee.property, preferredSelector);
 	}
 
-	const getArgumentFix = nodeToBeFixed.type === 'Literal' ? getLiteralFix : getTemplateLiteralFix;
-	return function * (fixer) {
-		yield * getArgumentFix(fixer, nodeToBeFixed, identifierName);
+	const getArgumentFix =
+		nodeToBeFixed.type === 'Literal' ? getLiteralFix : getTemplateLiteralFix;
+	return function* (fixer) {
+		yield* getArgumentFix(fixer, nodeToBeFixed, identifierName);
 		yield fixer.replaceText(node.callee.property, preferredSelector);
 	};
 };
@@ -123,12 +134,17 @@ const create = () => ({
 	CallExpression(node) {
 		if (
 			!isMethodCall(node, {
-				methods: ['getElementById', 'getElementsByClassName', 'getElementsByTagName', 'getElementsByName'],
+				methods: [
+					'getElementById',
+					'getElementsByClassName',
+					'getElementsByTagName',
+					'getElementsByName',
+				],
 				argumentsLength: 1,
 				optionalCall: false,
 				optionalMember: false,
-			})
-			|| isNodeValueNotDomNode(node.callee.object)
+			}) ||
+			isNodeValueNotDomNode(node.callee.object)
 		) {
 			return;
 		}
@@ -159,7 +175,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `.querySelector()` over `.getElementById()`, `.querySelectorAll()` over `.getElementsByClassName()` and `.getElementsByTagName()` and `.getElementsByName()`.',
+			description:
+				'Prefer `.querySelector()` over `.getElementById()`, `.querySelectorAll()` over `.getElementsByClassName()` and `.getElementsByTagName()` and `.getElementsByName()`.',
 			recommended: true,
 		},
 		fixable: 'code',

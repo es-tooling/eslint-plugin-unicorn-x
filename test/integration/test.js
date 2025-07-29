@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {parseArgs} from 'node:util';
 import {Listr} from 'listr2';
-import spawn from 'nano-spawn';
+import {x} from 'tinyexec';
 import styleText from 'node-style-text';
 import {outdent} from 'outdent';
 import {isCI} from 'ci-info';
@@ -13,14 +13,19 @@ import allProjects from './projects.js';
 import runEslint, {UnicornIntegrationTestError} from './run-eslint.js';
 
 if (isCI) {
-	const CI_CONFIG_FILE = new URL('../../.github/workflows/main.yml', import.meta.url);
+	const CI_CONFIG_FILE = new URL(
+		'../../.github/workflows/main.yml',
+		import.meta.url,
+	);
 	const content = fs.readFileSync(CI_CONFIG_FILE, 'utf8');
 	const config = YAML.parse(content).jobs.integration.strategy.matrix.group;
 
-	const expected = [...new Set(allProjects.map(project => String(project.group + 1)))];
+	const expected = [
+		...new Set(allProjects.map((project) => String(project.group + 1))),
+	];
 	if (
-		config.length !== expected.length
-		|| expected.some((group, index) => config[index] !== group)
+		config.length !== expected.length ||
+		expected.some((group, index) => config[index] !== group)
 	) {
 		throw new Error(outdent`
 			Expect 'jobs.integration.strategy.matrix.group' in '/.github/workflows/main.yml' to be:
@@ -30,9 +35,7 @@ if (isCI) {
 }
 
 const {
-	values: {
-		group,
-	},
+	values: {group},
 	positionals: projectsArguments,
 } = parseArgs({
 	options: {
@@ -43,16 +46,17 @@ const {
 	allowPositionals: true,
 });
 
-let projects = projectsArguments.length === 0
-	? allProjects
-	: allProjects.filter(({name}) => projectsArguments.includes(name));
+let projects =
+	projectsArguments.length === 0
+		? allProjects
+		: allProjects.filter(({name}) => projectsArguments.includes(name));
 
 if (isCI && !group) {
 	throw new Error('"--group" is required');
 }
 
 if (group) {
-	projects = projects.filter(project => String(project.group + 1) === group);
+	projects = projects.filter((project) => String(project.group + 1) === group);
 }
 
 if (projects.length === 0) {
@@ -60,16 +64,20 @@ if (projects.length === 0) {
 	process.exit(0);
 }
 
-const execute = async project => {
+const execute = async (project) => {
 	if (!fs.existsSync(project.location)) {
-		await spawn('git', [
-			'clone',
-			project.repository,
-			'--single-branch',
-			'--depth',
-			'1',
-			project.location,
-		], {stdout: 'inherit', stderr: 'inherit'});
+		await x(
+			'git',
+			[
+				'clone',
+				project.repository,
+				'--single-branch',
+				'--depth',
+				'1',
+				project.location,
+			],
+			{nodeOptions: {stdout: 'inherit', stderr: 'inherit'}},
+		);
 	}
 
 	await runEslint(project);
@@ -79,13 +87,12 @@ function printEslintError(error) {
 	const {message, project, errors} = error;
 
 	console.log();
-	console.error(
-		styleText.red.bold.underline(`[${project.name}]`),
-		message,
-	);
+	console.error(styleText.red.bold.underline(`[${project.name}]`), message);
 
 	for (const error of errors) {
-		let file = path.relative(project.location, error.eslintFile.filePath).replaceAll('\\', '/');
+		let file = path
+			.relative(project.location, error.eslintFile.filePath)
+			.replaceAll('\\', '/');
 		if (project.repository) {
 			file = `${project.repository}/blob/HEAD/${file}`;
 		}
@@ -113,7 +120,7 @@ async function printTestError(error) {
 }
 
 await new Listr(
-	projects.map(project => ({
+	projects.map((project) => ({
 		title: project.name,
 		async task() {
 			try {

@@ -51,7 +51,7 @@ test({
 		'foo[bar++].slice(foo[bar++].length - 1)',
 		// Foo[a + b]
 		'foo[a + b].slice(foo[a + b].length - 1)',
-		// eslint-disable-next-line no-template-curly-in-string
+
 		'foo[`${bar}`].slice(foo[`${bar}`].length - 1)',
 		// Should not crash
 		// https://github.com/gatsbyjs/gatsby/blob/e720d8efe58eba0f6fae9f26ec8879128967d0b5/packages/gatsby/src/bootstrap/log-line-function.js#L9
@@ -96,9 +96,9 @@ test({
 		},
 		// Foo['bar']
 		{
-			code: 'foo[\'bar\'].slice(foo[\'bar\'].length - 1)',
+			code: "foo['bar'].slice(foo['bar'].length - 1)",
 			errors: [error],
-			output: 'foo[\'bar\'].slice(- 1)',
+			output: "foo['bar'].slice(- 1)",
 		},
 		// Foo[1]
 		{

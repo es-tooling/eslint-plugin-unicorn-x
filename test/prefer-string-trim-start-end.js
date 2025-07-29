@@ -13,7 +13,7 @@ test.snapshot({
 		// Not `MemberExpression`
 		'trimLeft();',
 		// `callee.property` is not a `Identifier`
-		'foo[\'trimLeft\']();',
+		"foo['trimLeft']();",
 		// Computed
 		'foo[trimLeft]();',
 		// Not `trimLeft`/`trimRight`

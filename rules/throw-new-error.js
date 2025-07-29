@@ -8,25 +8,26 @@ const messages = {
 const customError = /^(?:[A-Z][\da-z]*)*Error$/;
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	CallExpression(node) {
 		const {callee} = node;
-		if (!(
-			(callee.type === 'Identifier' && customError.test(callee.name))
-			|| (
-				callee.type === 'MemberExpression'
-				&& !callee.computed
-				&& callee.property.type === 'Identifier'
-				&& customError.test(callee.property.name)
+		if (
+			!(
+				(callee.type === 'Identifier' && customError.test(callee.name)) ||
+				(callee.type === 'MemberExpression' &&
+					!callee.computed &&
+					callee.property.type === 'Identifier' &&
+					customError.test(callee.property.name))
 			)
-		)) {
+		) {
 			return;
 		}
 
 		return {
 			node,
 			messageId,
-			fix: fixer => switchCallExpressionToNewExpression(node, context.sourceCode, fixer),
+			fix: (fixer) =>
+				switchCallExpressionToNewExpression(node, context.sourceCode, fixer),
 		};
 	},
 });

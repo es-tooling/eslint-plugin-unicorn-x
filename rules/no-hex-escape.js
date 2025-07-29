@@ -1,5 +1,9 @@
 import {replaceTemplateElement} from './fix/index.js';
-import {isStringLiteral, isRegexLiteral, isTaggedTemplateLiteral} from './ast/index.js';
+import {
+	isStringLiteral,
+	isRegexLiteral,
+	isTaggedTemplateLiteral,
+} from './ast/index.js';
 
 const MESSAGE_ID = 'no-hex-escape';
 const messages = {
@@ -13,7 +17,7 @@ function checkEscape(context, node, value) {
 		return {
 			node,
 			messageId: MESSAGE_ID,
-			fix: fixer =>
+			fix: (fixer) =>
 				node.type === 'TemplateElement'
 					? replaceTemplateElement(fixer, node, fixedValue)
 					: fixer.replaceText(node, fixedValue),
@@ -22,7 +26,7 @@ function checkEscape(context, node, value) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	Literal(node) {
 		if (isStringLiteral(node) || isRegexLiteral(node)) {
 			return checkEscape(context, node, node.raw);
@@ -43,7 +47,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Enforce the use of Unicode escapes instead of hexadecimal escapes.',
+			description:
+				'Enforce the use of Unicode escapes instead of hexadecimal escapes.',
 			recommended: true,
 		},
 		fixable: 'code',

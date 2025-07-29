@@ -58,12 +58,12 @@ test({
 		'const foo = "";',
 		...[
 			// `Literal` string
-			'const foo = \'🦄\';',
+			"const foo = '🦄';",
 			// Not `a string`
 			'const foo = 0;',
 			// Not `Literal`
 			'const foo = bar;',
-			/* eslint-disable no-template-curly-in-string */
+
 			// `TemplateLiteral`
 			'const foo = `🦄`',
 			// Should not escape
@@ -89,8 +89,7 @@ test({
 					<svg xmlns="http://www.w3.org/2000/svg"><text>no</text></svg>
 				\`;
 			`,
-			/* eslint-enable no-template-curly-in-string */
-		].map(code => ({
+		].map((code) => ({
 			code,
 			options: [{patterns: noToYesPattern}],
 		})),
@@ -98,21 +97,21 @@ test({
 	invalid: [
 		// `Literal` string
 		{
-			code: 'const foo = \'no\'',
-			output: 'const foo = \'yes\'',
+			code: "const foo = 'no'",
+			output: "const foo = 'yes'",
 			options: [{patterns: noToYesPattern}],
 			errors: createError('no', 'yes'),
 		},
 		// Custom patterns
 		{
-			code: 'const foo = \'unicorn\'',
-			output: 'const foo = \'🦄\'',
+			code: "const foo = 'unicorn'",
+			output: "const foo = '🦄'",
 			options: [{patterns}],
 			errors: createError('unicorn', '🦄'),
 		},
 		// Escape single quote
 		{
-			code: 'const foo = \'quote\'',
+			code: "const foo = 'quote'",
 			output: String.raw`const foo = '\'"'`,
 			options: [{patterns}],
 			errors: createError('quote', '\'"'),
@@ -140,11 +139,7 @@ test({
 		{
 			code: 'const foo = "unicorn"',
 			options: [{patterns: {unicorn: {...patterns.unicorn, fix: false}}}],
-			errors: createSuggestionError(
-				'unicorn',
-				'🦄',
-				'const foo = "🦄"',
-			),
+			errors: createSuggestionError('unicorn', '🦄', 'const foo = "🦄"'),
 		},
 		// Conflict patterns
 		{
@@ -190,7 +185,13 @@ test({
 		{
 			code: 'const foo = "foo"',
 			output: 'const foo = "bar"',
-			options: [{patterns: {foo: {suggest: 'bar', message: '`bar` is better than `foo`.'}}}],
+			options: [
+				{
+					patterns: {
+						foo: {suggest: 'bar', message: '`bar` is better than `foo`.'},
+					},
+				},
+			],
 			errors: [{message: '`bar` is better than `foo`.'}],
 		},
 
@@ -210,7 +211,6 @@ test({
 			errors: createError('no', 'yes'),
 		},
 
-		/* eslint-disable no-template-curly-in-string */
 		// `TemplateLiteral`
 		{
 			code: 'const foo = `no`',
@@ -287,7 +287,7 @@ test({
 			options: [{patterns: noToYesPattern}],
 			errors: createError('no', 'yes'),
 		},
-		/* eslint-enable no-template-curly-in-string */
+
 		{
 			code: outdent`
 				const foo = <div className='

@@ -232,11 +232,13 @@ test.snapshot({
 			'[...iterable,]',
 			'(( [...iterable] ))',
 			'(( [...(( iterable ))] ))',
-		].map(code => outdent`
-			function * fn() {
-				yield * ${code};
-			}
-		`),
+		].map(
+			(code) => outdent`
+				function * fn() {
+					yield * ${code};
+				}
+			`,
+		),
 	],
 });
 

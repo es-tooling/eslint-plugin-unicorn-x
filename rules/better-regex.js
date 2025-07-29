@@ -9,12 +9,16 @@ const messages = {
 	[MESSAGE_ID]: '{{original}} can be optimized to {{optimized}}.',
 	[MESSAGE_ID_PARSE_ERROR]: 'Problem parsing {{original}}: {{error}}',
 };
+const newExpressionOptions = {name: 'RegExp', minimumArguments: 1};
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sortCharacterClasses} = context.options[0] || {};
 
 	const ignoreList = [];
+	const optimizeOptions = {
+		blacklist: ignoreList,
+	};
 
 	if (sortCharacterClasses === false) {
 		ignoreList.push('charClassClassrangesMerge');
@@ -36,16 +40,19 @@ const create = context => {
 			let optimized = original;
 
 			try {
-				optimized = regexpTree.optimize(original, undefined, {blacklist: ignoreList}).toString();
+				optimized = regexpTree
+					.optimize(original, undefined, optimizeOptions)
+					.toString();
 			} catch (error) {
-				return {
+				context.report({
 					node,
 					messageId: MESSAGE_ID_PARSE_ERROR,
 					data: {
 						original,
 						error: error.message,
 					},
-				};
+				});
+				return;
 			}
 
 			if (original === optimized) {
@@ -62,25 +69,23 @@ const create = context => {
 			};
 
 			if (
-				node.parent.type === 'MemberExpression'
-				&& node.parent.object === node
-				&& !node.parent.optional
-				&& !node.parent.computed
-				&& node.parent.property.type === 'Identifier'
-				&& (
-					node.parent.property.name === 'toString'
-					|| node.parent.property.name === 'source'
-				)
+				node.parent.type === 'MemberExpression' &&
+				node.parent.object === node &&
+				!node.parent.optional &&
+				!node.parent.computed &&
+				node.parent.property.type === 'Identifier' &&
+				(node.parent.property.name === 'toString' ||
+					node.parent.property.name === 'source')
 			) {
-				return problem;
+				context.report(problem);
+				return;
 			}
 
-			return Object.assign(problem, {
-				fix: fixer => fixer.replaceText(node, optimized),
-			});
+			problem.fix = (fixer) => fixer.replaceText(node, optimized);
+			context.report(problem);
 		},
 		NewExpression(node) {
-			if (!isNewExpression(node, {name: 'RegExp', minimumArguments: 1})) {
+			if (!isNewExpression(node, newExpressionOptions)) {
 				return;
 			}
 
@@ -91,25 +96,24 @@ const create = context => {
 			}
 
 			const oldPattern = patternNode.value;
-			const flags = isStringLiteral(flagsNode)
-				? flagsNode.value
-				: '';
+			const flags = isStringLiteral(flagsNode) ? flagsNode.value : '';
 
 			const newPattern = cleanRegexp(oldPattern, flags);
 
 			if (oldPattern !== newPattern) {
-				return {
+				context.report({
 					node,
 					messageId: MESSAGE_ID,
 					data: {
 						original: oldPattern,
 						optimized: newPattern,
 					},
-					fix: fixer => fixer.replaceText(
-						patternNode,
-						escapeString(newPattern, patternNode.raw.charAt(0)),
-					),
-				};
+					fix: (fixer) =>
+						fixer.replaceText(
+							patternNode,
+							escapeString(newPattern, patternNode.raw.charAt(0)),
+						),
+				});
 			}
 		},
 	};
@@ -133,7 +137,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Improve regexes by making them shorter, consistent, and safer.',
+			description:
+				'Improve regexes by making them shorter, consistent, and safer.',
 			recommended: false,
 		},
 		fixable: 'code',

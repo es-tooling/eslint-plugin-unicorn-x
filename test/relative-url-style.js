@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
 import {getTester} from './utils/test.js';
 
 const {test} = getTester(import.meta);
@@ -33,7 +32,7 @@ test.snapshot({
 	],
 	invalid: [
 		'new URL("./foo", base)',
-		'new URL(\'./foo\', base)',
+		"new URL('./foo', base)",
 		'new URL("././a", base)',
 		'new URL(`./${foo}`, base)',
 		'new URL("./", "https://example.com/a/b/")',
@@ -70,10 +69,10 @@ test.snapshot({
 		String.raw`new URL("C:\foo", base)`,
 		String.raw`new URL("\u002E/foo", base)`,
 		String.raw`new URL("\u002Ffoo", base)`,
-	].map(code => ({code, options: alwaysAddDotSlashOptions})),
+	].map((code) => ({code, options: alwaysAddDotSlashOptions})),
 	invalid: [
 		'new URL("foo", base)',
-		'new URL(\'foo\', base)',
+		"new URL('foo', base)",
 		'new URL("", "https://example.com/a/b/")',
-	].map(code => ({code, options: alwaysAddDotSlashOptions})),
+	].map((code) => ({code, options: alwaysAddDotSlashOptions})),
 });

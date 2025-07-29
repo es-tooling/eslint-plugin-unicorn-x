@@ -104,12 +104,10 @@ test({
 		// `callee.object.type` is not a `Identifier`
 		'lib.process.on("SIGINT", function() { process.exit(1); })',
 		'lib.process.once("SIGINT", function() { process.exit(1); })',
-	].map(code => ({code, errors})),
+	].map((code) => ({code, errors})),
 });
 
 test.snapshot({
 	valid: [],
-	invalid: [
-		'process.exit(1);',
-	],
+	invalid: ['process.exit(1);'],
 });

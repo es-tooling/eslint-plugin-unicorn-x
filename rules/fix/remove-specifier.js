@@ -1,6 +1,14 @@
-import {isCommaToken, isOpeningBraceToken} from '@eslint-community/eslint-utils';
+import {
+	isCommaToken,
+	isOpeningBraceToken,
+} from '@eslint-community/eslint-utils';
 
-export default function * removeSpecifier(specifier, fixer, sourceCode, keepDeclaration = false) {
+export default function* removeSpecifier(
+	specifier,
+	fixer,
+	sourceCode,
+	keepDeclaration = false,
+) {
 	const declaration = specifier.parent;
 	const {specifiers} = declaration;
 
@@ -11,18 +19,31 @@ export default function * removeSpecifier(specifier, fixer, sourceCode, keepDecl
 
 	switch (specifier.type) {
 		case 'ImportSpecifier': {
-			const isTheOnlyNamedImport = specifiers.every(node => specifier === node || specifier.type !== node.type);
+			const isTheOnlyNamedImport = specifiers.every(
+				(node) => specifier === node || specifier.type !== node.type,
+			);
 			if (isTheOnlyNamedImport) {
-				const fromToken = sourceCode.getTokenAfter(specifier, token => token.type === 'Identifier' && token.value === 'from');
+				const fromToken = sourceCode.getTokenAfter(
+					specifier,
+					(token) => token.type === 'Identifier' && token.value === 'from',
+				);
 
-				const hasDefaultImport = specifiers.some(node => node.type === 'ImportDefaultSpecifier');
-				const startToken = sourceCode.getTokenBefore(specifier, hasDefaultImport ? isCommaToken : isOpeningBraceToken);
+				const hasDefaultImport = specifiers.some(
+					(node) => node.type === 'ImportDefaultSpecifier',
+				);
+				const startToken = sourceCode.getTokenBefore(
+					specifier,
+					hasDefaultImport ? isCommaToken : isOpeningBraceToken,
+				);
 				const [start] = sourceCode.getRange(startToken);
 				const [end] = sourceCode.getRange(fromToken);
 				const tokenBefore = sourceCode.getTokenBefore(startToken);
 				const shouldInsertSpace = sourceCode.getRange(tokenBefore)[1] === start;
 
-				yield fixer.replaceTextRange([start, end], shouldInsertSpace ? ' ' : '');
+				yield fixer.replaceTextRange(
+					[start, end],
+					shouldInsertSpace ? ' ' : '',
+				);
 				return;
 			}
 			// Fallthrough

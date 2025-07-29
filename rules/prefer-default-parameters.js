@@ -5,13 +5,13 @@ const MESSAGE_ID = 'preferDefaultParameters';
 const MESSAGE_ID_SUGGEST = 'preferDefaultParametersSuggest';
 
 const isDefaultExpression = (left, right) =>
-	left
-	&& right
-	&& left.type === 'Identifier'
-	&& right.type === 'LogicalExpression'
-	&& (right.operator === '||' || right.operator === '??')
-	&& right.left.type === 'Identifier'
-	&& right.right.type === 'Literal';
+	left &&
+	right &&
+	left.type === 'Identifier' &&
+	right.type === 'LogicalExpression' &&
+	(right.operator === '||' || right.operator === '??') &&
+	right.left.type === 'Identifier' &&
+	right.right.type === 'Literal';
 
 const containsCallExpression = (sourceCode, node) => {
 	if (!node) {
@@ -78,7 +78,10 @@ const isLastParameter = (parameters, parameter) => {
 };
 
 const needsParentheses = (sourceCode, function_) => {
-	if (function_.type !== 'ArrowFunctionExpression' || function_.params.length > 1) {
+	if (
+		function_.type !== 'ArrowFunctionExpression' ||
+		function_.params.length > 1
+	) {
 		return false;
 	}
 
@@ -114,7 +117,7 @@ const fixDefaultExpression = (fixer, sourceCode, node) => {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 	const functionStack = [];
 
@@ -147,15 +150,15 @@ const create = context => {
 
 		const {references} = variable;
 		const {params} = currentFunction;
-		const parameter = params.find(parameter =>
-			parameter.type === 'Identifier'
-			&& parameter.name === secondId,
+		const parameter = params.find(
+			(parameter) =>
+				parameter.type === 'Identifier' && parameter.name === secondId,
 		);
 
 		if (
-			hasSideEffects(sourceCode, currentFunction, node)
-			|| hasExtraReferences(assignment, references, left)
-			|| !isLastParameter(params, parameter)
+			hasSideEffects(sourceCode, currentFunction, node) ||
+			hasExtraReferences(assignment, references, left) ||
+			!isLastParameter(params, parameter)
 		) {
 			return;
 		}
@@ -167,17 +170,19 @@ const create = context => {
 		return {
 			node,
 			messageId: MESSAGE_ID,
-			suggest: [{
-				messageId: MESSAGE_ID_SUGGEST,
-				fix: fixer => [
-					fixer.replaceText(parameter, replacement),
-					fixDefaultExpression(fixer, sourceCode, node),
-				],
-			}],
+			suggest: [
+				{
+					messageId: MESSAGE_ID_SUGGEST,
+					fix: (fixer) => [
+						fixer.replaceText(parameter, replacement),
+						fixDefaultExpression(fixer, sourceCode, node),
+					],
+				},
+			],
 		};
 	};
 
-	context.on(functionTypes, node => {
+	context.on(functionTypes, (node) => {
 		functionStack.push(node);
 	});
 
@@ -185,14 +190,20 @@ const create = context => {
 		functionStack.pop();
 	});
 
-	context.on('AssignmentExpression', node => {
-		if (node.parent.type === 'ExpressionStatement' && node.parent.expression === node) {
+	context.on('AssignmentExpression', (node) => {
+		if (
+			node.parent.type === 'ExpressionStatement' &&
+			node.parent.expression === node
+		) {
 			return checkExpression(node.parent, node.left, node.right, true);
 		}
 	});
 
-	context.on('VariableDeclarator', node => {
-		if (node.parent.type === 'VariableDeclaration' && node.parent.declarations[0] === node) {
+	context.on('VariableDeclarator', (node) => {
+		if (
+			node.parent.type === 'VariableDeclaration' &&
+			node.parent.declarations[0] === node
+		) {
 			return checkExpression(node.parent, node.id, node.init, false);
 		}
 	});

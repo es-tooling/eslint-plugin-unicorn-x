@@ -47,7 +47,7 @@ test({
 			'foo.find()',
 			'foo.find(fn, thisArgument, extraArgument)',
 			'foo.find(...argumentsArray)',
-		].flatMap(code => [
+		].flatMap((code) => [
 			`if (${code}) {}`,
 			`if (${code.replace('find', 'findLast')}) {}`,
 		]),
@@ -61,7 +61,7 @@ test({
 			'while (foo.find(fn)) foo.shift();',
 			'do {foo.shift();} while (foo.find(fn));',
 			'for (; foo.find(fn); ) foo.shift();',
-		].flatMap(code => [
+		].flatMap((code) => [
 			invalidCase({
 				code,
 				suggestionOutput: code.replace('find', 'some'),
@@ -76,7 +76,8 @@ test({
 		// Comments
 		invalidCase({
 			code: 'console.log(foo /* comment 1 */ . /* comment 2 */ find /* comment 3 */ (fn) ? a : b)',
-			suggestionOutput: 'console.log(foo /* comment 1 */ . /* comment 2 */ some /* comment 3 */ (fn) ? a : b)',
+			suggestionOutput:
+				'console.log(foo /* comment 1 */ . /* comment 2 */ some /* comment 3 */ (fn) ? a : b)',
 			method: 'find',
 		}),
 		// This should not be reported, but `jQuery.find()` is always `truly`,
@@ -238,7 +239,7 @@ test.snapshot({
 			'foo.findIndex(bar) == - 1',
 			'foo.findIndex(bar) >= 0',
 			'foo.findIndex(bar) < 0',
-		].flatMap(code => [code, code.replace('findIndex', 'findLastIndex')]),
+		].flatMap((code) => [code, code.replace('findIndex', 'findLastIndex')]),
 		'foo.findIndex(bar) !== (( - 1 ))',
 		'foo.findIndex(element => element.bar === 1) !== (( - 1 ))',
 	],

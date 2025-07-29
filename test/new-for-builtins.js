@@ -1,4 +1,3 @@
-
 import outdent from 'outdent';
 import {enforceNew, disallowNew} from '../rules/utils/builtins.js';
 import {getTester} from './utils/test.js';
@@ -22,7 +21,7 @@ test.snapshot({
 		'const foo = new Int16Array()',
 		'const foo = new Int32Array()',
 		'const foo = new Map()',
-		'const foo = new Map([[\'foo\', \'bar\'], [\'unicorn\', \'rainbow\']])',
+		"const foo = new Map([['foo', 'bar'], ['unicorn', 'rainbow']])",
 		'const foo = new WeakMap()',
 		'const foo = new Set()',
 		'const foo = new WeakSet()',
@@ -38,42 +37,54 @@ test.snapshot({
 		'const foo = String()',
 		'const foo = Symbol()',
 		// Shadowed
-		...enforceNew.map(object => `
+		...enforceNew.map(
+			(object) => `
 			const ${object} = function() {};
 			const foo = ${object}();
-		`),
-		...disallowNew.map(object => `
+		`,
+		),
+		...disallowNew.map(
+			(object) => `
 			const ${object} = function() {};
 			const foo = new ${object}();
-		`),
-		...enforceNew.map(object => `
+		`,
+		),
+		...enforceNew.map(
+			(object) => `
 			function insideFunction() {
 				const ${object} = function() {};
 				const foo = ${object}();
 			}
-		`),
-		...disallowNew.map(object => `
+		`,
+		),
+		...disallowNew.map(
+			(object) => `
 			function insideFunction() {
 				const ${object} = function() {};
 				const foo = new ${object}();
 			}
-		`),
-		...enforceNew.map(object => `
+		`,
+		),
+		...enforceNew.map(
+			(object) => `
 			function outer() {
 				const ${object} = function() {};
 				function inner() {
 					const foo = ${object}();
 				}
 			}
-		`),
-		...disallowNew.map(object => `
+		`,
+		),
+		...disallowNew.map(
+			(object) => `
 			function insideFunction() {
 				const ${object} = function() {};
 				function inner() {
 					const foo = new ${object}();
 				}
 			}
-		`),
+		`,
+		),
 		// #122
 		`
 			import { Map } from 'immutable';
@@ -206,7 +217,7 @@ test.snapshot({
 		'const foo = BigUint64Array()',
 		'const foo = DataView()',
 		'const foo = Error()',
-		'const foo = Error(\'Foo bar\')',
+		"const foo = Error('Foo bar')",
 		'const foo = Float16Array()',
 		'const foo = Float32Array()',
 		'const foo = Float64Array()',
@@ -215,7 +226,7 @@ test.snapshot({
 		'const foo = Int16Array()',
 		'const foo = Int32Array()',
 		'const foo = (( Map ))()',
-		'const foo = Map([[\'foo\', \'bar\'], [\'unicorn\', \'rainbow\']])',
+		"const foo = Map([['foo', 'bar'], ['unicorn', 'rainbow']])",
 		'const foo = WeakMap()',
 		'const foo = Set()',
 		'const foo = WeakSet()',
@@ -228,7 +239,7 @@ test.snapshot({
 		'const foo = new BigInt(123)',
 		'const foo = new Boolean()',
 		'const foo = new Number()',
-		'const foo = new Number(\'123\')',
+		"const foo = new Number('123')",
 		'const foo = new String()',
 		'const foo = new Symbol()',
 		outdent`
@@ -262,9 +273,7 @@ test.snapshot({
 
 // `Date`
 test.snapshot({
-	valid: [
-		'const foo = new Date();',
-	],
+	valid: ['const foo = new Date();'],
 	invalid: [
 		'const foo = Date();',
 		'const foo = globalThis.Date();',

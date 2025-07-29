@@ -2,19 +2,21 @@ import {getStaticValue} from '@eslint-community/eslint-utils';
 
 const MESSAGE_ID = 'consistent-empty-array-spread';
 const messages = {
-	[MESSAGE_ID]: 'Prefer using empty {{replacementDescription}} since the {{anotherNodePosition}} is {{anotherNodeDescription}}.',
+	[MESSAGE_ID]:
+		'Prefer using empty {{replacementDescription}} since the {{anotherNodePosition}} is {{anotherNodeDescription}}.',
 };
 
-const isEmptyArrayExpression = node =>
-	node.type === 'ArrayExpression'
-	&& node.elements.length === 0;
+const isEmptyArrayExpression = (node) =>
+	node.type === 'ArrayExpression' && node.elements.length === 0;
 
-const isEmptyStringLiteral = node =>
-	node.type === 'Literal'
-	&& node.value === '';
+const isEmptyStringLiteral = (node) =>
+	node.type === 'Literal' && node.value === '';
 
 const isString = (node, context) => {
-	const staticValueResult = getStaticValue(node, context.sourceCode.getScope(node));
+	const staticValueResult = getStaticValue(
+		node,
+		context.sourceCode.getScope(node),
+	);
 	return typeof staticValueResult?.value === 'string';
 };
 
@@ -23,7 +25,10 @@ const isArray = (node, context) => {
 		return true;
 	}
 
-	const staticValueResult = getStaticValue(node, context.sourceCode.getScope(node));
+	const staticValueResult = getStaticValue(
+		node,
+		context.sourceCode.getScope(node),
+	);
 	return Array.isArray(staticValueResult?.value);
 };
 
@@ -40,7 +45,7 @@ const cases = [
 		anotherSidePredicate: isString,
 		anotherNodeDescription: 'a string',
 		replacementDescription: 'string',
-		replacementCode: '\'\'',
+		replacementCode: "''",
 	},
 ];
 
@@ -59,23 +64,20 @@ function createProblem({
 			anotherNodePosition,
 			anotherNodeDescription,
 		},
-		fix: fixer => fixer.replaceText(problemNode, replacementCode),
+		fix: (fixer) => fixer.replaceText(problemNode, replacementCode),
 	};
 }
 
 function getProblem(conditionalExpression, context) {
-	const {
-		consequent,
-		alternate,
-	} = conditionalExpression;
+	const {consequent, alternate} = conditionalExpression;
 
 	for (const problemCase of cases) {
-		const {
-			oneSidePredicate,
-			anotherSidePredicate,
-		} = problemCase;
+		const {oneSidePredicate, anotherSidePredicate} = problemCase;
 
-		if (oneSidePredicate(consequent, context) && anotherSidePredicate(alternate, context)) {
+		if (
+			oneSidePredicate(consequent, context) &&
+			anotherSidePredicate(alternate, context)
+		) {
 			return createProblem({
 				...problemCase,
 				problemNode: consequent,
@@ -83,7 +85,10 @@ function getProblem(conditionalExpression, context) {
 			});
 		}
 
-		if (oneSidePredicate(alternate, context) && anotherSidePredicate(consequent, context)) {
+		if (
+			oneSidePredicate(alternate, context) &&
+			anotherSidePredicate(consequent, context)
+		) {
 			return createProblem({
 				...problemCase,
 				problemNode: alternate,
@@ -94,12 +99,12 @@ function getProblem(conditionalExpression, context) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
-	* ArrayExpression(arrayExpression) {
+const create = (context) => ({
+	*ArrayExpression(arrayExpression) {
 		for (const element of arrayExpression.elements) {
 			if (
-				element?.type !== 'SpreadElement'
-				|| element.argument.type !== 'ConditionalExpression'
+				element?.type !== 'SpreadElement' ||
+				element.argument.type !== 'ConditionalExpression'
 			) {
 				continue;
 			}
@@ -115,7 +120,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer consistent types when spreading a ternary in an array literal.',
+			description:
+				'Prefer consistent types when spreading a ternary in an array literal.',
 			recommended: true,
 		},
 		fixable: 'code',

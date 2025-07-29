@@ -13,8 +13,7 @@ const impossibleNodeTypes = new Set([
 	'TemplateLiteral',
 ]);
 
-const isNodeValueNotDomNode = node =>
-	impossibleNodeTypes.has(node.type)
-	|| isUndefined(node);
+const isNodeValueNotDomNode = (node) =>
+	impossibleNodeTypes.has(node.type) || isUndefined(node);
 
 export default isNodeValueNotDomNode;

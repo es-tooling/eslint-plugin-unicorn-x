@@ -1,4 +1,7 @@
-import {removeParentheses, removeMemberExpressionProperty} from './fix/index.js';
+import {
+	removeParentheses,
+	removeMemberExpressionProperty,
+} from './fix/index.js';
 import {isLiteral} from './ast/index.js';
 
 const MESSAGE_ID = 'no-await-expression-member';
@@ -7,7 +10,7 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
@@ -24,21 +27,28 @@ const create = context => {
 
 			// `const foo = (await bar)[0]`
 			if (
-				memberExpression.computed
-				&& !memberExpression.optional
-				&& (isLiteral(property, 0) || isLiteral(property, 1))
-				&& memberExpression.parent.type === 'VariableDeclarator'
-				&& memberExpression.parent.init === memberExpression
-				&& memberExpression.parent.id.type === 'Identifier'
-				&& !memberExpression.parent.id.typeAnnotation
+				memberExpression.computed &&
+				!memberExpression.optional &&
+				(isLiteral(property, 0) || isLiteral(property, 1)) &&
+				memberExpression.parent.type === 'VariableDeclarator' &&
+				memberExpression.parent.init === memberExpression &&
+				memberExpression.parent.id.type === 'Identifier' &&
+				!memberExpression.parent.id.typeAnnotation
 			) {
-				problem.fix = function * (fixer) {
+				problem.fix = function* (fixer) {
 					const variable = memberExpression.parent.id;
-					yield fixer.insertTextBefore(variable, property.value === 0 ? '[' : '[, ');
+					yield fixer.insertTextBefore(
+						variable,
+						property.value === 0 ? '[' : '[, ',
+					);
 					yield fixer.insertTextAfter(variable, ']');
 
-					yield removeMemberExpressionProperty(fixer, memberExpression, sourceCode);
-					yield * removeParentheses(memberExpression.object, fixer, sourceCode);
+					yield removeMemberExpressionProperty(
+						fixer,
+						memberExpression,
+						sourceCode,
+					);
+					yield* removeParentheses(memberExpression.object, fixer, sourceCode);
 				};
 
 				return problem;
@@ -46,22 +56,26 @@ const create = context => {
 
 			// `const foo = (await bar).foo`
 			if (
-				!memberExpression.computed
-				&& !memberExpression.optional
-				&& property.type === 'Identifier'
-				&& memberExpression.parent.type === 'VariableDeclarator'
-				&& memberExpression.parent.init === memberExpression
-				&& memberExpression.parent.id.type === 'Identifier'
-				&& memberExpression.parent.id.name === property.name
-				&& !memberExpression.parent.id.typeAnnotation
+				!memberExpression.computed &&
+				!memberExpression.optional &&
+				property.type === 'Identifier' &&
+				memberExpression.parent.type === 'VariableDeclarator' &&
+				memberExpression.parent.init === memberExpression &&
+				memberExpression.parent.id.type === 'Identifier' &&
+				memberExpression.parent.id.name === property.name &&
+				!memberExpression.parent.id.typeAnnotation
 			) {
-				problem.fix = function * (fixer) {
+				problem.fix = function* (fixer) {
 					const variable = memberExpression.parent.id;
 					yield fixer.insertTextBefore(variable, '{');
 					yield fixer.insertTextAfter(variable, '}');
 
-					yield removeMemberExpressionProperty(fixer, memberExpression, sourceCode);
-					yield * removeParentheses(memberExpression.object, fixer, sourceCode);
+					yield removeMemberExpressionProperty(
+						fixer,
+						memberExpression,
+						sourceCode,
+					);
+					yield* removeParentheses(memberExpression.object, fixer, sourceCode);
 				};
 
 				return problem;

@@ -8,7 +8,7 @@ test.snapshot({
 		'node.textContent;',
 		'node[innerText];',
 		'innerText = true;',
-		'node[\'innerText\'];',
+		"node['innerText'];",
 		'innerText.textContent',
 		'const [innerText] = node;',
 		'[innerText] = node;',
@@ -20,7 +20,7 @@ test.snapshot({
 	invalid: [
 		'node.innerText;',
 		'node?.innerText;',
-		'node.innerText = \'foo\';',
+		"node.innerText = 'foo';",
 		'innerText.innerText;',
 		'const {innerText} = node;',
 		'const {innerText,} = node;',

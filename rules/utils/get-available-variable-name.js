@@ -2,11 +2,8 @@ import helperValidatorIdentifier from '@babel/helper-validator-identifier';
 import resolveVariableName from './resolve-variable-name.js';
 import getReferences from './get-references.js';
 
-const {
-	isIdentifierName,
-	isStrictReservedWord,
-	isKeyword,
-} = helperValidatorIdentifier;
+const {isIdentifierName, isStrictReservedWord, isKeyword} =
+	helperValidatorIdentifier;
 
 // https://github.com/microsoft/TypeScript/issues/2536#issuecomment-87194347
 const typescriptReservedWords = new Set([
@@ -74,13 +71,13 @@ const typescriptReservedWords = new Set([
 
 // Copied from https://github.com/babel/babel/blob/fce35af69101c6b316557e28abf60bdbf77d6a36/packages/babel-types/src/validators/isValidIdentifier.ts#L7
 // Use this function instead of `require('@babel/types').isIdentifier`, since `@babel/helper-validator-identifier` package is much smaller
-const isValidIdentifier = name =>
-	typeof name === 'string'
-	&& !isKeyword(name)
-	&& !isStrictReservedWord(name, true)
-	&& isIdentifierName(name)
-	&& name !== 'arguments'
-	&& !typescriptReservedWords.has(name);
+const isValidIdentifier = (name) =>
+	typeof name === 'string' &&
+	!isKeyword(name) &&
+	!isStrictReservedWord(name, true) &&
+	isIdentifierName(name) &&
+	name !== 'arguments' &&
+	!typescriptReservedWords.has(name);
 
 /*
 Unresolved reference is probably from the global scope. We should avoid using that name.
@@ -100,10 +97,15 @@ function unicorn() {
 ```
 */
 const isUnresolvedName = (name, scope) =>
-	getReferences(scope).some(({identifier, resolved}) => identifier?.name === name && !resolved);
+	getReferences(scope).some(
+		({identifier, resolved}) => identifier?.name === name && !resolved,
+	);
 
 const isSafeName = (name, scopes) =>
-	!scopes.some(scope => resolveVariableName(name, scope) || isUnresolvedName(name, scope));
+	!scopes.some(
+		(scope) =>
+			resolveVariableName(name, scope) || isUnresolvedName(name, scope),
+	);
 
 const alwaysTrue = () => true;
 
@@ -130,7 +132,11 @@ Useful when you want to rename a variable (or create a new variable) while being
 @param {isSafe} [isSafe] - Rule-specific name check function.
 @returns {string} - Either `name` as is, or a string like `${name}_` suffixed with underscores to make the name unique.
 */
-export default function getAvailableVariableName(name, scopes, isSafe = alwaysTrue) {
+export default function getAvailableVariableName(
+	name,
+	scopes,
+	isSafe = alwaysTrue,
+) {
 	if (!isValidIdentifier(name)) {
 		name += '_';
 

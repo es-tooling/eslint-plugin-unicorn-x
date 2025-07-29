@@ -7,8 +7,8 @@ test.snapshot({
 	valid: [
 		'const buffer = Buffer',
 		'const buffer = new NotBuffer(1)',
-		'const buffer = Buffer.from(\'buf\')',
-		'const buffer = Buffer.from(\'7468697320697320612074c3a97374\', \'hex\')',
+		"const buffer = Buffer.from('buf')",
+		"const buffer = Buffer.from('7468697320697320612074c3a97374', 'hex')",
 		'const buffer = Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72])',
 		'const buffer = Buffer.alloc(10)',
 	],
@@ -55,7 +55,7 @@ test.snapshot({
 			const string = "string";
 			const buffer = new Buffer(string);
 		`,
-		// eslint-disable-next-line no-template-curly-in-string
+
 		'const buffer = new Buffer(`${unknown}`)',
 
 		// Unknown

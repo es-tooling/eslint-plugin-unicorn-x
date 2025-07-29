@@ -1,4 +1,4 @@
-const getVendorPrefixedName = eventName => [
+const getVendorPrefixedName = (eventName) => [
 	`webkit${eventName}`,
 	`o${eventName.toLowerCase()}`,
 	eventName.toLowerCase(),
@@ -26,7 +26,7 @@ const domEvents = new Set([
 	// Selection events.
 	// https://www.w3.org/TR/selection-api/
 	'selectionchange',
-	'selectstart',	// IE, Safari, Chrome
+	'selectstart', // IE, Safari, Chrome
 
 	// Wheel events
 	// http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents
@@ -40,7 +40,7 @@ const domEvents = new Set([
 	// Focus
 	'blur',
 	'focus',
-	'deactivate',	// IE only
+	'deactivate', // IE only
 	'focusin',
 	'focusout',
 
@@ -50,7 +50,7 @@ const domEvents = new Set([
 	'select',
 	'submit',
 	'input',
-	'propertychange',	// IE only
+	'propertychange', // IE only
 
 	// Drag and drop
 	'dragstart',

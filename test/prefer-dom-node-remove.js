@@ -9,7 +9,7 @@ test.snapshot({
 		'foo.remove()',
 		'this.remove()',
 		'remove()',
-		'foo.parentNode.removeChild(\'bar\')',
+		"foo.parentNode.removeChild('bar')",
 		'parentNode.removeChild(undefined)',
 
 		// Not `CallExpression`
@@ -17,7 +17,7 @@ test.snapshot({
 		// Not `MemberExpression`
 		'removeChild(foo);',
 		// `callee.property` is not a `Identifier`
-		'parentNode[\'removeChild\'](bar);',
+		"parentNode['removeChild'](bar);",
 		// Computed
 		'parentNode[removeChild](bar);',
 		// Not `removeChild`
@@ -30,9 +30,9 @@ test.snapshot({
 		'parentNode.removeChild?.(foo)',
 
 		// `callee.object` is not a DOM Node,
-		...notDomNodeTypes.map(data => `(${data}).removeChild(foo)`),
+		...notDomNodeTypes.map((data) => `(${data}).removeChild(foo)`),
 		// First argument is not a DOM Node,
-		...notDomNodeTypes.map(data => `foo.removeChild(${data})`),
+		...notDomNodeTypes.map((data) => `foo.removeChild(${data})`),
 	],
 	invalid: [
 		// Auto fix

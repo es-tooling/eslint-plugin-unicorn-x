@@ -5,11 +5,16 @@ const {test} = getTester(import.meta);
 
 test({
 	testerOptions: {
-		plugins: Object.fromEntries([
-			['plugin-name', 'rule-name'],
-			['@scope/plugin', 'rule-name'],
-			['@scope', 'rule-name'],
-		].map(([pluginName, ruleName]) => [pluginName, {rules: {[ruleName]: {}}}])),
+		plugins: Object.fromEntries(
+			[
+				['plugin-name', 'rule-name'],
+				['@scope/plugin', 'rule-name'],
+				['@scope', 'rule-name'],
+			].map(([pluginName, ruleName]) => [
+				pluginName,
+				{rules: {[ruleName]: {}}},
+			]),
+		),
 	},
 	valid: [
 		'eval();',

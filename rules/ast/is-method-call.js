@@ -18,45 +18,24 @@ import {isCallExpression} from './call-or-new-expression.js';
 		objects?: string[],
 		optionalMember?: boolean,
 		computed?: boolean
-	} | string | string[]
+	}
 } [options]
 @returns {string}
 */
 export default function isMethodCall(node, options) {
-	if (typeof options === 'string') {
-		options = {methods: [options]};
-	}
-
-	if (Array.isArray(options)) {
-		options = {methods: options};
-	}
-
-	const {
-		optionalCall,
-		optionalMember,
-		method,
-		methods,
-	} = {
-		method: '',
-		methods: [],
-		...options,
-	};
-
 	return (
 		isCallExpression(node, {
 			argumentsLength: options.argumentsLength,
 			minimumArguments: options.minimumArguments,
 			maximumArguments: options.maximumArguments,
 			allowSpreadElement: options.allowSpreadElement,
-			optional: optionalCall,
-		})
-		&& isMemberExpression(node.callee, {
-			object: options.object,
-			objects: options.objects,
+			optional: options.optionalCall,
+		}) &&
+		isMemberExpression(node.callee, {
+			objects: options.object ?? options.objects,
+			properties: options.method ?? options.methods,
+			optional: options.optionalMember,
 			computed: options.computed,
-			property: method,
-			properties: methods,
-			optional: optionalMember,
 		})
 	);
 }

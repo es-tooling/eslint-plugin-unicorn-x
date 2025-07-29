@@ -9,12 +9,14 @@ function getObjectLengthOrInfinityDescription(node, object) {
 	}
 
 	// `Number.POSITIVE_INFINITY`
-	if (isMemberExpression(node, {
-		object: 'Number',
-		property: 'POSITIVE_INFINITY',
-		computed: false,
-		optional: false,
-	})) {
+	if (
+		isMemberExpression(node, {
+			objects: 'Number',
+			properties: 'POSITIVE_INFINITY',
+			optional: false,
+			computed: false,
+		})
+	) {
 		return 'Number.POSITIVE_INFINITY';
 	}
 
@@ -25,10 +27,15 @@ function getObjectLengthOrInfinityDescription(node, object) {
 	}
 
 	// `object.length`
-	if (!(
-		isMemberExpression(node, {property: 'length', computed: false})
-		&& isSameReference(object, node.object)
-	)) {
+	if (
+		!(
+			isMemberExpression(node, {
+				properties: 'length',
+				optional: undefined,
+				computed: false,
+			}) && isSameReference(object, node.object)
+		)
+	) {
 		return;
 	}
 
@@ -37,44 +44,49 @@ function getObjectLengthOrInfinityDescription(node, object) {
 
 /** @param {import('eslint').Rule.RuleContext} context */
 function listen(context, {methods, messageId}) {
-	context.on('CallExpression', callExpression => {
-		if (!isMethodCall(callExpression, {
-			methods,
-			argumentsLength: 2,
-			optionalCall: false,
-		})) {
-			return;
-		}
+	return {
+		CallExpression(callExpression) {
+			if (
+				!isMethodCall(callExpression, {
+					methods,
+					argumentsLength: 2,
+					optionalCall: false,
+				})
+			) {
+				return;
+			}
 
-		const secondArgument = callExpression.arguments[1];
-		const description = getObjectLengthOrInfinityDescription(
-			secondArgument,
-			callExpression.callee.object,
-		);
+			const secondArgument = callExpression.arguments[1];
+			const description = getObjectLengthOrInfinityDescription(
+				secondArgument,
+				callExpression.callee.object,
+			);
 
-		if (!description) {
-			return;
-		}
+			if (!description) {
+				return;
+			}
 
-		const methodName = callExpression.callee.property.name;
-		const messageData = {
-			description,
-		};
+			const methodName = callExpression.callee.property.name;
+			const messageData = {
+				description,
+			};
 
-		if (methodName === 'splice') {
-			messageData.argumentName = 'deleteCount';
-		} else if (methodName === 'toSpliced') {
-			messageData.argumentName = 'skipCount';
-		}
+			if (methodName === 'splice') {
+				messageData.argumentName = 'deleteCount';
+			} else if (methodName === 'toSpliced') {
+				messageData.argumentName = 'skipCount';
+			}
 
-		return {
-			node: secondArgument,
-			messageId,
-			data: messageData,
-			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			fix: fixer => removeArgument(fixer, secondArgument, context.sourceCode),
-		};
-	});
+			context.report({
+				node: secondArgument,
+				messageId,
+				data: messageData,
+				/** @param {import('eslint').Rule.RuleFixer} fixer */
+				fix: (fixer) =>
+					removeArgument(fixer, secondArgument, context.sourceCode),
+			});
+		},
+	};
 }
 
 export {listen};

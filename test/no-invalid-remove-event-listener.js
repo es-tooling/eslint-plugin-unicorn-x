@@ -38,7 +38,6 @@ test.snapshot({
 		'el.removeEventListener("keydown", obj.listener)',
 		'removeEventListener("keyup", () => {})',
 		'removeEventListener("keydown", function () {})',
-
 	],
 	invalid: [
 		'window.removeEventListener("scroll", handler.bind(abc))',

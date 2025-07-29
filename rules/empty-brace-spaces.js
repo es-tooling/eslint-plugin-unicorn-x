@@ -7,7 +7,9 @@ const messages = {
 
 const getProblem = (node, context) => {
 	const {sourceCode} = context;
-	const openingBrace = sourceCode.getFirstToken(node, {filter: isOpeningBraceToken});
+	const openingBrace = sourceCode.getFirstToken(node, {
+		filter: isOpeningBraceToken,
+	});
 	const closingBrace = sourceCode.getLastToken(node);
 	const [, start] = sourceCode.getRange(openingBrace);
 	const [end] = sourceCode.getRange(closingBrace);
@@ -23,26 +25,25 @@ const getProblem = (node, context) => {
 			end: sourceCode.getLoc(closingBrace).start,
 		},
 		messageId: MESSAGE_ID,
-		fix: fixer => fixer.removeRange([start, end]),
+		fix: (fixer) => fixer.removeRange([start, end]),
 	};
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	context.on([
-		'BlockStatement',
-		'ClassBody',
-		'StaticBlock',
-		'ObjectExpression',
-	], node => {
-		const children = node.type === 'ObjectExpression' ? node.properties : node.body;
+const create = (context) => {
+	context.on(
+		['BlockStatement', 'ClassBody', 'StaticBlock', 'ObjectExpression'],
+		(node) => {
+			const children =
+				node.type === 'ObjectExpression' ? node.properties : node.body;
 
-		if (children.length > 0) {
-			return;
-		}
+			if (children.length > 0) {
+				return;
+			}
 
-		return getProblem(node, context);
-	});
+			return getProblem(node, context);
+		},
+	);
 };
 
 /** @type {import('eslint').Rule.RuleModule} */

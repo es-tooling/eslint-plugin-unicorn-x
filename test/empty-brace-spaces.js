@@ -27,10 +27,7 @@ const cases = [
 	'foo = class {bar() {/* */}}',
 	'class Foo {static  {/* */}}',
 ];
-const classBodyCases = [
-	'class Foo {/* */}',
-	'foo = class {/* */}',
-];
+const classBodyCases = ['class Foo {/* */}', 'foo = class {/* */}'];
 const allCases = [...cases, ...classBodyCases];
 
 const ignoredCases = [
@@ -41,34 +38,30 @@ const ignoredCases = [
 
 test({
 	valid: [
-		...[
-			'',
-			'/* comment */',
-			'\n\t// comment \n',
-		].flatMap(body => allCases.map(code => code.replace(SPACES_PLACEHOLDER, body))),
+		...['', '/* comment */', '\n\t// comment \n'].flatMap((body) =>
+			allCases.map((code) => code.replace(SPACES_PLACEHOLDER, body)),
+		),
 		// Not empty
-		...cases.map(code => code.replace(SPACES_PLACEHOLDER, 'unicorn')),
-		...classBodyCases.map(code => code.replace(SPACES_PLACEHOLDER, 'baz() {}')),
+		...cases.map((code) => code.replace(SPACES_PLACEHOLDER, 'unicorn')),
+		...classBodyCases.map((code) =>
+			code.replace(SPACES_PLACEHOLDER, 'baz() {}'),
+		),
 		// `with`
 		{
 			code: 'with (foo) {}',
 			languageOptions: {ecmaVersion: 5, sourceType: 'script'},
 		},
 		// We don't check these cases
-		...ignoredCases.map(code => code.replace(SPACES_PLACEHOLDER, '   ')),
+		...ignoredCases.map((code) => code.replace(SPACES_PLACEHOLDER, '   ')),
 	],
 	invalid: [
-		...[
-			' ',
-			'\t',
-			' \t \t ',
-			'\n\n',
-			'\r\n',
-		].flatMap(spaces => allCases.map(code => ({
-			code: code.replace(SPACES_PLACEHOLDER, spaces),
-			output: code.replace(SPACES_PLACEHOLDER, ''),
-			errors: 1,
-		}))),
+		...[' ', '\t', ' \t \t ', '\n\n', '\r\n'].flatMap((spaces) =>
+			allCases.map((code) => ({
+				code: code.replace(SPACES_PLACEHOLDER, spaces),
+				output: code.replace(SPACES_PLACEHOLDER, ''),
+				errors: 1,
+			})),
+		),
 		// `with`
 		{
 			code: 'with (foo) {     }',
@@ -92,7 +85,7 @@ test.snapshot({
 	],
 });
 
-const enableBabelPlugins = plugins => ({
+const enableBabelPlugins = (plugins) => ({
 	parserOptions: {
 		babelOptions: {
 			parserOpts: {
@@ -101,7 +94,7 @@ const enableBabelPlugins = plugins => ({
 		},
 	},
 });
-const enableBabelPlugin = plugin => enableBabelPlugins([plugin]);
+const enableBabelPlugin = (plugin) => enableBabelPlugins([plugin]);
 test.babel({
 	valid: [],
 	invalid: [
@@ -142,7 +135,10 @@ test.babel({
 				};
 			`,
 			output: 'const foo = async    do    {};',
-			languageOptions: enableBabelPlugins(['doExpressions', 'asyncDoExpressions']),
+			languageOptions: enableBabelPlugins([
+				'doExpressions',
+				'asyncDoExpressions',
+			]),
 			errors: 1,
 		},
 	],

@@ -1,13 +1,13 @@
 # Enforce the use of built-in methods instead of unnecessary polyfills
 
-💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config).
+💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config).
 
 <!-- end auto-generated rule header -->
 
 <!-- Do not manually modify RULE_NOTICE part. Run: `npm run generate-rule-notices` -->
 <!-- RULE_NOTICE -->
 
-✅ _This rule is part of the [recommended](https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config) config._
+✅ _This rule is part of the [recommended](https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config) config._
 
 <!-- /RULE_NOTICE -->
 

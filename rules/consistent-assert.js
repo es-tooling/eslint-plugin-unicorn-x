@@ -6,7 +6,7 @@ const messages = {
 /**
 @param {import('estree').ImportSpecifier | import('estree').ImportDefaultSpecifier | import('estree').ImportSpecifier | import('estree').ImportDeclaration} node
 */
-const isValueImport = node => !node.importKind || node.importKind === 'value';
+const isValueImport = (node) => !node.importKind || node.importKind === 'value';
 
 /**
 Check if a specifier is `assert` function.
@@ -17,25 +17,21 @@ Check if a specifier is `assert` function.
 const isAssertFunction = (specifier, moduleName) =>
 	// `import assert from 'node:assert';`
 	// `import assert from 'node:assert/strict';`
-	specifier.type === 'ImportDefaultSpecifier'
+	specifier.type === 'ImportDefaultSpecifier' ||
 	// `import {default as assert} from 'node:assert';`
 	// `import {default as assert} from 'node:assert/strict';`
-	|| (
-		specifier.type === 'ImportSpecifier'
-		&& specifier.imported.name === 'default'
-	)
+	(specifier.type === 'ImportSpecifier' &&
+		specifier.imported.name === 'default') ||
 	// `import {strict as assert} from 'node:assert';`
-	|| (
-		moduleName === 'assert'
-		&& specifier.type === 'ImportSpecifier'
-		&& specifier.imported.name === 'strict'
-	);
+	(moduleName === 'assert' &&
+		specifier.type === 'ImportSpecifier' &&
+		specifier.imported.name === 'strict');
 
 const NODE_PROTOCOL = 'node:';
 
 /** @type {import('eslint').Rule.RuleModule['create']} */
-const create = context => ({
-	* ImportDeclaration(importDeclaration) {
+const create = (context) => ({
+	*ImportDeclaration(importDeclaration) {
 		if (!isValueImport(importDeclaration)) {
 			return;
 		}
@@ -51,7 +47,10 @@ const create = context => ({
 		}
 
 		for (const specifier of importDeclaration.specifiers) {
-			if (!isValueImport(specifier) || !isAssertFunction(specifier, moduleName)) {
+			if (
+				!isValueImport(specifier) ||
+				!isAssertFunction(specifier, moduleName)
+			) {
 				continue;
 			}
 
@@ -65,7 +64,12 @@ const create = context => ({
 			const [variable] = variables;
 
 			for (const {identifier} of variable.references) {
-				if (!(identifier.parent.type === 'CallExpression' && identifier.parent.callee === identifier)) {
+				if (
+					!(
+						identifier.parent.type === 'CallExpression' &&
+						identifier.parent.callee === identifier
+					)
+				) {
 					continue;
 				}
 
@@ -74,7 +78,7 @@ const create = context => ({
 					messageId: MESSAGE_ID_ERROR,
 					data: {name: identifier.name},
 					/** @param {import('eslint').Rule.RuleFixer} fixer */
-					fix: fixer => fixer.insertTextAfter(identifier, '.ok'),
+					fix: (fixer) => fixer.insertTextAfter(identifier, '.ok'),
 				};
 			}
 		}

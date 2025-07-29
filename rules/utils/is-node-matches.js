@@ -15,17 +15,17 @@ export function isNodeMatchesNameOrPath(node, nameOrPath) {
 
 		if (index === 0) {
 			return (
-				(node.type === 'Identifier' && node.name === name)
-				|| (name === 'this' && node.type === 'ThisExpression')
+				(node.type === 'Identifier' && node.name === name) ||
+				(name === 'this' && node.type === 'ThisExpression')
 			);
 		}
 
 		if (
-			node.type !== 'MemberExpression'
-			|| node.optional
-			|| node.computed
-			|| node.property.type !== 'Identifier'
-			|| node.property.name !== name
+			node.type !== 'MemberExpression' ||
+			node.optional ||
+			node.computed ||
+			node.property.type !== 'Identifier' ||
+			node.property.name !== name
 		) {
 			return false;
 		}
@@ -42,5 +42,7 @@ Check if node matches any object name or key path.
 @returns {boolean}
 */
 export function isNodeMatches(node, nameOrPaths) {
-	return nameOrPaths.some(nameOrPath => isNodeMatchesNameOrPath(node, nameOrPath));
+	return nameOrPaths.some((nameOrPath) =>
+		isNodeMatchesNameOrPath(node, nameOrPath),
+	);
 }

@@ -31,13 +31,15 @@ test.snapshot({
 					Error.captureStackTrace(this, MyError)
 				}
 			`,
-		].map(code => outdent`
-			class MyError extends Error {
-				constructor() {
-					${code}
+		].map(
+			(code) => outdent`
+				class MyError extends Error {
+					constructor() {
+						${code}
+					}
 				}
-			}
-		`),
+			`,
+		),
 		outdent`
 			class MyError extends Error {
 				notConstructor() {
@@ -109,20 +111,24 @@ test.snapshot({
 			'Error.captureStackTrace?.(this, this.constructor)',
 			'Error.captureStackTrace(this, new.target)',
 			'Error.captureStackTrace?.(this, new.target)',
-		].map(code => outdent`
-			class MyError extends Error {
-				constructor() {
-					${code};
+		].map(
+			(code) => outdent`
+				class MyError extends Error {
+					constructor() {
+						${code};
+					}
 				}
-			}
-		`),
-		...builtinErrors.map(builtinError => outdent`
-			class MyError extends ${builtinError} {
-				constructor() {
-					Error.captureStackTrace(this, MyError)
+			`,
+		),
+		...builtinErrors.map(
+			(builtinError) => outdent`
+				class MyError extends ${builtinError} {
+					constructor() {
+						Error.captureStackTrace(this, MyError)
+					}
 				}
-			}
-		`),
+			`,
+		),
 		outdent`
 			class MyError extends Error {
 				constructor() {

@@ -8,7 +8,8 @@ const MESSAGE_ID_LENGTH = 'array-length';
 const MESSAGE_ID_ONLY_ELEMENT = 'only-element';
 const MESSAGE_ID_SPREAD = 'spread';
 const messages = {
-	[MESSAGE_ID_ERROR]: '`new Array()` is unclear in intent; use either `[x]` or `Array.from({length: x})`',
+	[MESSAGE_ID_ERROR]:
+		'`new Array()` is unclear in intent; use either `[x]` or `Array.from({length: x})`',
 	[MESSAGE_ID_LENGTH]: 'The argument is the length of array.',
 	[MESSAGE_ID_ONLY_ELEMENT]: 'The argument is the only element of array.',
 	[MESSAGE_ID_SPREAD]: 'Spread the argument.',
@@ -38,7 +39,11 @@ function getProblem(context, node) {
 		text = `(${text})`;
 	}
 
-	const maybeSemiColon = needsSemicolon(sourceCode.getTokenBefore(node), sourceCode, '[')
+	const maybeSemiColon = needsSemicolon(
+		sourceCode.getTokenBefore(node),
+		sourceCode,
+		'[',
+	)
 		? ';'
 		: '';
 
@@ -47,7 +52,7 @@ function getProblem(context, node) {
 		problem.suggest = [
 			{
 				messageId: MESSAGE_ID_SPREAD,
-				fix: fixer => fixer.replaceText(node, `${maybeSemiColon}[${text}]`),
+				fix: (fixer) => fixer.replaceText(node, `${maybeSemiColon}[${text}]`),
 			},
 		];
 		return problem;
@@ -56,14 +61,14 @@ function getProblem(context, node) {
 	const fromLengthText = `Array.from(${text === 'length' ? '{length}' : `{length: ${text}}`})`;
 	const scope = sourceCode.getScope(node);
 	if (isNumber(argumentNode, scope)) {
-		problem.fix = fixer => fixer.replaceText(node, fromLengthText);
+		problem.fix = (fixer) => fixer.replaceText(node, fromLengthText);
 		return problem;
 	}
 
 	const onlyElementText = `${maybeSemiColon}[${text}]`;
 	const result = getStaticValue(argumentNode, scope);
 	if (result !== null && typeof result.value !== 'number') {
-		problem.fix = fixer => fixer.replaceText(node, onlyElementText);
+		problem.fix = (fixer) => fixer.replaceText(node, onlyElementText);
 		return problem;
 	}
 
@@ -71,18 +76,18 @@ function getProblem(context, node) {
 	problem.suggest = [
 		{
 			messageId: MESSAGE_ID_LENGTH,
-			fix: fixer => fixer.replaceText(node, fromLengthText),
+			fix: (fixer) => fixer.replaceText(node, fromLengthText),
 		},
 		{
 			messageId: MESSAGE_ID_ONLY_ELEMENT,
-			fix: fixer => fixer.replaceText(node, onlyElementText),
+			fix: (fixer) => fixer.replaceText(node, onlyElementText),
 		},
 	];
 	return problem;
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	NewExpression(node) {
 		return getProblem(context, node);
 	},

@@ -13,12 +13,14 @@ function create(context) {
 	const {sourceCode} = context;
 	return {
 		CallExpression(node) {
-			if (!isMethodCall(node, {
-				method: 'postMessage',
-				argumentsLength: 1,
-				optionalCall: false,
-				optionalMember: false,
-			})) {
+			if (
+				!isMethodCall(node, {
+					method: 'postMessage',
+					argumentsLength: 1,
+					optionalCall: false,
+					optionalMember: false,
+				})
+			) {
 				return;
 			}
 
@@ -37,7 +39,7 @@ function create(context) {
 				replacements.push('self.location.origin');
 			}
 
-			replacements.push('\'*\'');
+			replacements.push("'*'");
 
 			return {
 				loc: {
@@ -45,11 +47,11 @@ function create(context) {
 					end: sourceCode.getLoc(lastToken).end,
 				},
 				messageId: ERROR,
-				suggest: replacements.map(code => ({
+				suggest: replacements.map((code) => ({
 					messageId: SUGGESTION,
 					data: {code},
 					/** @param {import('eslint').Rule.RuleFixer} fixer */
-					fix: fixer => appendArgument(fixer, node, code, sourceCode),
+					fix: (fixer) => appendArgument(fixer, node, code, sourceCode),
 				})),
 			};
 		},
@@ -62,7 +64,8 @@ const config = {
 	meta: {
 		type: 'problem',
 		docs: {
-			description: 'Enforce using the `targetOrigin` argument with `window.postMessage()`.',
+			description:
+				'Enforce using the `targetOrigin` argument with `window.postMessage()`.',
 			// Turned off because we can't distinguish `window.postMessage` and `{Worker,MessagePort,Client,BroadcastChannel}#postMessage()`
 			// See #1396
 			recommended: false,

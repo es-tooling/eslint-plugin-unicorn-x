@@ -1,4 +1,8 @@
-import {isParenthesized, isOpeningParenToken, isClosingParenToken} from '@eslint-community/eslint-utils';
+import {
+	isParenthesized,
+	isOpeningParenToken,
+	isClosingParenToken,
+} from '@eslint-community/eslint-utils';
 
 /*
 Get how many times the node is parenthesized.
@@ -7,7 +11,7 @@ Get how many times the node is parenthesized.
 @param {SourceCode} sourceCode - The source code object.
 @returns {number}
 */
-export function getParenthesizedTimes(node, sourceCode) {
+function getParenthesizedTimes(node, sourceCode) {
 	let times = 0;
 
 	while (isParenthesized(times + 1, node, sourceCode)) {

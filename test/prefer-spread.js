@@ -115,7 +115,7 @@ test.snapshot({
 			}
 		`,
 		// https://github.com/facebook/relay/blob/c7dd4cc33eb2dba82629884bff865f0905fc269e/packages/relay-compiler/transforms/ValidateUnusedVariablesTransform.js#L57
-		// eslint-disable-next-line no-template-curly-in-string
+
 		'const foo = `${Array.from(arrayLike)}`',
 		// https://github.com/angular/angular/blob/9e70bcb34f91d439f5203dc22a44f323d02c4648/packages/service-worker/worker/testing/cache.ts#L48
 		outdent`
@@ -157,7 +157,7 @@ test.snapshot({
 		'concat(1)',
 		'array[concat](1)',
 		'"foo".concat("bar")',
-		// eslint-disable-next-line no-template-curly-in-string
+
 		'`${foo}`.concat("bar")',
 		outdent`
 			const string = 'foo';

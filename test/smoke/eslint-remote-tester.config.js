@@ -15,17 +15,7 @@ const config = {
 	pathIgnorePattern: getPathIgnorePattern(),
 
 	/** Extensions of files under scanning */
-	extensions: [
-		'js',
-		'cjs',
-		'mjs',
-		'ts',
-		'cts',
-		'mts',
-		'jsx',
-		'tsx',
-		'vue',
-	],
+	extensions: ['js', 'cjs', 'mjs', 'ts', 'cts', 'mts', 'jsx', 'tsx', 'vue'],
 
 	/** Maximum amount of tasks ran concurrently */
 	concurrentTasks: 3,
@@ -42,16 +32,11 @@ const config = {
 		{
 			rules: {
 				// This rule crashing on replace string inside `jsx` or `Unicode escape sequence`
-				'unicorn/string-content': 'off',
+				'unicorn-x/string-content': 'off',
 			},
 		},
 		{
-			files: [
-				'**/*.ts',
-				'**/*.mts',
-				'**/*.cts',
-				'**/*.tsx',
-			],
+			files: ['**/*.ts', '**/*.mts', '**/*.cts', '**/*.tsx'],
 			languageOptions: {
 				parser: typescriptParser,
 				parserOptions: {
@@ -60,9 +45,7 @@ const config = {
 			},
 		},
 		{
-			files: [
-				'**/*.vue',
-			],
+			files: ['**/*.vue'],
 			languageOptions: {
 				parser: vueParser,
 				parserOptions: {

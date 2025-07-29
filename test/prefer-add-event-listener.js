@@ -7,16 +7,16 @@ const excludeFooOptions = [{excludedPackages: ['foo']}];
 
 test.snapshot({
 	valid: [
-		'foo.addEventListener(\'click\', () => {})',
-		'foo.removeEventListener(\'click\', onClick)',
+		"foo.addEventListener('click', () => {})",
+		"foo.removeEventListener('click', onClick)",
 		'foo.onclick',
 		'foo[onclick] = () => {}',
 		'foo["onclick"] = () => {}',
 		'foo.onunknown = () => {}',
-		'foo.setCallBack = () => {console.log(\'foo\')}',
-		'setCallBack = () => {console.log(\'foo\')}',
+		"foo.setCallBack = () => {console.log('foo')}",
+		"setCallBack = () => {console.log('foo')}",
 		'foo.onclick.bar = () => {}',
-		'foo[\'x\'] = true;',
+		"foo['x'] = true;",
 		outdent`
 			const Koa = require('koa');
 			const app = new Koa();
@@ -81,7 +81,7 @@ test.snapshot({
 		'window.onbeforeunload = null',
 		'window.onbeforeunload = undefined',
 		'window.onbeforeunload = foo',
-		'window.onbeforeunload = () => \'foo\'',
+		"window.onbeforeunload = () => 'foo'",
 		outdent`
 			window.onbeforeunload = () => {
 				return bar;
@@ -173,7 +173,8 @@ test.typescript({
 	invalid: [
 		{
 			code: '(el as HTMLElement).onmouseenter = onAnchorMouseEnter;',
-			output: '(el as HTMLElement).addEventListener(\'mouseenter\', onAnchorMouseEnter);',
+			output:
+				"(el as HTMLElement).addEventListener('mouseenter', onAnchorMouseEnter);",
 			errors: 1,
 		},
 	],

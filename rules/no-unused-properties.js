@@ -5,20 +5,18 @@ const messages = {
 	[MESSAGE_ID]: 'Property `{{name}}` is defined but never used.',
 };
 
-const getDeclaratorOrPropertyValue = declaratorOrProperty =>
-	declaratorOrProperty.init
-	|| declaratorOrProperty.value;
+const getDeclaratorOrPropertyValue = (declaratorOrProperty) =>
+	declaratorOrProperty.init || declaratorOrProperty.value;
 
-const isMemberExpressionCall = memberExpression =>
-	memberExpression.parent.type === 'CallExpression'
-	&& memberExpression.parent.callee === memberExpression;
+const isMemberExpressionCall = (memberExpression) =>
+	memberExpression.parent.type === 'CallExpression' &&
+	memberExpression.parent.callee === memberExpression;
 
-const isMemberExpressionAssignment = memberExpression =>
+const isMemberExpressionAssignment = (memberExpression) =>
 	memberExpression.parent.type === 'AssignmentExpression';
 
-const isMemberExpressionComputedBeyondPrediction = memberExpression =>
-	memberExpression.computed
-	&& memberExpression.property.type !== 'Literal';
+const isMemberExpressionComputedBeyondPrediction = (memberExpression) =>
+	memberExpression.computed && memberExpression.property.type !== 'Literal';
 
 const specialProtoPropertyKey = {
 	type: 'Identifier',
@@ -50,7 +48,7 @@ const propertyKeysEqual = (keyA, keyB) => {
 };
 
 const objectPatternMatchesObjectExprPropertyKey = (pattern, key) =>
-	pattern.properties.some(property => {
+	pattern.properties.some((property) => {
 		if (property.type === 'RestElement') {
 			return true;
 		}
@@ -58,7 +56,7 @@ const objectPatternMatchesObjectExprPropertyKey = (pattern, key) =>
 		return propertyKeysEqual(property.key, key);
 	});
 
-const isLeafDeclaratorOrProperty = declaratorOrProperty => {
+const isLeafDeclaratorOrProperty = (declaratorOrProperty) => {
 	const value = getDeclaratorOrPropertyValue(declaratorOrProperty);
 
 	if (!value) {
@@ -72,15 +70,17 @@ const isLeafDeclaratorOrProperty = declaratorOrProperty => {
 	return false;
 };
 
-const isUnusedVariable = variable => {
-	const hasReadReference = variable.references.some(reference => reference.isRead());
+const isUnusedVariable = (variable) => {
+	const hasReadReference = variable.references.some((reference) =>
+		reference.isRead(),
+	);
 	return !hasReadReference;
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
-	const getPropertyDisplayName = property => {
+	const getPropertyDisplayName = (property) => {
 		if (property.key.type === 'Identifier') {
 			return property.key.name;
 		}
@@ -122,14 +122,14 @@ const create = context => {
 			const nextPath = [...path, key];
 
 			const nextReferences = references
-				.map(reference => {
+				.map((reference) => {
 					const {parent} = reference.identifier;
 
 					if (reference.init) {
 						if (
-							parent.type === 'VariableDeclarator'
-							&& parent.parent.type === 'VariableDeclaration'
-							&& parent.parent.parent.type === 'ExportNamedDeclaration'
+							parent.type === 'VariableDeclarator' &&
+							parent.parent.type === 'VariableDeclaration' &&
+							parent.parent.parent.type === 'ExportNamedDeclaration'
 						) {
 							return {identifier: parent};
 						}
@@ -139,10 +139,10 @@ const create = context => {
 
 					if (parent.type === 'MemberExpression') {
 						if (
-							isMemberExpressionAssignment(parent)
-							|| isMemberExpressionCall(parent)
-							|| isMemberExpressionComputedBeyondPrediction(parent)
-							|| propertyKeysEqual(parent.property, key)
+							isMemberExpressionAssignment(parent) ||
+							isMemberExpressionCall(parent) ||
+							isMemberExpressionComputedBeyondPrediction(parent) ||
+							propertyKeysEqual(parent.property, key)
 						) {
 							return {identifier: parent};
 						}
@@ -151,8 +151,8 @@ const create = context => {
 					}
 
 					if (
-						parent.type === 'VariableDeclarator'
-						&& parent.id.type === 'ObjectPattern'
+						parent.type === 'VariableDeclarator' &&
+						parent.id.type === 'ObjectPattern'
 					) {
 						if (objectPatternMatchesObjectExprPropertyKey(parent.id, key)) {
 							return {identifier: parent};
@@ -162,8 +162,8 @@ const create = context => {
 					}
 
 					if (
-						parent.type === 'AssignmentExpression'
-						&& parent.left.type === 'ObjectPattern'
+						parent.type === 'AssignmentExpression' &&
+						parent.left.type === 'ObjectPattern'
 					) {
 						if (objectPatternMatchesObjectExprPropertyKey(parent.left, key)) {
 							return {identifier: parent};
@@ -190,7 +190,7 @@ const create = context => {
 		checkProperties(value, references, path);
 	};
 
-	const checkVariable = variable => {
+	const checkVariable = (variable) => {
 		if (variable.defs.length !== 1) {
 			return;
 		}
@@ -204,7 +204,7 @@ const create = context => {
 		checkObject(definition.node, variable.references);
 	};
 
-	const checkVariables = scope => {
+	const checkVariables = (scope) => {
 		for (const variable of scope.variables) {
 			checkVariable(variable);
 		}

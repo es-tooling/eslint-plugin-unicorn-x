@@ -274,9 +274,7 @@ const decoratorsBeforeExportOptions = {
 		parserOptions: {
 			babelOptions: {
 				parserOpts: {
-					plugins: [
-						['decorators', {decoratorsBeforeExport: true}],
-					],
+					plugins: [['decorators', {decoratorsBeforeExport: true}]],
 				},
 			},
 		},
@@ -288,9 +286,7 @@ const decoratorsAfterExportOptions = {
 		parserOptions: {
 			babelOptions: {
 				parserOpts: {
-					plugins: [
-						['decorators', {decoratorsBeforeExport: false}],
-					],
+					plugins: [['decorators', {decoratorsBeforeExport: false}]],
 				},
 			},
 		},
@@ -321,4 +317,3 @@ test.snapshot({
 		},
 	],
 });
-

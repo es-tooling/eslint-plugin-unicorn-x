@@ -12,10 +12,10 @@ const messages = {
 };
 
 const isObjectPropertyWithName = (node, name) =>
-	node.type === 'Property'
-	&& !node.computed
-	&& node.key.type === 'Identifier'
-	&& node.key.name === name;
+	node.type === 'Property' &&
+	!node.computed &&
+	node.key.type === 'Identifier' &&
+	node.key.name === name;
 
 function checkFetchOptions(context, node) {
 	if (node.type !== 'ObjectExpression') {
@@ -24,7 +24,9 @@ function checkFetchOptions(context, node) {
 
 	const {properties} = node;
 
-	const bodyProperty = properties.findLast(property => isObjectPropertyWithName(property, 'body'));
+	const bodyProperty = properties.findLast((property) =>
+		isObjectPropertyWithName(property, 'body'),
+	);
 
 	if (!bodyProperty) {
 		return;
@@ -35,10 +37,12 @@ function checkFetchOptions(context, node) {
 		return;
 	}
 
-	const methodProperty = properties.findLast(property => isObjectPropertyWithName(property, 'method'));
+	const methodProperty = properties.findLast((property) =>
+		isObjectPropertyWithName(property, 'method'),
+	);
 	// If `method` is omitted but there is an `SpreadElement`, we just ignore the case
 	if (!methodProperty) {
-		if (properties.some(node => node.type === 'SpreadElement')) {
+		if (properties.some((node) => node.type === 'SpreadElement')) {
 			return;
 		}
 
@@ -71,24 +75,28 @@ function checkFetchOptions(context, node) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	context.on('CallExpression', callExpression => {
-		if (!isCallExpression(callExpression, {
-			name: 'fetch',
-			minimumArguments: 2,
-			optional: false,
-		})) {
+const create = (context) => {
+	context.on('CallExpression', (callExpression) => {
+		if (
+			!isCallExpression(callExpression, {
+				name: 'fetch',
+				minimumArguments: 2,
+				optional: false,
+			})
+		) {
 			return;
 		}
 
 		return checkFetchOptions(context, callExpression.arguments[1]);
 	});
 
-	context.on('NewExpression', newExpression => {
-		if (!isNewExpression(newExpression, {
-			name: 'Request',
-			minimumArguments: 2,
-		})) {
+	context.on('NewExpression', (newExpression) => {
+		if (
+			!isNewExpression(newExpression, {
+				name: 'Request',
+				minimumArguments: 2,
+			})
+		) {
 			return;
 		}
 

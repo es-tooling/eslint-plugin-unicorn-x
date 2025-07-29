@@ -29,7 +29,8 @@ test({
 		},
 		{
 			code: 'const foo = i > 5 ? i < 100 ? true : false : i < 100 ? true : false;',
-			output: 'const foo = i > 5 ? (i < 100 ? true : false) : (i < 100 ? true : false);',
+			output:
+				'const foo = i > 5 ? (i < 100 ? true : false) : (i < 100 ? true : false);',
 			errors: 2,
 		},
 		{

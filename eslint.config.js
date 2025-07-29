@@ -1,12 +1,12 @@
 import globals from 'globals';
-import xo from 'eslint-config-xo';
+import eslintjs from '@eslint/js';
 import eslintPlugin from 'eslint-plugin-eslint-plugin';
 import jsdoc from 'eslint-plugin-jsdoc';
 import internalRules from './scripts/internal-rules/index.js';
 import unicorn from './index.js';
 
 const config = [
-	...xo,
+	eslintjs.configs.recommended,
 	unicorn.configs.recommended,
 	internalRules,
 	{
@@ -27,21 +27,20 @@ const config = [
 	},
 	{
 		rules: {
-			'unicorn/escape-case': 'off',
-			'unicorn/expiring-todo-comments': 'off',
-			'unicorn/no-hex-escape': 'off',
-			'unicorn/no-null': 'error',
-			'unicorn/prefer-array-flat': ['error', {
+			'unicorn-x/escape-case': 'off',
+			'unicorn-x/expiring-todo-comments': 'off',
+			'unicorn-x/no-hex-escape': 'off',
+			'unicorn-x/no-null': 'error',
+			'unicorn-x/prefer-array-flat': ['error', {
 				functions: [
 					'flat',
 					'flatten',
 				],
 			}],
-			'unicorn/consistent-function-scoping': 'off',
+			'unicorn-x/consistent-function-scoping': 'off',
 			'import/order': 'off',
 			'func-names': 'off',
-			'@stylistic/function-paren-newline': 'off',
-			'@stylistic/curly-newline': 'off',
+			'no-unused-vars': 'off',
 		},
 	},
 	{

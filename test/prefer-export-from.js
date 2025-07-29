@@ -479,8 +479,7 @@ test.snapshot({
 
 // Import attributes
 test.snapshot({
-	valid: [
-	],
+	valid: [],
 	invalid: [
 		outdent`
 			import json from './foo.json' with { type: 'json' };
@@ -571,7 +570,7 @@ test.snapshot({
 			use(named1);
 			export {defaultExport, named2};
 		`,
-	].map(code => ({code, options: [{ignoreUsedVariables: true}]})),
+	].map((code) => ({code, options: [{ignoreUsedVariables: true}]})),
 	invalid: [
 		outdent`
 			import defaultExport from 'foo';
@@ -605,6 +604,5 @@ test.snapshot({
 			import {notUsedNotExported, exported} from 'foo';
 			export {exported};
 		`,
-	].map(code => ({code, options: [{ignoreUsedVariables: true}]})),
+	].map((code) => ({code, options: [{ignoreUsedVariables: true}]})),
 });
-

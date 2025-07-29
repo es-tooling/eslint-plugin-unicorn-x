@@ -26,17 +26,17 @@ function isSameNode(left, right, sourceCode) {
 
 		case 'LogicalExpression': {
 			return (
-				left.operator === right.operator
-				&& isSameNode(left.left, right.left, sourceCode)
-				&& isSameNode(left.right, right.right, sourceCode)
+				left.operator === right.operator &&
+				isSameNode(left.left, right.left, sourceCode) &&
+				isSameNode(left.right, right.right, sourceCode)
 			);
 		}
 
 		case 'UnaryExpression': {
 			return (
-				left.operator === right.operator
-				&& left.prefix === right.prefix
-				&& isSameNode(left.argument, right.argument, sourceCode)
+				left.operator === right.operator &&
+				left.prefix === right.prefix &&
+				isSameNode(left.argument, right.argument, sourceCode)
 			);
 		}
 
@@ -58,57 +58,66 @@ function fix({
 	right,
 	operator,
 }) {
-	let text = [left, right].map((node, index) => {
-		const isNodeParenthesized = isParenthesized(node, sourceCode);
-		let text = isNodeParenthesized ? getParenthesizedText(node, sourceCode) : sourceCode.getText(node);
+	let text = [left, right]
+		.map((node, index) => {
+			const isNodeParenthesized = isParenthesized(node, sourceCode);
+			let text = isNodeParenthesized
+				? getParenthesizedText(node, sourceCode)
+				: sourceCode.getText(node);
 
-		if (
-			!isNodeParenthesized
-			&& shouldAddParenthesesToLogicalExpressionChild(node, {operator, property: index === 0 ? 'left' : 'right'})
-		) {
-			text = `(${text})`;
-		}
+			if (
+				!isNodeParenthesized &&
+				shouldAddParenthesesToLogicalExpressionChild(node, {
+					operator,
+					property: index === 0 ? 'left' : 'right',
+				})
+			) {
+				text = `(${text})`;
+			}
 
-		return text;
-	}).join(` ${operator} `);
+			return text;
+		})
+		.join(` ${operator} `);
 
 	// According to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#table
 	// There should be no cases need add parentheses when switching ternary to logical expression
 
 	// ASI
-	if (needsSemicolon(sourceCode.getTokenBefore(conditionalExpression), sourceCode, text)) {
+	if (
+		needsSemicolon(
+			sourceCode.getTokenBefore(conditionalExpression),
+			sourceCode,
+			text,
+		)
+	) {
 		text = `;${text}`;
 	}
 
 	return fixer.replaceText(conditionalExpression, text);
 }
 
-function getProblem({
-	sourceCode,
-	conditionalExpression,
-	left,
-	right,
-}) {
+function getProblem({sourceCode, conditionalExpression, left, right}) {
 	return {
 		node: conditionalExpression,
 		messageId: MESSAGE_ID_ERROR,
-		suggest: ['??', '||'].map(operator => ({
+		suggest: ['??', '||'].map((operator) => ({
 			messageId: MESSAGE_ID_SUGGESTION,
 			data: {operator},
-			fix: fixer => fix({
-				fixer,
-				sourceCode,
-				conditionalExpression,
-				left,
-				right,
-				operator,
-			}),
+			fix: (fixer) =>
+				fix({
+					fixer,
+					sourceCode,
+					conditionalExpression,
+					left,
+					right,
+					operator,
+				}),
 		})),
 	};
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
@@ -127,10 +136,10 @@ const create = context => {
 
 			// `!bar ? foo : bar`
 			if (
-				test.type === 'UnaryExpression'
-				&& test.operator === '!'
-				&& test.prefix
-				&& isSameNode(test.argument, alternate, sourceCode)
+				test.type === 'UnaryExpression' &&
+				test.operator === '!' &&
+				test.prefix &&
+				isSameNode(test.argument, alternate, sourceCode)
 			) {
 				return getProblem({
 					sourceCode,

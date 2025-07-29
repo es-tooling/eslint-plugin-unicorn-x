@@ -1,4 +1,7 @@
-import {isClosingParenToken, getStaticValue} from '@eslint-community/eslint-utils';
+import {
+	isClosingParenToken,
+	getStaticValue,
+} from '@eslint-community/eslint-utils';
 import {
 	getAvailableVariableName,
 	getScopes,
@@ -14,17 +17,18 @@ const messages = {
 };
 
 const defaultElementName = 'element';
-const isLiteralZero = node => isLiteral(node, 0);
-const isLiteralOne = node => isLiteral(node, 1);
+const isLiteralZero = (node) => isLiteral(node, 0);
+const isLiteralOne = (node) => isLiteral(node, 1);
 
-const isIdentifierWithName = (node, name) => node?.type === 'Identifier' && node.name === name;
+const isIdentifierWithName = (node, name) =>
+	node?.type === 'Identifier' && node.name === name;
 
-const getIndexIdentifierName = forStatement => {
+const getIndexIdentifierName = (forStatement) => {
 	const {init: variableDeclaration} = forStatement;
 
 	if (
-		!variableDeclaration
-		|| variableDeclaration.type !== 'VariableDeclaration'
+		!variableDeclaration ||
+		variableDeclaration.type !== 'VariableDeclaration'
 	) {
 		return;
 	}
@@ -46,7 +50,7 @@ const getIndexIdentifierName = forStatement => {
 	return variableDeclarator.id.name;
 };
 
-const getStrictComparisonOperands = binaryExpression => {
+const getStrictComparisonOperands = (binaryExpression) => {
 	if (binaryExpression.operator === '<') {
 		return {
 			lesser: binaryExpression.left,
@@ -62,7 +66,10 @@ const getStrictComparisonOperands = binaryExpression => {
 	}
 };
 
-const getArrayIdentifierFromBinaryExpression = (binaryExpression, indexIdentifierName) => {
+const getArrayIdentifierFromBinaryExpression = (
+	binaryExpression,
+	indexIdentifierName,
+) => {
 	const operands = getStrictComparisonOperands(binaryExpression);
 
 	if (!operands) {
@@ -80,8 +87,8 @@ const getArrayIdentifierFromBinaryExpression = (binaryExpression, indexIdentifie
 	}
 
 	if (
-		greater.object.type !== 'Identifier'
-		|| greater.property.type !== 'Identifier'
+		greater.object.type !== 'Identifier' ||
+		greater.property.type !== 'Identifier'
 	) {
 		return;
 	}
@@ -105,8 +112,12 @@ const getArrayIdentifier = (forStatement, indexIdentifierName) => {
 
 const isLiteralOnePlusIdentifierWithName = (node, identifierName) => {
 	if (node?.type === 'BinaryExpression' && node.operator === '+') {
-		return (isIdentifierWithName(node.left, identifierName) && isLiteralOne(node.right))
-			|| (isIdentifierWithName(node.right, identifierName) && isLiteralOne(node.left));
+		return (
+			(isIdentifierWithName(node.left, identifierName) &&
+				isLiteralOne(node.right)) ||
+			(isIdentifierWithName(node.right, identifierName) &&
+				isLiteralOne(node.left))
+		);
 	}
 
 	return false;
@@ -120,45 +131,52 @@ const checkUpdateExpression = (forStatement, indexIdentifierName) => {
 	}
 
 	if (update.type === 'UpdateExpression') {
-		return update.operator === '++' && isIdentifierWithName(update.argument, indexIdentifierName);
+		return (
+			update.operator === '++' &&
+			isIdentifierWithName(update.argument, indexIdentifierName)
+		);
 	}
 
 	if (
-		update.type === 'AssignmentExpression'
-		&& isIdentifierWithName(update.left, indexIdentifierName)
+		update.type === 'AssignmentExpression' &&
+		isIdentifierWithName(update.left, indexIdentifierName)
 	) {
 		if (update.operator === '+=') {
 			return isLiteralOne(update.right);
 		}
 
 		if (update.operator === '=') {
-			return isLiteralOnePlusIdentifierWithName(update.right, indexIdentifierName);
+			return isLiteralOnePlusIdentifierWithName(
+				update.right,
+				indexIdentifierName,
+			);
 		}
 	}
 
 	return false;
 };
 
-const isOnlyArrayOfIndexVariableRead = (arrayReferences, indexIdentifierName) => arrayReferences.every(reference => {
-	const node = reference.identifier.parent;
+const isOnlyArrayOfIndexVariableRead = (arrayReferences, indexIdentifierName) =>
+	arrayReferences.every((reference) => {
+		const node = reference.identifier.parent;
 
-	if (node.type !== 'MemberExpression') {
-		return false;
-	}
+		if (node.type !== 'MemberExpression') {
+			return false;
+		}
 
-	if (node.property.name !== indexIdentifierName) {
-		return false;
-	}
+		if (node.property.name !== indexIdentifierName) {
+			return false;
+		}
 
-	if (
-		node.parent.type === 'AssignmentExpression'
-		&& node.parent.left === node
-	) {
-		return false;
-	}
+		if (
+			node.parent.type === 'AssignmentExpression' &&
+			node.parent.left === node
+		) {
+			return false;
+		}
 
-	return true;
-});
+		return true;
+	});
 
 const getRemovalRange = (node, sourceCode) => {
 	const declarationNode = node.parent;
@@ -167,13 +185,14 @@ const getRemovalRange = (node, sourceCode) => {
 		const {line} = sourceCode.getLoc(declarationNode).start;
 		const lineText = sourceCode.lines[line - 1];
 
-		const isOnlyNodeOnLine = lineText.trim() === sourceCode.getText(declarationNode);
+		const isOnlyNodeOnLine =
+			lineText.trim() === sourceCode.getText(declarationNode);
 
 		return isOnlyNodeOnLine
 			? [
-				sourceCode.getIndexFromLoc({line, column: 0}),
-				sourceCode.getIndexFromLoc({line: line + 1, column: 0}),
-			]
+					sourceCode.getIndexFromLoc({line, column: 0}),
+					sourceCode.getIndexFromLoc({line: line + 1, column: 0}),
+				]
 			: sourceCode.getRange(declarationNode);
 	}
 
@@ -228,43 +247,56 @@ const nodeContains = (ancestor, descendant) => {
 	return false;
 };
 
-const isIndexVariableUsedElsewhereInTheLoopBody = (indexVariable, bodyScope, arrayIdentifierName) => {
-	const inBodyReferences = indexVariable.references.filter(reference => scopeContains(bodyScope, reference.from));
+const isIndexVariableUsedElsewhereInTheLoopBody = (
+	indexVariable,
+	bodyScope,
+	arrayIdentifierName,
+) => {
+	const inBodyReferences = indexVariable.references.filter((reference) =>
+		scopeContains(bodyScope, reference.from),
+	);
 
-	const referencesOtherThanArrayAccess = inBodyReferences.filter(reference => {
-		const node = reference.identifier.parent;
+	const referencesOtherThanArrayAccess = inBodyReferences.filter(
+		(reference) => {
+			const node = reference.identifier.parent;
 
-		if (node.type !== 'MemberExpression') {
-			return true;
-		}
+			if (node.type !== 'MemberExpression') {
+				return true;
+			}
 
-		if (node.object.name !== arrayIdentifierName) {
-			return true;
-		}
+			if (node.object.name !== arrayIdentifierName) {
+				return true;
+			}
 
-		return false;
-	});
+			return false;
+		},
+	);
 
 	return referencesOtherThanArrayAccess.length > 0;
 };
 
 const isIndexVariableAssignedToInTheLoopBody = (indexVariable, bodyScope) =>
 	indexVariable.references
-		.filter(reference => scopeContains(bodyScope, reference.from))
-		.some(inBodyReference => inBodyReference.isWrite());
+		.filter((reference) => scopeContains(bodyScope, reference.from))
+		.some((inBodyReference) => inBodyReference.isWrite());
 
 const someVariablesLeakOutOfTheLoop = (forStatement, variables, forScope) =>
 	variables.some(
-		variable => !variable.references.every(
-			reference => scopeContains(forScope, reference.from) || nodeContains(forStatement, reference.identifier),
-		),
+		(variable) =>
+			!variable.references.every(
+				(reference) =>
+					scopeContains(forScope, reference.from) ||
+					nodeContains(forStatement, reference.identifier),
+			),
 	);
 
 const getReferencesInChildScopes = (scope, name) =>
-	getReferences(scope).filter(reference => reference.identifier.name === name);
+	getReferences(scope).filter(
+		(reference) => reference.identifier.name === name,
+	);
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 	const {scopeManager} = sourceCode;
 
@@ -305,24 +337,35 @@ const create = context => {
 				return;
 			}
 
-			const indexVariable = resolveIdentifierName(indexIdentifierName, bodyScope);
+			const indexVariable = resolveIdentifierName(
+				indexIdentifierName,
+				bodyScope,
+			);
 
 			if (isIndexVariableAssignedToInTheLoopBody(indexVariable, bodyScope)) {
 				return;
 			}
 
-			const arrayReferences = getReferencesInChildScopes(bodyScope, arrayIdentifierName);
+			const arrayReferences = getReferencesInChildScopes(
+				bodyScope,
+				arrayIdentifierName,
+			);
 
 			if (arrayReferences.length === 0) {
 				return;
 			}
 
-			if (!isOnlyArrayOfIndexVariableRead(arrayReferences, indexIdentifierName)) {
+			if (
+				!isOnlyArrayOfIndexVariableRead(arrayReferences, indexIdentifierName)
+			) {
 				return;
 			}
 
 			const [start] = sourceCode.getRange(node);
-			const closingParenthesisToken = sourceCode.getTokenBefore(node.body, isClosingParenToken);
+			const closingParenthesisToken = sourceCode.getTokenBefore(
+				node.body,
+				isClosingParenToken,
+			);
 			const [, end] = sourceCode.getRange(closingParenthesisToken);
 
 			const problem = {
@@ -330,7 +373,7 @@ const create = context => {
 				messageId: MESSAGE_ID,
 			};
 
-			const elementReference = arrayReferences.find(reference => {
+			const elementReference = arrayReferences.find((reference) => {
 				const node = reference.identifier.parent;
 
 				if (node.parent.type !== 'VariableDeclarator') {
@@ -341,17 +384,31 @@ const create = context => {
 			});
 			const elementNode = elementReference?.identifier.parent.parent;
 			const elementIdentifierName = elementNode?.id.name;
-			const elementVariable = elementIdentifierName && resolveIdentifierName(elementIdentifierName, bodyScope);
+			const elementVariable =
+				elementIdentifierName &&
+				resolveIdentifierName(elementIdentifierName, bodyScope);
 
-			const shouldFix = !someVariablesLeakOutOfTheLoop(node, [indexVariable, elementVariable].filter(Boolean), forScope)
-				&& !elementNode?.id.typeAnnotation;
+			const shouldFix =
+				!someVariablesLeakOutOfTheLoop(
+					node,
+					[indexVariable, elementVariable].filter(Boolean),
+					forScope,
+				) && !elementNode?.id.typeAnnotation;
 
 			if (shouldFix) {
-				problem.fix = function * (fixer) {
-					const shouldGenerateIndex = isIndexVariableUsedElsewhereInTheLoopBody(indexVariable, bodyScope, arrayIdentifierName);
+				problem.fix = function* (fixer) {
+					const shouldGenerateIndex = isIndexVariableUsedElsewhereInTheLoopBody(
+						indexVariable,
+						bodyScope,
+						arrayIdentifierName,
+					);
 					const index = indexIdentifierName;
-					const element = elementIdentifierName
-						|| getAvailableVariableName(singular(arrayIdentifierName) || defaultElementName, getScopes(bodyScope));
+					const element =
+						elementIdentifierName ||
+						getAvailableVariableName(
+							singular(arrayIdentifierName) || defaultElementName,
+							getScopes(bodyScope),
+						);
 					const array = arrayIdentifierName;
 
 					let declarationElement = element;
@@ -359,19 +416,27 @@ const create = context => {
 					let removeDeclaration = true;
 
 					if (elementNode) {
-						if (elementNode.id.type === 'ObjectPattern' || elementNode.id.type === 'ArrayPattern') {
+						if (
+							elementNode.id.type === 'ObjectPattern' ||
+							elementNode.id.type === 'ArrayPattern'
+						) {
 							removeDeclaration = arrayReferences.length === 1;
 						}
 
 						if (removeDeclaration) {
-							declarationType = element.type === 'VariableDeclarator' ? elementNode.kind : elementNode.parent.kind;
+							declarationType =
+								element.type === 'VariableDeclarator'
+									? elementNode.kind
+									: elementNode.parent.kind;
 							declarationElement = sourceCode.getText(elementNode.id);
 						}
 					}
 
 					const parts = [declarationType];
 					if (shouldGenerateIndex) {
-						parts.push(` [${index}, ${declarationElement}] of ${array}.entries()`);
+						parts.push(
+							` [${index}, ${declarationElement}] of ${array}.entries()`,
+						);
 					} else {
 						parts.push(` ${declarationElement} of ${array}`);
 					}
@@ -407,7 +472,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Do not use a `for` loop that can be replaced with a `for-of` loop.',
+			description:
+				'Do not use a `for` loop that can be replaced with a `for-of` loop.',
 			recommended: true,
 		},
 		fixable: 'code',

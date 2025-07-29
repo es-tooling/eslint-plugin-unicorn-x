@@ -24,5 +24,8 @@ Check if parentheses should be added to a `node` when it's used as `callee` of `
 @returns {boolean}
 */
 export default function shouldAddParenthesesToNewExpressionCallee(node) {
-	return node.type === 'MemberExpression' && doesMemberExpressionContainCallExpression(node);
+	return (
+		node.type === 'MemberExpression' &&
+		doesMemberExpressionContainCallExpression(node)
+	);
 }

@@ -7,24 +7,25 @@ const messages = {
 	[MESSAGE_ID]: 'Use `.key` instead of `.{{name}}`.',
 };
 
-const keys = new Set([
-	'keyCode',
-	'charCode',
-	'which',
-]);
+const keys = new Set(['keyCode', 'charCode', 'which']);
 
-const isPropertyNamedAddEventListener = node =>
-	node?.type === 'CallExpression'
-	&& node.callee.type === 'MemberExpression'
-	&& node.callee.property.name === 'addEventListener';
+const isPropertyNamedAddEventListener = (node) =>
+	node?.type === 'CallExpression' &&
+	node.callee.type === 'MemberExpression' &&
+	node.callee.property.name === 'addEventListener';
 
 const getEventNodeAndReferences = (context, node) => {
-	const eventListener = getMatchingAncestorOfType(node, 'CallExpression', isPropertyNamedAddEventListener);
+	const eventListener = getMatchingAncestorOfType(
+		node,
+		'CallExpression',
+		isPropertyNamedAddEventListener,
+	);
 	const callback = eventListener?.arguments[1];
 	switch (callback?.type) {
 		case 'ArrowFunctionExpression':
 		case 'FunctionExpression': {
-			const eventVariable = context.sourceCode.getDeclaredVariables(callback)[0];
+			const eventVariable =
+				context.sourceCode.getDeclaredVariables(callback)[0];
 			const references = eventVariable?.references;
 			return {
 				event: callback.params[0],
@@ -39,8 +40,7 @@ const getEventNodeAndReferences = (context, node) => {
 };
 
 const isPropertyOf = (node, eventNode) =>
-	node?.parent?.type === 'MemberExpression'
-	&& node.parent.object === eventNode;
+	node?.parent?.type === 'MemberExpression' && node.parent.object === eventNode;
 
 // The third argument is a condition function, as one passed to `Array#filter()`
 // Helpful if nearest node of type also needs to have some other property
@@ -68,7 +68,7 @@ const getParentByLevel = (node, level) => {
 	}
 };
 
-const fix = node => fixer => {
+const fix = (node) => (fixer) => {
 	// Since we're only fixing direct property access usages, like `event.keyCode`
 	const nearestIf = getParentByLevel(node, 3);
 	if (!nearestIf || nearestIf.type !== 'IfStatement') {
@@ -78,9 +78,9 @@ const fix = node => fixer => {
 	const {type, operator, right} = nearestIf.test;
 	if (
 		!(
-			type === 'BinaryExpression'
-			&& (operator === '==' || operator === '===')
-			&& isNumberLiteral(right)
+			type === 'BinaryExpression' &&
+			(operator === '==' || operator === '===') &&
+			isNumberLiteral(right)
 		)
 	) {
 		return;
@@ -100,7 +100,7 @@ const fix = node => fixer => {
 	];
 };
 
-const getProblem = node => ({
+const getProblem = (node) => ({
 	messageId: MESSAGE_ID,
 	data: {name: node.name},
 	node,
@@ -108,12 +108,12 @@ const getProblem = node => ({
 });
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	Identifier(node) {
 		if (
-			node.name !== 'keyCode'
-			&& node.name !== 'charCode'
-			&& node.name !== 'which'
+			node.name !== 'keyCode' &&
+			node.name !== 'charCode' &&
+			node.name !== 'which'
 		) {
 			return;
 		}
@@ -125,8 +125,8 @@ const create = context => ({
 		}
 
 		if (
-			references
-			&& references.some(reference => isPropertyOf(node, reference.identifier))
+			references &&
+			references.some((reference) => isPropertyOf(node, reference.identifier))
 		) {
 			return getProblem(node);
 		}
@@ -152,8 +152,8 @@ const create = context => ({
 
 		// Make sure initObject is a reference of eventVariable
 		if (
-			references
-			&& references.some(reference => reference.identifier === initObject)
+			references &&
+			references.some((reference) => reference.identifier === initObject)
 		) {
 			return getProblem(node.value);
 		}

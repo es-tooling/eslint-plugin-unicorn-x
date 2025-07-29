@@ -13,26 +13,26 @@ const messages = {
 
 // Bitwise operators
 const bitwiseOperators = new Set(['|', '>>', '<<', '^']);
-const isBitwiseNot = node =>
-	node.type === 'UnaryExpression'
-	&& node.operator === '~';
+const isBitwiseNot = (node) =>
+	node.type === 'UnaryExpression' && node.operator === '~';
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
-	const mathTruncFunctionCall = node => {
+	const mathTruncFunctionCall = (node) => {
 		const text = sourceCode.getText(node);
-		const parenthesized = node.type === 'SequenceExpression' ? `(${text})` : text;
+		const parenthesized =
+			node.type === 'SequenceExpression' ? `(${text})` : text;
 		return `Math.trunc(${parenthesized})`;
 	};
 
-	context.on(['BinaryExpression', 'AssignmentExpression'], node => {
+	context.on(['BinaryExpression', 'AssignmentExpression'], (node) => {
 		const {type, operator, right, left} = node;
 		const isAssignment = type === 'AssignmentExpression';
 		if (
-			!isLiteral(right, 0)
-			|| !bitwiseOperators.has(isAssignment ? operator.slice(0, -1) : operator)
+			!isLiteral(right, 0) ||
+			!bitwiseOperators.has(isAssignment ? operator.slice(0, -1) : operator)
 		) {
 			return;
 		}
@@ -47,14 +47,17 @@ const create = context => {
 		};
 
 		if (!isAssignment || !hasSideEffect(left, sourceCode)) {
-			const fix = function * (fixer) {
+			const fix = function* (fixer) {
 				const fixed = mathTruncFunctionCall(left);
 				if (isAssignment) {
-					const operatorToken = sourceCode.getTokenAfter(left, token => token.type === 'Punctuator' && token.value === operator);
+					const operatorToken = sourceCode.getTokenAfter(
+						left,
+						(token) => token.type === 'Punctuator' && token.value === operator,
+					);
 					yield fixer.replaceText(operatorToken, '=');
 					yield fixer.replaceText(right, fixed);
 				} else {
-					yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+					yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 					yield fixer.replaceText(node, fixed);
 				}
 			};
@@ -75,18 +78,21 @@ const create = context => {
 	});
 
 	// Unary Expression Selector: Inner-most 2 bitwise NOT
-	context.on('UnaryExpression', node => {
+	context.on('UnaryExpression', (node) => {
 		if (
-			isBitwiseNot(node)
-			&& isBitwiseNot(node.argument)
-			&& !isBitwiseNot(node.argument.argument)
+			isBitwiseNot(node) &&
+			isBitwiseNot(node.argument) &&
+			!isBitwiseNot(node.argument.argument)
 		) {
 			return {
 				node,
 				messageId: ERROR_BITWISE_NOT,
-				* fix(fixer) {
-					yield fixer.replaceText(node, mathTruncFunctionCall(node.argument.argument));
-					yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+				*fix(fixer) {
+					yield fixer.replaceText(
+						node,
+						mathTruncFunctionCall(node.argument.argument),
+					);
+					yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 				},
 			};
 		}
@@ -99,7 +105,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Enforce the use of `Math.trunc` instead of bitwise operators.',
+			description:
+				'Enforce the use of `Math.trunc` instead of bitwise operators.',
 			recommended: true,
 		},
 		fixable: 'code',

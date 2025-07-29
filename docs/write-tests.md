@@ -42,16 +42,16 @@ test.snapshot({
 
 ## Focus on one rule
 
-We use [`AVA`](https://github.com/avajs/ava) to run tests. To focus on a specific rule test, you can:
+We use vitest to run tests. To focus on a specific rule test, you can:
 
 ```console
-npx ava test/rule-name.js
+npx vitest test/rule-name.js
 ```
 
-To update snapshots, run the command above with [`--update-snapshots` or `-u`](https://github.com/avajs/ava/blob/main/docs/05-command-line.md#cli).
+To update snapshots, run the command above with `-u`.
 
 ```console
-npx ava test/rule-name.js -u
+npx vitest test/rule-name.js -u
 ```
 
 ## Focus on one test case
@@ -88,7 +88,7 @@ test.snapshot({
 
 ## `test()`
 
-This runs [`eslint-ava-rule-tester`](https://github.com/jfmengels/eslint-ava-rule-tester):
+This runs the ESLint `RuleTester`.
 
 ```js
 import {getTester} from './utils/test.js';

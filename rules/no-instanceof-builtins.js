@@ -1,16 +1,21 @@
 import {checkVueTemplate} from './utils/rule.js';
 import {getParenthesizedRange} from './utils/parentheses.js';
-import {replaceNodeOrTokenAndSpacesBefore, fixSpaceAroundKeyword} from './fix/index.js';
+import {
+	replaceNodeOrTokenAndSpacesBefore,
+	fixSpaceAroundKeyword,
+} from './fix/index.js';
 import builtinErrors from './shared/builtin-errors.js';
 import typedArray from './shared/typed-array.js';
 
-const isInstanceofToken = token => token.value === 'instanceof' && token.type === 'Keyword';
+const isInstanceofToken = (token) =>
+	token.value === 'instanceof' && token.type === 'Keyword';
 
 const MESSAGE_ID = 'no-instanceof-builtins';
 const MESSAGE_ID_SWITCH_TO_TYPE_OF = 'switch-to-type-of';
 const messages = {
-	[MESSAGE_ID]: 'Avoid using `instanceof` for type checking as it can lead to unreliable results.',
-	[MESSAGE_ID_SWITCH_TO_TYPE_OF]: 'Switch to `typeof … === \'{{type}}\'`.',
+	[MESSAGE_ID]:
+		'Avoid using `instanceof` for type checking as it can lead to unreliable results.',
+	[MESSAGE_ID_SWITCH_TO_TYPE_OF]: "Switch to `typeof … === '{{type}}'`.",
 };
 
 const primitiveWrappers = new Set([
@@ -53,41 +58,64 @@ const strictStrategyConstructors = [
 	'FinalizationRegistry',
 ];
 
-const replaceWithFunctionCall = (node, sourceCode, functionName) => function * (fixer) {
-	const {tokenStore, instanceofToken} = getInstanceOfToken(sourceCode, node);
-	const {left, right} = node;
+const replaceWithFunctionCall = (node, sourceCode, functionName) =>
+	function* (fixer) {
+		const {tokenStore, instanceofToken} = getInstanceOfToken(sourceCode, node);
+		const {left, right} = node;
 
-	yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+		yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 
-	const range = getParenthesizedRange(left, tokenStore);
-	yield fixer.insertTextBeforeRange(range, functionName + '(');
-	yield fixer.insertTextAfterRange(range, ')');
+		const range = getParenthesizedRange(left, tokenStore);
+		yield fixer.insertTextBeforeRange(range, functionName + '(');
+		yield fixer.insertTextAfterRange(range, ')');
 
-	yield * replaceNodeOrTokenAndSpacesBefore(instanceofToken, '', fixer, sourceCode, tokenStore);
-	yield * replaceNodeOrTokenAndSpacesBefore(right, '', fixer, sourceCode, tokenStore);
-};
+		yield* replaceNodeOrTokenAndSpacesBefore(
+			instanceofToken,
+			'',
+			fixer,
+			sourceCode,
+			tokenStore,
+		);
+		yield* replaceNodeOrTokenAndSpacesBefore(
+			right,
+			'',
+			fixer,
+			sourceCode,
+			tokenStore,
+		);
+	};
 
-const replaceWithTypeOfExpression = (node, sourceCode) => function * (fixer) {
-	const {tokenStore, instanceofToken} = getInstanceOfToken(sourceCode, node);
-	const {left, right} = node;
+const replaceWithTypeOfExpression = (node, sourceCode) =>
+	function* (fixer) {
+		const {tokenStore, instanceofToken} = getInstanceOfToken(sourceCode, node);
+		const {left, right} = node;
 
-	// Check if the node is in a Vue template expression
-	const vueExpressionContainer = sourceCode.getAncestors(node).findLast(ancestor => ancestor.type === 'VExpressionContainer');
+		// Check if the node is in a Vue template expression
+		const vueExpressionContainer = sourceCode
+			.getAncestors(node)
+			.findLast((ancestor) => ancestor.type === 'VExpressionContainer');
 
-	// Get safe quote
-	const safeQuote = vueExpressionContainer ? (sourceCode.getText(vueExpressionContainer)[0] === '"' ? '\'' : '"') : '\'';
+		// Get safe quote
+		const safeQuote =
+			vueExpressionContainer &&
+			sourceCode.getText(vueExpressionContainer)[0] !== '"'
+				? '"'
+				: "'";
 
-	yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+		yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 
-	const leftRange = getParenthesizedRange(left, tokenStore);
-	yield fixer.insertTextBeforeRange(leftRange, 'typeof ');
+		const leftRange = getParenthesizedRange(left, tokenStore);
+		yield fixer.insertTextBeforeRange(leftRange, 'typeof ');
 
-	yield fixer.replaceText(instanceofToken, '===');
+		yield fixer.replaceText(instanceofToken, '===');
 
-	const rightRange = getParenthesizedRange(right, tokenStore);
+		const rightRange = getParenthesizedRange(right, tokenStore);
 
-	yield fixer.replaceTextRange(rightRange, safeQuote + sourceCode.getText(right).toLowerCase() + safeQuote);
-};
+		yield fixer.replaceTextRange(
+			rightRange,
+			safeQuote + sourceCode.getText(right).toLowerCase() + safeQuote,
+		);
+	};
 
 const getInstanceOfToken = (sourceCode, node) => {
 	const {left} = node;
@@ -103,7 +131,7 @@ const getInstanceOfToken = (sourceCode, node) => {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const {
 		useErrorIsError = false,
 		strategy = 'loose',
@@ -124,7 +152,11 @@ const create = context => {
 		BinaryExpression(node) {
 			const {right, operator} = node;
 
-			if (right.type !== 'Identifier' || operator !== 'instanceof' || exclude.includes(right.name)) {
+			if (
+				right.type !== 'Identifier' ||
+				operator !== 'instanceof' ||
+				exclude.includes(right.name)
+			) {
 				return;
 			}
 
@@ -137,10 +169,11 @@ const create = context => {
 			};
 
 			if (
-				constructorName === 'Array'
-				|| (constructorName === 'Error' && useErrorIsError)
+				constructorName === 'Array' ||
+				(constructorName === 'Error' && useErrorIsError)
 			) {
-				const functionName = constructorName === 'Array' ? 'Array.isArray' : 'Error.isError';
+				const functionName =
+					constructorName === 'Array' ? 'Array.isArray' : 'Error.isError';
 				problem.fix = replaceWithFunctionCall(node, sourceCode, functionName);
 				return problem;
 			}
@@ -178,10 +211,7 @@ const schema = [
 				type: 'boolean',
 			},
 			strategy: {
-				enum: [
-					'loose',
-					'strict',
-				],
+				enum: ['loose', 'strict'],
 			},
 			include: {
 				type: 'array',
@@ -211,12 +241,14 @@ const config = {
 		},
 		fixable: 'code',
 		schema,
-		defaultOptions: [{
-			useErrorIsError: false,
-			strategy: 'loose',
-			include: [],
-			exclude: [],
-		}],
+		defaultOptions: [
+			{
+				useErrorIsError: false,
+				strategy: 'loose',
+				include: [],
+				exclude: [],
+			},
+		],
 		hasSuggestions: true,
 		messages,
 	},

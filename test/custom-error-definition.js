@@ -6,8 +6,13 @@ const {test} = getTester(import.meta);
 const invalidClassNameError = {message: 'Invalid class name, use `FooError`.'};
 const constructorError = {message: 'Add a constructor to your error.'};
 const noSuperCallError = {message: 'Missing call to `super()` in constructor.'};
-const invalidNameError = name => ({message: `The \`name\` property should be set to \`${name}\`.`});
-const passMessageToSuperError = {message: 'Pass the error message to `super()` instead of setting `this.message`.'};
+const invalidNameError = (name) => ({
+	message: `The \`name\` property should be set to \`${name}\`.`,
+});
+const passMessageToSuperError = {
+	message:
+		'Pass the error message to `super()` instead of setting `this.message`.',
+};
 const invalidExportError = {
 	messageId: 'invalidExport',
 };
@@ -132,9 +137,7 @@ const tests = {
 			code: outdent`
 				class FooError extends Error {}
 			`,
-			errors: [
-				constructorError,
-			],
+			errors: [constructorError],
 			output: outdent`
 				class FooError extends Error {
 					constructor() {
@@ -153,10 +156,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidClassNameError,
-				invalidNameError('fooError'),
-			],
+			errors: [invalidClassNameError, invalidNameError('fooError')],
 		},
 		{
 			code: outdent`
@@ -167,9 +167,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidClassNameError,
-			],
+			errors: [invalidClassNameError],
 		},
 		{
 			code: outdent`
@@ -180,9 +178,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidClassNameError,
-			],
+			errors: [invalidClassNameError],
 		},
 		{
 			code: outdent`
@@ -193,9 +189,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidClassNameError,
-			],
+			errors: [invalidClassNameError],
 		},
 		{
 			code: outdent`
@@ -203,10 +197,7 @@ const tests = {
 					constructor() { }
 				}
 			`,
-			errors: [
-				noSuperCallError,
-				invalidNameError('FooError'),
-			],
+			errors: [noSuperCallError, invalidNameError('FooError')],
 		},
 		{
 			code: outdent`
@@ -217,10 +208,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidNameError('FooError'),
-				passMessageToSuperError,
-			],
+			errors: [invalidNameError('FooError'), passMessageToSuperError],
 			output: outdent`
 				class FooError extends Error {
 					constructor() {
@@ -237,9 +225,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidNameError('FooError'),
-			],
+			errors: [invalidNameError('FooError')],
 		},
 		{
 			code: outdent`
@@ -250,9 +236,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidNameError('FooError'),
-			],
+			errors: [invalidNameError('FooError')],
 		},
 		{
 			code: outdent`
@@ -264,9 +248,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				passMessageToSuperError,
-			],
+			errors: [passMessageToSuperError],
 			output: outdent`
 				class FooError extends Error {
 					constructor(message) {
@@ -286,9 +268,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				passMessageToSuperError,
-			],
+			errors: [passMessageToSuperError],
 			output: outdent`
 				class FooError extends Error {
 					constructor(message) {
@@ -307,10 +287,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidNameError('FooError'),
-				passMessageToSuperError,
-			],
+			errors: [invalidNameError('FooError'), passMessageToSuperError],
 			output: outdent`
 				class FooError extends Error {
 					constructor(message) {
@@ -329,9 +306,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				passMessageToSuperError,
-			],
+			errors: [passMessageToSuperError],
 			output: outdent`
 				class FooError extends Error {
 					constructor(message) {
@@ -350,9 +325,7 @@ const tests = {
 					}
 				}
 			`,
-			errors: [
-				invalidNameError('FooError'),
-			],
+			errors: [invalidNameError('FooError')],
 		},
 		{
 			code: outdent`
@@ -363,9 +336,7 @@ const tests = {
 					}
 				};
 			`,
-			errors: [
-				invalidNameError('FooError'),
-			],
+			errors: [invalidNameError('FooError')],
 		},
 		{
 			code: outdent`
@@ -395,9 +366,7 @@ const tests = {
 					}
 				};
 			`,
-			errors: [
-				invalidNameError('FooError'),
-			],
+			errors: [invalidNameError('FooError')],
 		},
 		{
 			code: outdent`
@@ -408,9 +377,7 @@ const tests = {
 					}
 				};
 			`,
-			errors: [
-				invalidNameError('FooError'),
-			],
+			errors: [invalidNameError('FooError')],
 		},
 		{
 			code: outdent`
@@ -421,9 +388,7 @@ const tests = {
 					}
 				};
 			`,
-			errors: [
-				invalidNameError('FooError'),
-			],
+			errors: [invalidNameError('FooError')],
 		},
 
 		// #90

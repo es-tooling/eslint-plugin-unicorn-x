@@ -11,16 +11,17 @@ const config = {
 			CallExpression(callExpression) {
 				const [, emptyString] = callExpression.arguments;
 
-				if (!(
-					isMethodCall(callExpression, {
-						object: 'fixer',
-						method: 'replaceTextRange',
-						argumentsLength: 2,
-						optionalCall: false,
-						optionalMember: false,
-					})
-					&& isLiteral(emptyString, '')
-				)) {
+				if (
+					!(
+						isMethodCall(callExpression, {
+							object: 'fixer',
+							method: 'replaceTextRange',
+							argumentsLength: 2,
+							optionalCall: false,
+							optionalMember: false,
+						}) && isLiteral(emptyString, '')
+					)
+				) {
 					return;
 				}
 
@@ -28,7 +29,7 @@ const config = {
 				context.report({
 					node: property,
 					messageId,
-					* fix(fixer) {
+					*fix(fixer) {
 						yield removeArgument(fixer, emptyString, context.sourceCode);
 						yield fixer.replaceText(property, 'removeRange');
 					},
@@ -39,7 +40,8 @@ const config = {
 	meta: {
 		fixable: 'code',
 		messages: {
-			[messageId]: 'Prefer `fixer.removeRange(…)` over `fixer.replaceTextRange(…, \'\')`.',
+			[messageId]:
+				"Prefer `fixer.removeRange(…)` over `fixer.replaceTextRange(…, '')`.",
 		},
 	},
 };

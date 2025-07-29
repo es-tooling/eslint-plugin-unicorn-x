@@ -4,7 +4,7 @@ import enquirer from 'enquirer';
 import unicorn from '../index.js';
 
 const rules = Object.keys(unicorn.rules);
-const resolveFile = file => new URL(`../${file}`, import.meta.url);
+const resolveFile = (file) => new URL(`../${file}`, import.meta.url);
 
 function checkFiles(ruleId) {
 	const files = [
@@ -35,8 +35,14 @@ async function renameRule(from, to) {
 	await renameFile(`docs/rules/${from}.md`, `docs/rules/${to}.md`);
 	await renameFile(`rules/${from}.js`, `rules/${to}.js`);
 	await renameFile(`test/${from}.js`, `test/${to}.js`);
-	await renameFile(`test/snapshots/${from}.js.md`, `test/snapshots/${to}.js.md`);
-	await renameFile(`test/snapshots/${from}.js.snap`, `test/snapshots/${to}.js.snap`);
+	await renameFile(
+		`test/snapshots/${from}.js.md`,
+		`test/snapshots/${to}.js.md`,
+	);
+	await renameFile(
+		`test/snapshots/${from}.js.snap`,
+		`test/snapshots/${to}.js.snap`,
+	);
 
 	for (const file of [
 		'readme.md',
@@ -45,15 +51,14 @@ async function renameRule(from, to) {
 		`rules/${to}.js`,
 		`test/${to}.js`,
 		`test/snapshots/${to}.js.md`,
-	].map(file => resolveFile(file))) {
+	].map((file) => resolveFile(file))) {
 		if (!fs.existsSync(file)) {
 			continue;
 		}
 
-		// eslint-disable-next-line no-await-in-loop
 		let text = await fsAsync.readFile(file, 'utf8');
 		text = text.replaceAll(from, to);
-		// eslint-disable-next-line no-await-in-loop
+
 		await fsAsync.writeFile(file, text);
 	}
 }

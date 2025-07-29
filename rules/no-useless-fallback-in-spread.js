@@ -7,18 +7,20 @@ const messages = {
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	ObjectExpression(node) {
-		if (!(
-			node.properties.length === 0
-			&& node.parent.type === 'LogicalExpression'
-			&& node.parent.right === node
-			&& (node.parent.operator === '||' || node.parent.operator === '??')
-			&& node.parent.parent.type === 'SpreadElement'
-			&& node.parent.parent.argument === node.parent
-			&& node.parent.parent.parent.type === 'ObjectExpression'
-			&& node.parent.parent.parent.properties.includes(node.parent.parent)
-		)) {
+		if (
+			!(
+				node.properties.length === 0 &&
+				node.parent.type === 'LogicalExpression' &&
+				node.parent.right === node &&
+				(node.parent.operator === '||' || node.parent.operator === '??') &&
+				node.parent.parent.type === 'SpreadElement' &&
+				node.parent.parent.argument === node.parent &&
+				node.parent.parent.parent.type === 'ObjectExpression' &&
+				node.parent.parent.parent.properties.includes(node.parent.parent)
+			)
+		) {
 			return;
 		}
 
@@ -26,7 +28,7 @@ const create = context => ({
 			node,
 			messageId: MESSAGE_ID,
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			* fix(fixer) {
+			*fix(fixer) {
 				const {sourceCode} = context;
 				const logicalExpression = node.parent;
 				const {left} = logicalExpression;
@@ -38,11 +40,8 @@ const create = context => ({
 
 				yield fixer.removeRange([start, end]);
 
-				if (
-					isLeftObjectParenthesized
-					|| left.type !== 'SequenceExpression'
-				) {
-					yield * removeParentheses(logicalExpression, fixer, sourceCode);
+				if (isLeftObjectParenthesized || left.type !== 'SequenceExpression') {
+					yield* removeParentheses(logicalExpression, fixer, sourceCode);
 				}
 			},
 		};
@@ -55,7 +54,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Disallow useless fallback when spreading in object literals.',
+			description:
+				'Disallow useless fallback when spreading in object literals.',
 			recommended: true,
 		},
 		fixable: 'code',

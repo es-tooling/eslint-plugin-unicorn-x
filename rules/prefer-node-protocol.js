@@ -1,8 +1,5 @@
-import isBuiltinModule from 'is-builtin-module';
-import {
-	isStaticRequire,
-	isMethodCall,
-} from './ast/index.js';
+import {isBuiltin} from 'node:module';
+import {isStaticRequire, isMethodCall} from './ast/index.js';
 
 const MESSAGE_ID = 'prefer-node-protocol';
 const messages = {
@@ -10,53 +7,66 @@ const messages = {
 };
 const NODE_PROTOCOL = 'node:';
 
-const create = context => ({
-	Literal(node) {
-		if (!(
-			(
-				(
-					node.parent.type === 'ImportDeclaration'
-					|| node.parent.type === 'ExportNamedDeclaration'
-					|| node.parent.type === 'ImportExpression'
-				)
-				&& node.parent.source === node
-			)
-			|| (
-				(
-					isMethodCall(node.parent, {
-						object: 'process',
-						method: 'getBuiltinModule',
-						argumentsLength: 1,
-						optionalCall: false,
-						optionalMember: false,
-					})
-					|| isStaticRequire(node.parent)
-				)
-				&& node.parent.arguments[0] === node
-			)
-		)) {
+// These are being removed from node, so users should use the equivalent
+// npm package instead
+const ignoredBuiltins = new Set(['punycode']);
+const checkNode = (node, context) => {
+	const {value} = node;
+
+	if (
+		!(
+			typeof value === 'string' &&
+			!value.startsWith(NODE_PROTOCOL) &&
+			isBuiltin(value) &&
+			isBuiltin(`${NODE_PROTOCOL}${value}`) &&
+			!ignoredBuiltins.has(value)
+		)
+	) {
+		return;
+	}
+
+	const insertPosition = context.sourceCode.getRange(node)[0] + 1; // After quote
+	context.report({
+		node,
+		messageId: MESSAGE_ID,
+		data: {moduleName: value},
+		/** @param {import('eslint').Rule.RuleFixer} fixer */
+		fix: (fixer) =>
+			fixer.insertTextAfterRange(
+				[insertPosition, insertPosition],
+				NODE_PROTOCOL,
+			),
+	});
+};
+
+const create = (context) => ({
+	'ImportDeclaration, ExportNamedDeclaration, ImportExpression'(node) {
+		if (node.source?.type !== 'Literal') {
+			return;
+		}
+		checkNode(node.source, context);
+	},
+	CallExpression(node) {
+		if (
+			!isMethodCall(node, {
+				object: 'process',
+				method: 'getBuiltinModule',
+				argumentsLength: 1,
+				optionalCall: false,
+				optionalMember: false,
+			}) &&
+			!isStaticRequire(node)
+		) {
 			return;
 		}
 
-		const {value} = node;
+		const [argument] = node.arguments;
 
-		if (!(
-			typeof value === 'string'
-			&& !value.startsWith(NODE_PROTOCOL)
-			&& isBuiltinModule(value)
-			&& isBuiltinModule(`${NODE_PROTOCOL}${value}`)
-		)) {
+		if (argument === undefined || argument.type !== 'Literal') {
 			return;
 		}
 
-		const insertPosition = context.sourceCode.getRange(node)[0] + 1; // After quote
-		return {
-			node,
-			messageId: MESSAGE_ID,
-			data: {moduleName: value},
-			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			fix: fixer => fixer.insertTextAfterRange([insertPosition, insertPosition], NODE_PROTOCOL),
-		};
+		checkNode(argument, context);
 	},
 });
 
@@ -66,7 +76,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer using the `node:` protocol when importing Node.js builtin modules.',
+			description:
+				'Prefer using the `node:` protocol when importing Node.js builtin modules.',
 			recommended: true,
 		},
 		fixable: 'code',

@@ -1,3 +1,4 @@
 node_modules
 test/snapshots
+test/unit/snapshots
 test/integration/fixtures

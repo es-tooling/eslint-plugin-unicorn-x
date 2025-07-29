@@ -3,7 +3,7 @@ import {getTester, parsers} from './utils/test.js';
 
 const {test} = getTester(import.meta);
 
-const typescriptCode = code => ({
+const typescriptCode = (code) => ({
 	code,
 	languageOptions: {parser: parsers.typescript},
 });

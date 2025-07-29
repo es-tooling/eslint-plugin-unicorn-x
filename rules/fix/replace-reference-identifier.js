@@ -3,20 +3,30 @@ import isShorthandPropertyAssignmentPatternLeft from '../utils/is-shorthand-prop
 import isShorthandImportLocal from '../utils/is-shorthand-import-local.js';
 import isShorthandExportLocal from '../utils/is-shorthand-export-local.js';
 
-export default function replaceReferenceIdentifier(identifier, replacement, fixer) {
+export default function replaceReferenceIdentifier(
+	identifier,
+	replacement,
+	fixer,
+) {
 	if (
-		isShorthandPropertyValue(identifier)
-		|| isShorthandPropertyAssignmentPatternLeft(identifier)
+		isShorthandPropertyValue(identifier) ||
+		isShorthandPropertyAssignmentPatternLeft(identifier)
 	) {
 		return fixer.replaceText(identifier, `${identifier.name}: ${replacement}`);
 	}
 
 	if (isShorthandImportLocal(identifier)) {
-		return fixer.replaceText(identifier, `${identifier.name} as ${replacement}`);
+		return fixer.replaceText(
+			identifier,
+			`${identifier.name} as ${replacement}`,
+		);
 	}
 
 	if (isShorthandExportLocal(identifier)) {
-		return fixer.replaceText(identifier, `${replacement} as ${identifier.name}`);
+		return fixer.replaceText(
+			identifier,
+			`${replacement} as ${identifier.name}`,
+		);
 	}
 
 	// `typeAnnotation`

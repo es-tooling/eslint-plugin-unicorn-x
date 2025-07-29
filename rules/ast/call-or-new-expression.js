@@ -8,54 +8,35 @@
 		maximumArguments?: number,
 		allowSpreadElement?: boolean,
 		optional?: boolean,
-	} | string | string[]
+	}
 } CallOrNewExpressionCheckOptions
 */
-// eslint-disable-next-line complexity
 function create(node, options, types) {
 	if (!types.includes(node?.type)) {
 		return false;
 	}
 
-	if (typeof options === 'string') {
-		options = {names: [options]};
-	}
-
-	if (Array.isArray(options)) {
-		options = {names: options};
-	}
-
-	let {
-		name,
-		names,
-		argumentsLength,
-		minimumArguments,
-		maximumArguments,
-		allowSpreadElement,
-		optional,
-	} = {
-		minimumArguments: 0,
-		maximumArguments: Number.POSITIVE_INFINITY,
-		allowSpreadElement: false,
-		...options,
-	};
-
-	if (name) {
-		names = [name];
-	}
+	const minimumArguments = options?.minimumArguments ?? 0;
+	const maximumArguments =
+		options?.maximumArguments ?? Number.POSITIVE_INFINITY;
+	const allowSpreadElement = options?.allowSpreadElement ?? false;
+	const names = options?.name ? [options.name] : options?.names;
+	const optional = options?.optional;
+	const argumentsLength = options?.argumentsLength;
 
 	if (
-		(optional === true && (node.optional !== optional))
-		|| (
-			optional === false
+		(optional === true && node.optional !== optional) ||
+		(optional === false &&
 			// `node.optional` can be `undefined` in some parsers
-			&& node.optional
-		)
+			node.optional)
 	) {
 		return false;
 	}
 
-	if (typeof argumentsLength === 'number' && node.arguments.length !== argumentsLength) {
+	if (
+		typeof argumentsLength === 'number' &&
+		node.arguments.length !== argumentsLength
+	) {
 		return false;
 	}
 
@@ -63,18 +44,22 @@ function create(node, options, types) {
 		return false;
 	}
 
-	if (Number.isFinite(maximumArguments) && node.arguments.length > maximumArguments) {
+	if (
+		Number.isFinite(maximumArguments) &&
+		node.arguments.length > maximumArguments
+	) {
 		return false;
 	}
 
 	if (!allowSpreadElement) {
-		const maximumArgumentsLength = Number.isFinite(maximumArguments) ? maximumArguments : argumentsLength;
+		const maximumArgumentsLength = Number.isFinite(maximumArguments)
+			? maximumArguments
+			: argumentsLength;
 		if (
-			typeof maximumArgumentsLength === 'number'
-			&& node.arguments.some(
+			typeof maximumArgumentsLength === 'number' &&
+			node.arguments.some(
 				(node, index) =>
-					node.type === 'SpreadElement'
-					&& index < maximumArgumentsLength,
+					node.type === 'SpreadElement' && index < maximumArgumentsLength,
 			)
 		) {
 			return false;
@@ -82,12 +67,9 @@ function create(node, options, types) {
 	}
 
 	if (
-		Array.isArray(names)
-		&& names.length > 0
-		&& (
-			node.callee.type !== 'Identifier'
-			|| !names.includes(node.callee.name)
-		)
+		Array.isArray(names) &&
+		names.length > 0 &&
+		(node.callee.type !== 'Identifier' || !names.includes(node.callee.name))
 	) {
 		return false;
 	}
@@ -99,7 +81,8 @@ function create(node, options, types) {
 @param {CallOrNewExpressionCheckOptions} [options]
 @returns {boolean}
 */
-export const isCallExpression = (node, options) => create(node, options, ['CallExpression']);
+export const isCallExpression = (node, options) =>
+	create(node, options, ['CallExpression']);
 
 /**
 @param {CallOrNewExpressionCheckOptions} [options]
@@ -117,4 +100,5 @@ export const isNewExpression = (node, options) => {
 @param {CallOrNewExpressionCheckOptions} [options]
 @returns {boolean}
 */
-export const isCallOrNewExpression = (node, options) => create(node, options, ['CallExpression', 'NewExpression']);
+export const isCallOrNewExpression = (node, options) =>
+	create(node, options, ['CallExpression', 'NewExpression']);

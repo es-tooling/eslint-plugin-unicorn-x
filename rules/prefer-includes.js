@@ -5,31 +5,38 @@ import {isLiteral, isNegativeOne} from './ast/index.js';
 
 const MESSAGE_ID = 'prefer-includes';
 const messages = {
-	[MESSAGE_ID]: 'Use `.includes()`, rather than `.{{method}}()`, when checking for existence.',
+	[MESSAGE_ID]:
+		'Use `.includes()`, rather than `.{{method}}()`, when checking for existence.',
 };
 // Ignore `{_,lodash,underscore}.{indexOf,lastIndexOf}`
 const ignoredVariables = new Set(['_', 'lodash', 'underscore']);
-const isIgnoredTarget = node => node.type === 'Identifier' && ignoredVariables.has(node.name);
-const isLiteralZero = node => isLiteral(node, 0);
-const isNegativeResult = node => ['===', '==', '<'].includes(node.operator);
+const isIgnoredTarget = (node) =>
+	node.type === 'Identifier' && ignoredVariables.has(node.name);
+const isLiteralZero = (node) => isLiteral(node, 0);
+const isNegativeResult = (node) => ['===', '==', '<'].includes(node.operator);
 
 const getProblem = (context, node, target, argumentsNodes) => {
 	const {sourceCode} = context;
-	const tokenStore = sourceCode.parserServices.getTemplateBodyTokenStore?.() ?? sourceCode;
+	const tokenStore =
+		sourceCode.parserServices.getTemplateBodyTokenStore?.() ?? sourceCode;
 
 	const memberExpressionNode = target.parent;
 	const dotToken = tokenStore.getTokenBefore(memberExpressionNode.property);
-	const targetSource = sourceCode.getText().slice(
-		sourceCode.getRange(memberExpressionNode)[0],
-		sourceCode.getRange(dotToken)[0],
-	);
+	const targetSource = sourceCode
+		.getText()
+		.slice(
+			sourceCode.getRange(memberExpressionNode)[0],
+			sourceCode.getRange(dotToken)[0],
+		);
 
 	// Strip default `fromIndex`
 	if (isLiteralZero(argumentsNodes[1])) {
 		argumentsNodes = argumentsNodes.slice(0, 1);
 	}
 
-	const argumentsSource = argumentsNodes.map(argument => sourceCode.getText(argument));
+	const argumentsSource = argumentsNodes.map((argument) =>
+		sourceCode.getText(argument),
+	);
 
 	return {
 		node: memberExpressionNode.property,
@@ -50,13 +57,16 @@ const includesOverSomeRule = simpleArraySearchRule({
 });
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	includesOverSomeRule.listen(context);
 
-	context.on('BinaryExpression', node => {
+	context.on('BinaryExpression', (node) => {
 		const {left, right, operator} = node;
 
-		if (!isMethodNamed(left, 'indexOf') && !isMethodNamed(left, 'lastIndexOf')) {
+		if (
+			!isMethodNamed(left, 'indexOf') &&
+			!isMethodNamed(left, 'lastIndexOf')
+		) {
 			return;
 		}
 
@@ -74,15 +84,11 @@ const create = context => {
 		}
 
 		if (
-			(['!==', '!=', '>', '===', '=='].includes(operator) && isNegativeOne(right))
-			|| (['>=', '<'].includes(operator) && isLiteralZero(right))
+			(['!==', '!=', '>', '===', '=='].includes(operator) &&
+				isNegativeOne(right)) ||
+			(['>=', '<'].includes(operator) && isLiteralZero(right))
 		) {
-			return getProblem(
-				context,
-				node,
-				target,
-				argumentsNodes,
-			);
+			return getProblem(context, node, target, argumentsNodes);
 		}
 	});
 };
@@ -93,7 +99,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer `.includes()` over `.indexOf()`, `.lastIndexOf()`, and `Array#some()` when checking for existence or non-existence.',
+			description:
+				'Prefer `.includes()` over `.indexOf()`, `.lastIndexOf()`, and `Array#some()` when checking for existence or non-existence.',
 			recommended: true,
 		},
 		fixable: 'code',

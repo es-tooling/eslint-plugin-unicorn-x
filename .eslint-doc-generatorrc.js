@@ -1,4 +1,4 @@
-/* eslint unicorn/prevent-abbreviations:"off" -- https://github.com/sindresorhus/eslint-plugin-unicorn/issues/2015 */
+/* eslint unicorn-x/prevent-abbreviations:"off" -- https://github.com/sindresorhus/eslint-plugin-unicorn/issues/2015 */
 
 /** @type {import('eslint-doc-generator').GenerateOptions} */
 const config = {
@@ -19,7 +19,7 @@ const config = {
 		'hasSuggestions',
 		'requiresTypeChecking',
 	],
-	urlConfigs: 'https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config',
+	urlConfigs: 'https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config',
 };
 
 export default config;

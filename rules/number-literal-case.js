@@ -13,14 +13,16 @@ const messages = {
 const fix = (raw, {hexadecimalValue}) => {
 	let fixed = raw.toLowerCase();
 	if (fixed.startsWith('0x')) {
-		fixed = '0x' + fixed.slice(2)[hexadecimalValue === 'lowercase' ? 'toLowerCase' : 'toUpperCase']();
+		const stringMethod =
+			hexadecimalValue === 'lowercase' ? 'toLowerCase' : 'toUpperCase';
+		fixed = '0x' + fixed.slice(2)[stringMethod]();
 	}
 
 	return fixed;
 };
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
+const create = (context) => ({
 	Literal(node) {
 		const {raw} = node;
 
@@ -39,7 +41,7 @@ const create = context => ({
 			return {
 				node,
 				messageId: MESSAGE_ID,
-				fix: fixer => fixer.replaceText(node, fixed),
+				fix: (fixer) => fixer.replaceText(node, fixed),
 			};
 		}
 	},
@@ -72,9 +74,11 @@ const config = {
 		},
 		fixable: 'code',
 		schema,
-		defaultOptions: [{
-			hexadecimalValue: 'uppercase',
-		}],
+		defaultOptions: [
+			{
+				hexadecimalValue: 'uppercase',
+			},
+		],
 		messages,
 	},
 };

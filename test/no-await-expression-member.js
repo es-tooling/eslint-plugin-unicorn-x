@@ -46,9 +46,7 @@ test.snapshot({
 });
 
 test.typescript({
-	valid: [
-		'function foo () {return (await promise) as string;}',
-	],
+	valid: ['function foo () {return (await promise) as string;}'],
 	invalid: [
 		{
 			code: 'const foo: Type = (await promise)[0]',

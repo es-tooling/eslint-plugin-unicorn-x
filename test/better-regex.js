@@ -56,12 +56,12 @@ test({
 		String.raw`new RegExp('\d')`,
 		String.raw`new RegExp('\d', 'ig')`,
 		String.raw`new RegExp('\d*?')`,
-		'new RegExp(\'[a-z]\', \'i\')',
+		"new RegExp('[a-z]', 'i')",
 		String.raw`new RegExp(/\d/)`,
 		String.raw`new RegExp(/\d/gi)`,
 		String.raw`new RegExp(/\d/, 'ig')`,
 		String.raw`new RegExp(/\d*?/)`,
-		'new RegExp(/[a-z]/, \'i\')',
+		"new RegExp(/[a-z]/, 'i')",
 		// Not `new`
 		'RegExp("[0-9]")',
 		// Not `RegExp`
@@ -126,7 +126,10 @@ test({
 		},
 		{
 			code: String.raw`const foo = /[A-Za-z0-9_]+[0-9]?\.[A-Za-z0-9_]*/`,
-			errors: createError(String.raw`/[A-Za-z0-9_]+[0-9]?\.[A-Za-z0-9_]*/`, String.raw`/\w+\d?\.\w*/`),
+			errors: createError(
+				String.raw`/[A-Za-z0-9_]+[0-9]?\.[A-Za-z0-9_]*/`,
+				String.raw`/\w+\d?\.\w*/`,
+			),
 			output: String.raw`const foo = /\w+\d?\.\w*/`,
 		},
 		{
@@ -176,12 +179,18 @@ test({
 		},
 		{
 			code: 'const foo = /^by @([a-zA-Z0-9-]+)/',
-			errors: createError('/^by @([a-zA-Z0-9-]+)/', String.raw`/^by @([\dA-Za-z-]+)/`),
+			errors: createError(
+				'/^by @([a-zA-Z0-9-]+)/',
+				String.raw`/^by @([\dA-Za-z-]+)/`,
+			),
 			output: String.raw`const foo = /^by @([\dA-Za-z-]+)/`,
 		},
 		{
 			code: '/[GgHhIiå.Z:a-f"0-8%A*ä]/',
-			errors: createError('/[GgHhIiå.Z:a-f"0-8%A*ä]/', '/["%*.0-8:AG-IZa-iäå]/'),
+			errors: createError(
+				'/[GgHhIiå.Z:a-f"0-8%A*ä]/',
+				'/["%*.0-8:AG-IZa-iäå]/',
+			),
 			output: '/["%*.0-8:AG-IZa-iäå]/',
 		},
 		// Should still use shorthand when disabling sort character classes
@@ -194,7 +203,7 @@ test({
 
 		// `RegExp()` constructor
 		{
-			code: 'const foo = new RegExp(\'[0-9]\')',
+			code: "const foo = new RegExp('[0-9]')",
 			errors: createError('[0-9]', String.raw`\d`),
 			output: String.raw`const foo = new RegExp('\\d')`,
 		},
@@ -205,21 +214,21 @@ test({
 		},
 		{
 			code: String.raw`const foo = new RegExp('\'[0-9]\'')`,
-			errors: createError('\'[0-9]\'', String.raw`'\d'`),
+			errors: createError("'[0-9]'", String.raw`'\d'`),
 			output: String.raw`const foo = new RegExp('\'\\d\'')`,
 		},
 		{
 			code: 'const foo = new RegExp("\'[0-9]\'")',
-			errors: createError('\'[0-9]\'', String.raw`'\d'`),
+			errors: createError("'[0-9]'", String.raw`'\d'`),
 			output: String.raw`const foo = new RegExp("'\\d'")`,
 		},
 		{
-			code: 'const foo = new RegExp(\'[0-9]\', \'ig\')',
+			code: "const foo = new RegExp('[0-9]', 'ig')",
 			errors: createError('[0-9]', String.raw`\d`),
 			output: String.raw`const foo = new RegExp('\\d', 'ig')`,
 		},
 		{
-			code: 'const foo = new RegExp(/[0-9]/, \'ig\')',
+			code: "const foo = new RegExp(/[0-9]/, 'ig')",
 			errors: createError('/[0-9]/', String.raw`/\d/`),
 			output: String.raw`const foo = new RegExp(/\d/, 'ig')`,
 		},
@@ -254,14 +263,14 @@ test({
 		// #499
 		{
 			code: String.raw`/^[a-z][a-z0-9\-]{5,29}$/`,
-			errors: createError(String.raw`/^[a-z][a-z0-9\-]{5,29}$/`, String.raw`/^[a-z][\da-z\-]{5,29}$/`),
+			errors: createError(
+				String.raw`/^[a-z][a-z0-9\-]{5,29}$/`,
+				String.raw`/^[a-z][\da-z\-]{5,29}$/`,
+			),
 			output: String.raw`/^[a-z][\da-z\-]{5,29}$/`,
 		},
 		// #477
-		testCase(
-			String.raw`/[ \n\t\r\]]/g`,
-			String.raw`/[\t\n\r \]]/g`,
-		),
+		testCase(String.raw`/[ \n\t\r\]]/g`, String.raw`/[\t\n\r \]]/g`),
 		testCase(
 			String.raw`/[ \n\t\r\f"#'()/;[\\\]{}]/g`,
 			String.raw`/[\t\n\f\r "#'()/;[\\\]{}]/g`,
@@ -271,10 +280,7 @@ test({
 			String.raw`/[\t\n\f\r !"#'():;@[\\\]{}]|\/(?=\*)/g`,
 		),
 		// #994
-		testCase(
-			String.raw`/\s?\s?\s?/`,
-			String.raw`/\s{0,3}/`,
-		),
+		testCase(String.raw`/\s?\s?\s?/`, String.raw`/\s{0,3}/`),
 		// Actual message
 		{
 			code: '/[0-9]/',
@@ -290,7 +296,8 @@ test({
 			code: '/(/',
 			errors: [
 				{
-					message: 'Problem parsing /(/: \n\n/(/\n  ^\nUnexpected token: "/" at 1:2.',
+					message:
+						'Problem parsing /(/: \n\n/(/\n  ^\nUnexpected token: "/" at 1:2.',
 				},
 			],
 			languageOptions: {

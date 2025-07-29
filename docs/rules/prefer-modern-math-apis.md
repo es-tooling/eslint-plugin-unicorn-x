@@ -1,6 +1,6 @@
 # Prefer modern `Math` APIs over legacy patterns
 
-💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/sindresorhus/eslint-plugin-unicorn#recommended-config).
+💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/es-tooling/eslint-plugin-unicorn-x#recommended-config).
 
 🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 
@@ -29,7 +29,7 @@ Math additions in ES2015:
 
 Currently, we only check a few known cases, but we are open to add more patterns.
 
-If you find a suitable case for this rule, please [open an issue](https://github.com/sindresorhus/eslint-plugin-unicorn/issues/new?title=%20%60prefer-modern-math-apis%60%20%20change%20request&labels=evaluating).
+If you find a suitable case for this rule, please [open an issue](https://github.com/es-tooling/eslint-plugin-unicorn-x/issues/new?title=%20%60prefer-modern-math-apis%60%20%20change%20request&labels=evaluating).
 
 ## Prefer `Math.log10(x)` over
 

@@ -1,6 +1,6 @@
 import packageJson from '../../package.json' with {type: 'json'};
 
-const repoUrl = 'https://github.com/sindresorhus/eslint-plugin-unicorn';
+const repoUrl = 'https://github.com/es-tooling/eslint-plugin-unicorn-x';
 
 /** @returns {{ [ruleName: string]: import('eslint').Rule.RuleModule }} */
 export default function createDeprecatedRules(rules) {

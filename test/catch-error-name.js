@@ -248,7 +248,7 @@ test({
 			'try {} catch (descriptive_exception) {}',
 			'try {} catch (descriptiveException__) {}',
 			'try {} catch (descriptive_exception__) {}',
-		].map(code => ({
+		].map((code) => ({
 			code,
 			options: [{name: 'exception'}],
 		})),
@@ -784,7 +784,10 @@ test({
 					}
 				}
 			`,
-			errors: [generateError('anyName', 'error'), generateError('anyOtherName', 'error')],
+			errors: [
+				generateError('anyName', 'error'),
+				generateError('anyOtherName', 'error'),
+			],
 		},
 		invalidTestCase({
 			code: outdent`
@@ -903,9 +906,7 @@ test.babel({
 			parserOptions: {
 				babelOptions: {
 					parserOpts: {
-						plugins: [
-							['decorators', {decoratorsBeforeExport: true}],
-						],
+						plugins: [['decorators', {decoratorsBeforeExport: true}]],
 					},
 				},
 			},

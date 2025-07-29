@@ -8,7 +8,7 @@ test.snapshot({
 		'"utf8"',
 		'"utf+8"',
 		'"   utf8   "',
-		'\'utf8\'',
+		"'utf8'",
 		String.raw`"\u0055tf8"`,
 		'const ASCII = 1',
 		'const UTF8 = 1',
@@ -16,7 +16,7 @@ test.snapshot({
 	invalid: [
 		'"UTF-8"',
 		'"utf-8"',
-		'\'utf-8\'',
+		"'utf-8'",
 		'"Utf8"',
 		'"ASCII"',
 		'fs.readFile?.(file, "UTF-8")',
@@ -47,10 +47,7 @@ test.snapshot({
 			},
 		},
 	},
-	valid: [
-		'<meta charset="utf-8" />',
-		'<META CHARSET="utf-8" />',
-	],
+	valid: ['<meta charset="utf-8" />', '<META CHARSET="utf-8" />'],
 	invalid: [
 		'<not-meta charset="utf-8" />',
 		'<meta not-charset="utf-8" />',

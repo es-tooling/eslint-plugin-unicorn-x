@@ -30,11 +30,9 @@ test({
 		'const foo = 0O1111_1111',
 
 		// Legacy octal
-		...[
-			'const foo = 0777777',
-			'var foo = 0999999',
-			'let foo = 0111222',
-		].map(code => ({code, languageOptions: legacyOctalLanguageOptions})),
+		...['const foo = 0777777', 'var foo = 0999999', 'let foo = 0111222'].map(
+			(code) => ({code, languageOptions: legacyOctalLanguageOptions}),
+		),
 
 		// Binary
 		'const foo = 0b1010_0001_1000_0101',
@@ -115,9 +113,11 @@ test({
 				const hexadecimal = 0xfedcba97;
 				const number = 12345678.12345678e12345678;
 			`,
-			options: [{
-				onlyIfContainsSeparator: true,
-			}],
+			options: [
+				{
+					onlyIfContainsSeparator: true,
+				},
+			],
 		},
 		{
 			code: outdent`
@@ -126,12 +126,14 @@ test({
 				const hexadecimal = 0xfedcba97;
 				const number = 12345678.12345678e12345678;
 			`,
-			options: [{
-				onlyIfContainsSeparator: true,
-				binary: {
-					onlyIfContainsSeparator: false,
+			options: [
+				{
+					onlyIfContainsSeparator: true,
+					binary: {
+						onlyIfContainsSeparator: false,
+					},
 				},
-			}],
+			],
 		},
 		{
 			code: outdent`
@@ -140,13 +142,15 @@ test({
 				const hexadecimal = 0xfedcba97;
 				const number = 12345678.12345678e12345678;
 			`,
-			options: [{
-				onlyIfContainsSeparator: true,
-				binary: {
-					onlyIfContainsSeparator: false,
-					groupLength: 2,
+			options: [
+				{
+					onlyIfContainsSeparator: true,
+					binary: {
+						onlyIfContainsSeparator: false,
+						groupLength: 2,
+					},
 				},
-			}],
+			],
 		},
 		{
 			code: outdent`
@@ -155,11 +159,13 @@ test({
 				const hexadecimal = 0xfe_dc_ba_97;
 				const number = 12_345_678.123_456_78e12_345_678;
 			`,
-			options: [{
-				binary: {
-					onlyIfContainsSeparator: true,
+			options: [
+				{
+					binary: {
+						onlyIfContainsSeparator: true,
+					},
 				},
-			}],
+			],
 		},
 		{
 			code: 'const foo = 12345',
@@ -207,23 +213,54 @@ test({
 		},
 		{
 			code: 'const foo = 0o777777',
-			options: [{octal: {onlyIfContainsSeparator: true, minimumDigits: 3, groupLength: 2}}],
+			options: [
+				{
+					octal: {
+						onlyIfContainsSeparator: true,
+						minimumDigits: 3,
+						groupLength: 2,
+					},
+				},
+			],
 		},
 		{
 			code: 'const foo = 0o777_777',
-			options: [{octal: {onlyIfContainsSeparator: true, minimumDigits: 2, groupLength: 3}}],
+			options: [
+				{
+					octal: {
+						onlyIfContainsSeparator: true,
+						minimumDigits: 2,
+						groupLength: 3,
+					},
+				},
+			],
 		},
 		{
 			code: 'const foo = 0b01010101',
-			options: [{onlyIfContainsSeparator: true, binary: {onlyIfContainsSeparator: true}}],
+			options: [
+				{
+					onlyIfContainsSeparator: true,
+					binary: {onlyIfContainsSeparator: true},
+				},
+			],
 		},
 		{
 			code: 'const foo = 0b0101_0101',
-			options: [{onlyIfContainsSeparator: false, binary: {onlyIfContainsSeparator: true}}],
+			options: [
+				{
+					onlyIfContainsSeparator: false,
+					binary: {onlyIfContainsSeparator: true},
+				},
+			],
 		},
 		{
 			code: 'const foo = 0b0101_0101',
-			options: [{onlyIfContainsSeparator: false, binary: {onlyIfContainsSeparator: false}}],
+			options: [
+				{
+					onlyIfContainsSeparator: false,
+					binary: {onlyIfContainsSeparator: false},
+				},
+			],
 		},
 	],
 	invalid: [
@@ -467,9 +504,11 @@ test({
 				const hexadecimal = 0xfe_dc_ba_97;
 				const number = 12_345_678.123_456_78e12_345_678;
 			`,
-			options: [{
-				onlyIfContainsSeparator: true,
-			}],
+			options: [
+				{
+					onlyIfContainsSeparator: true,
+				},
+			],
 			errors: 4,
 		},
 		{
@@ -485,12 +524,14 @@ test({
 				const hexadecimal = 0xfe_dc_ba_97;
 				const number = 12_345_678.123_456_78e12_345_678;
 			`,
-			options: [{
-				onlyIfContainsSeparator: true,
-				binary: {
-					onlyIfContainsSeparator: false,
+			options: [
+				{
+					onlyIfContainsSeparator: true,
+					binary: {
+						onlyIfContainsSeparator: false,
+					},
 				},
-			}],
+			],
 			errors: 4,
 		},
 		{
@@ -506,13 +547,15 @@ test({
 				const hexadecimal = 0xfe_dc_ba_97;
 				const number = 12_345_678.123_456_78e12_345_678;
 			`,
-			options: [{
-				onlyIfContainsSeparator: true,
-				binary: {
-					onlyIfContainsSeparator: false,
-					groupLength: 2,
+			options: [
+				{
+					onlyIfContainsSeparator: true,
+					binary: {
+						onlyIfContainsSeparator: false,
+						groupLength: 2,
+					},
 				},
-			}],
+			],
 			errors: 4,
 		},
 		{
@@ -528,11 +571,13 @@ test({
 				const hexadecimal = 0xfe_dc_ba_97;
 				const number = 12_345_678.123_456_78e12_345_678;
 			`,
-			options: [{
-				binary: {
-					onlyIfContainsSeparator: true,
+			options: [
+				{
+					binary: {
+						onlyIfContainsSeparator: true,
+					},
 				},
-			}],
+			],
 			errors: 4,
 		},
 	],
@@ -540,8 +585,5 @@ test({
 
 test.snapshot({
 	valid: [],
-	invalid: [
-		'console.log(0XdeEdBeeFn)',
-		'const foo = 12345678..toString()',
-	],
+	invalid: ['console.log(0XdeEdBeeFn)', 'const foo = 12345678..toString()'],
 });

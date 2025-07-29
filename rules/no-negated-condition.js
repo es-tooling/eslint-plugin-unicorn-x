@@ -16,13 +16,13 @@ const messages = {
 	[MESSAGE_ID]: 'Unexpected negated condition.',
 };
 
-function * convertNegatedCondition(fixer, node, sourceCode) {
+function* convertNegatedCondition(fixer, node, sourceCode) {
 	const {test} = node;
 	if (test.type === 'UnaryExpression') {
 		const token = sourceCode.getFirstToken(test);
 
 		if (node.type === 'IfStatement') {
-			yield * removeParentheses(test.argument, fixer, sourceCode);
+			yield* removeParentheses(test.argument, fixer, sourceCode);
 		}
 
 		yield fixer.remove(token);
@@ -31,30 +31,29 @@ function * convertNegatedCondition(fixer, node, sourceCode) {
 
 	const token = sourceCode.getTokenAfter(
 		test.left,
-		token => token.type === 'Punctuator' && token.value === test.operator,
+		(token) => token.type === 'Punctuator' && token.value === test.operator,
 	);
 
 	yield fixer.replaceText(token, '=' + token.value.slice(1));
 }
 
-function * swapConsequentAndAlternate(fixer, node, sourceCode) {
+function* swapConsequentAndAlternate(fixer, node, sourceCode) {
 	const isIfStatement = node.type === 'IfStatement';
-	const [consequent, alternate] = [
-		node.consequent,
-		node.alternate,
-	].map(node => {
-		const range = getParenthesizedRange(node, sourceCode);
-		let text = sourceCode.text.slice(...range);
-		// `if (!a) b(); else c()` can't fix to `if (!a) c() else b();`
-		if (isIfStatement && node.type !== 'BlockStatement') {
-			text = `{${text}}`;
-		}
+	const [consequent, alternate] = [node.consequent, node.alternate].map(
+		(node) => {
+			const range = getParenthesizedRange(node, sourceCode);
+			let text = sourceCode.text.slice(...range);
+			// `if (!a) b(); else c()` can't fix to `if (!a) c() else b();`
+			if (isIfStatement && node.type !== 'BlockStatement') {
+				text = `{${text}}`;
+			}
 
-		return {
-			range,
-			text,
-		};
-	});
+			return {
+				range,
+				text,
+			};
+		},
+	);
 
 	if (consequent.text === alternate.text) {
 		return;
@@ -65,24 +64,24 @@ function * swapConsequentAndAlternate(fixer, node, sourceCode) {
 }
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
-	context.on(['IfStatement', 'ConditionalExpression'], node => {
+const create = (context) => {
+	context.on(['IfStatement', 'ConditionalExpression'], (node) => {
 		if (
-			node.type === 'IfStatement'
-			&& (
-				!node.alternate
-				|| node.alternate.type === 'IfStatement'
-			)
+			node.type === 'IfStatement' &&
+			(!node.alternate || node.alternate.type === 'IfStatement')
 		) {
 			return;
 		}
 
 		const {test} = node;
 
-		if (!(
-			(test.type === 'UnaryExpression' && test.operator === '!')
-			|| (test.type === 'BinaryExpression' && (test.operator === '!=' || test.operator === '!=='))
-		)) {
+		if (
+			!(
+				(test.type === 'UnaryExpression' && test.operator === '!') ||
+				(test.type === 'BinaryExpression' &&
+					(test.operator === '!=' || test.operator === '!=='))
+			)
+		) {
 			return;
 		}
 
@@ -90,30 +89,35 @@ const create = context => {
 			node: test,
 			messageId: MESSAGE_ID,
 			/** @param {import('eslint').Rule.RuleFixer} fixer */
-			* fix(fixer) {
+			*fix(fixer) {
 				const {sourceCode} = context;
-				yield * convertNegatedCondition(fixer, node, sourceCode);
-				yield * swapConsequentAndAlternate(fixer, node, sourceCode);
+				yield* convertNegatedCondition(fixer, node, sourceCode);
+				yield* swapConsequentAndAlternate(fixer, node, sourceCode);
 
 				if (
-					node.type !== 'ConditionalExpression'
-					|| test.type !== 'UnaryExpression'
+					node.type !== 'ConditionalExpression' ||
+					test.type !== 'UnaryExpression'
 				) {
 					return;
 				}
 
-				yield * fixSpaceAroundKeyword(fixer, node, sourceCode);
+				yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 
 				const {parent} = node;
 				const [firstToken, secondToken] = sourceCode.getFirstTokens(test, 2);
 				if (
-					(parent.type === 'ReturnStatement' || parent.type === 'ThrowStatement')
-					&& parent.argument === node
-					&& !isOnSameLine(firstToken, secondToken)
-					&& !isParenthesized(node, sourceCode)
-					&& !isParenthesized(test, sourceCode)
+					(parent.type === 'ReturnStatement' ||
+						parent.type === 'ThrowStatement') &&
+					parent.argument === node &&
+					!isOnSameLine(firstToken, secondToken) &&
+					!isParenthesized(node, sourceCode) &&
+					!isParenthesized(test, sourceCode)
 				) {
-					yield * addParenthesizesToReturnOrThrowExpression(fixer, parent, sourceCode);
+					yield* addParenthesizesToReturnOrThrowExpression(
+						fixer,
+						parent,
+						sourceCode,
+					);
 					return;
 				}
 

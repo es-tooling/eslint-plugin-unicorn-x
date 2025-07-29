@@ -73,7 +73,7 @@ test.snapshot({
 	],
 });
 
-const noFixingCase = code => ({
+const noFixingCase = (code) => ({
 	code,
 	errors: 1,
 });

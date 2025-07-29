@@ -5,16 +5,16 @@ const messages = {
 	[MESSAGE_ID]: 'Empty files are not allowed.',
 };
 
-const isEmpty = node => isEmptyNode(node, isDirective);
+const isEmpty = (node) => isEmptyNode(node, isDirective);
 
-const isTripleSlashDirective = node =>
+const isTripleSlashDirective = (node) =>
 	node.type === 'Line' && node.value.startsWith('/');
 
-const hasTripeSlashDirectives = comments =>
-	comments.some(currentNode => isTripleSlashDirective(currentNode));
+const hasTripeSlashDirectives = (comments) =>
+	comments.some((currentNode) => isTripleSlashDirective(currentNode));
 
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => {
+const create = (context) => {
 	const filename = context.physicalFilename;
 
 	if (!/\.(?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$/i.test(filename)) {
@@ -23,7 +23,7 @@ const create = context => {
 
 	return {
 		Program(node) {
-			if (node.body.some(node => !isEmpty(node))) {
+			if (node.body.some((node) => !isEmpty(node))) {
 				return;
 			}
 

@@ -39,7 +39,7 @@ test.snapshot({
 		'typeof a.b !== "undefined"',
 		'typeof a.b == "undefined"',
 		'typeof a.b != "undefined"',
-		'typeof a.b == \'undefined\'',
+		"typeof a.b == 'undefined'",
 		'let foo; typeof foo === "undefined"',
 		'const foo = 1; typeof foo === "undefined"',
 		'var foo; typeof foo === "undefined"',
@@ -97,8 +97,7 @@ test.snapshot({
 
 // `checkGlobalVariables: true`
 test.snapshot({
-	valid: [
-	],
+	valid: [],
 	invalid: [
 		'typeof undefinedVariableIdentifier === "undefined"',
 		'typeof Array !== "undefined"',
@@ -113,5 +112,5 @@ test.snapshot({
 				switch (typeof value === 'undefined') {}
 			}
 		`,
-	].map(code => ({code, options: [{checkGlobalVariables: true}]})),
+	].map((code) => ({code, options: [{checkGlobalVariables: true}]})),
 });

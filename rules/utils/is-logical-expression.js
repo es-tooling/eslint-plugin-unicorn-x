@@ -7,8 +7,8 @@ The three binary expressions logical-or (`||`), logical-and (`&&`), and coalesce
 @returns {boolean} `true` if the node is `&&` or `||`.
 @see https://tc39.es/ecma262/#prod-ShortCircuitExpression
 */
-const isLogicalExpression = node =>
-	node?.type === 'LogicalExpression'
-	&& (node.operator === '&&' || node.operator === '||');
+const isLogicalExpression = (node) =>
+	node?.type === 'LogicalExpression' &&
+	(node.operator === '&&' || node.operator === '||');
 
 export default isLogicalExpression;

@@ -11,10 +11,11 @@ const indexOfOverFindIndexFixtures = createSimpleArraySearchRuleTestFixtures({
 test.snapshot(indexOfOverFindIndexFixtures.snapshot);
 test.typescript(indexOfOverFindIndexFixtures.typescript);
 
-const lastIndexOfOverFindLastIndexFixtures = createSimpleArraySearchRuleTestFixtures({
-	method: 'findLastIndex',
-	replacement: 'lastIndexOf',
-});
+const lastIndexOfOverFindLastIndexFixtures =
+	createSimpleArraySearchRuleTestFixtures({
+		method: 'findLastIndex',
+		replacement: 'lastIndexOf',
+	});
 
 test.snapshot(lastIndexOfOverFindLastIndexFixtures.snapshot);
 test.typescript(lastIndexOfOverFindLastIndexFixtures.typescript);

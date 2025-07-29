@@ -1,11 +1,14 @@
 import path from 'node:path';
 import url from 'node:url';
-import test from 'ava';
-import AvaRuleTester from 'eslint-ava-rule-tester';
+import {RuleTester} from 'eslint';
 import SnapshotRuleTester from './snapshot-rule-tester.js';
 import parsers from './parsers.js';
-import {DEFAULT_LANGUAGE_OPTIONS, normalizeLanguageOptions, mergeLanguageOptions} from './language-options.js';
-import plugin from '../../index.js';
+import {
+	DEFAULT_LANGUAGE_OPTIONS,
+	normalizeLanguageOptions,
+	mergeLanguageOptions,
+} from './language-options.js';
+import rules from '../../rules/index.js';
 
 function normalizeTestCase(testCase, shouldNormalizeLanguageOptions = true) {
 	if (typeof testCase === 'string') {
@@ -13,7 +16,10 @@ function normalizeTestCase(testCase, shouldNormalizeLanguageOptions = true) {
 	}
 
 	if (shouldNormalizeLanguageOptions && testCase.languageOptions) {
-		testCase = {...testCase, languageOptions: normalizeLanguageOptions(testCase.languageOptions)};
+		testCase = {
+			...testCase,
+			languageOptions: normalizeLanguageOptions(testCase.languageOptions),
+		};
 	}
 
 	return testCase;
@@ -27,7 +33,11 @@ function normalizeInvalidTest(test, rule) {
 		throw new Error('Remove output if your test do not fix code.');
 	}
 
-	if (Array.isArray(errors) && errors.some(error => error.suggestions) && rule.meta.hasSuggestions !== true) {
+	if (
+		Array.isArray(errors) &&
+		errors.some((error) => error.suggestions) &&
+		rule.meta.hasSuggestions !== true
+	) {
 		// This check will no longer be necessary if this change lands in ESLint 8: https://github.com/eslint/eslint/issues/14312
 		throw new Error('Rule with suggestion is missing `meta.hasSuggestions`.');
 	}
@@ -35,14 +45,14 @@ function normalizeInvalidTest(test, rule) {
 	return {
 		// Use `null` instead of `code` to get a better message
 		// See https://github.com/eslint/eslint/blob/8a77b661bc921c3408bae01b3aa41579edfc6e58/lib/rule-tester/rule-tester.js#L847-L853
-		// eslint-disable-next-line unicorn/no-null
+		// eslint-disable-next-line unicorn-x/no-null
 		output: null,
 		...test,
 	};
 }
 
 // https://github.com/tc39/proposal-array-is-template-object
-const isTemplateObject = value => Array.isArray(value?.raw);
+const isTemplateObject = (value) => Array.isArray(value?.raw);
 // https://github.com/tc39/proposal-string-cooked
 const cooked = (raw, ...substitutions) => String.raw({raw}, ...substitutions);
 
@@ -61,13 +71,19 @@ function only(...arguments_) {
 	only('code');
 	only({code: 'code'});
 	*/
-	return {...normalizeTestCase(arguments_[0], /* shouldNormalizeLanguageOptions */ false), only: true};
+	return {
+		...normalizeTestCase(
+			arguments_[0],
+			/* shouldNormalizeLanguageOptions */ false,
+		),
+		only: true,
+	};
 }
 
 class Tester {
 	constructor(ruleId) {
 		this.ruleId = ruleId;
-		this.rule = plugin.rules[ruleId];
+		this.rule = rules[ruleId];
 	}
 
 	runTest(tests) {
@@ -75,35 +91,39 @@ class Tester {
 
 		let {testerOptions = {}, valid, invalid} = tests;
 
-		valid = valid.map(testCase => normalizeTestCase(testCase));
-		invalid = invalid.map(testCase => normalizeInvalidTest(normalizeTestCase(testCase), rule));
+		valid = valid.map((testCase) => normalizeTestCase(testCase));
+		invalid = invalid.map((testCase) =>
+			normalizeInvalidTest(normalizeTestCase(testCase), rule),
+		);
 
 		const testConfig = {
 			...testerOptions,
-			languageOptions: mergeLanguageOptions(DEFAULT_LANGUAGE_OPTIONS, testerOptions.languageOptions),
+			languageOptions: mergeLanguageOptions(
+				DEFAULT_LANGUAGE_OPTIONS,
+				testerOptions.languageOptions,
+			),
 		};
 
-		const tester = new AvaRuleTester(test, testConfig);
+		const tester = new RuleTester(testConfig);
 
-		return tester.run(
-			ruleId,
-			rule,
-			{valid, invalid},
-		);
+		return tester.run(ruleId, rule, {valid, invalid});
 	}
 
 	snapshot(tests) {
 		let {testerOptions = {}, valid, invalid} = tests;
 
-		valid = valid.map(testCase => normalizeTestCase(testCase));
-		invalid = invalid.map(testCase => normalizeTestCase(testCase));
+		valid = valid.map((testCase) => normalizeTestCase(testCase));
+		invalid = invalid.map((testCase) => normalizeTestCase(testCase));
 
 		const testConfig = {
 			...testerOptions,
-			languageOptions: mergeLanguageOptions(DEFAULT_LANGUAGE_OPTIONS, testerOptions.languageOptions),
+			languageOptions: mergeLanguageOptions(
+				DEFAULT_LANGUAGE_OPTIONS,
+				testerOptions.languageOptions,
+			),
 		};
 
-		const tester = new SnapshotRuleTester(test, testConfig);
+		const tester = new SnapshotRuleTester(testConfig);
 		const {ruleId, rule} = this;
 		return tester.run(ruleId, rule, {valid, invalid});
 	}
@@ -143,7 +163,10 @@ function getTester(importMeta) {
 }
 
 const addComment = (testCase, comment) => {
-	testCase = normalizeTestCase(testCase, /* shouldNormalizeLanguageOptions */ false);
+	testCase = normalizeTestCase(
+		testCase,
+		/* shouldNormalizeLanguageOptions */ false,
+	);
 	const {code, output} = testCase;
 	const fixedTest = {
 		...testCase,
@@ -160,13 +183,10 @@ const avoidTestTitleConflict = (tests, comment) => {
 	const {valid, invalid} = tests;
 	return {
 		...tests,
-		valid: valid.map(testCase => addComment(testCase, comment)),
-		invalid: invalid.map(testCase => addComment(testCase, comment)),
+		valid: valid.map((testCase) => addComment(testCase, comment)),
+		invalid: invalid.map((testCase) => addComment(testCase, comment)),
 	};
 };
 
-export {
-	getTester,
-	avoidTestTitleConflict,
-};
+export {getTester, avoidTestTitleConflict};
 export {default as parsers} from './parsers.js';

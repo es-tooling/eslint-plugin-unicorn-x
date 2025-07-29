@@ -11,7 +11,7 @@ test.snapshot({
 		// Not `MemberExpression`
 		'getElementById(foo);',
 		// `callee.property` is not a `Identifier`
-		'document[\'getElementById\'](bar);',
+		"document['getElementById'](bar);",
 		// Computed
 		'document[getElementById](bar);',
 		// Not listed method
@@ -22,7 +22,7 @@ test.snapshot({
 		'document.getElementById(...["id"]);',
 
 		// `callee.object` is not a DOM Node,
-		...notDomNodeTypes.map(data => `(${data}).getElementById(foo)`),
+		...notDomNodeTypes.map((data) => `(${data}).getElementById(foo)`),
 
 		'document.querySelector("#foo");',
 		'document.querySelector(".bar");',
@@ -38,18 +38,18 @@ test.snapshot({
 		'document.getElementsByClassName("foo bar");',
 		'document.getElementsByTagName("foo");',
 		'document.getElementById("");',
-		'document.getElementById(\'foo\');',
-		'document.getElementsByClassName(\'foo\');',
-		'document.getElementsByClassName(\'foo bar\');',
-		'document.getElementsByTagName(\'foo\');',
-		'document.getElementsByClassName(\'\');',
+		"document.getElementById('foo');",
+		"document.getElementsByClassName('foo');",
+		"document.getElementsByClassName('foo bar');",
+		"document.getElementsByTagName('foo');",
+		"document.getElementsByClassName('');",
 		'document.getElementById(`foo`);',
 		'document.getElementsByClassName(`foo`);',
 		'document.getElementsByClassName(`foo bar`);',
 		'document.getElementsByTagName(`foo`);',
 		'document.getElementsByTagName(``);',
-		'document.getElementsByClassName(`${fn()}`);', // eslint-disable-line no-template-curly-in-string
-		'document.getElementsByClassName(`foo ${undefined}`);', // eslint-disable-line no-template-curly-in-string
+		'document.getElementsByClassName(`${fn()}`);',
+		'document.getElementsByClassName(`foo ${undefined}`);',
 		'document.getElementsByClassName(null);',
 		'document.getElementsByTagName(null);',
 		'document.getElementsByClassName(fn());',
@@ -63,9 +63,9 @@ test.snapshot({
 		// #1030
 		'e.getElementById(3)',
 		'document.getElementsByName("foo");',
-		'document.getElementsByName(\'foo\');',
+		"document.getElementsByName('foo');",
 		'document.getElementsByName(`foo`);',
-		'document.getElementsByName(`${\'foo\'}`);', // eslint-disable-line no-template-curly-in-string
+		"document.getElementsByName(`${'foo'}`);",
 		'document.getElementsByName(null);',
 		'document.getElementsByName("");',
 		'document.getElementsByName(foo + "bar");',

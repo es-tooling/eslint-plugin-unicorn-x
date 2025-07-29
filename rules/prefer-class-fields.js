@@ -23,56 +23,64 @@ const removeFieldAssignment = (node, sourceCode, fixer) => {
 
 	return isOnlyNodeOnLine
 		? fixer.removeRange([
-			sourceCode.getIndexFromLoc({line, column: 0}),
-			sourceCode.getIndexFromLoc({line: line + 1, column: 0}),
-		])
+				sourceCode.getIndexFromLoc({line, column: 0}),
+				sourceCode.getIndexFromLoc({line: line + 1, column: 0}),
+			])
 		: fixer.remove(node);
 };
 
 /**
 @type {import('eslint').Rule.RuleModule['create']}
 */
-const create = context => {
+const create = (context) => {
 	const {sourceCode} = context;
 
 	return {
 		ClassBody(classBody) {
-			const constructor = classBody.body.find(node =>
-				node.kind === 'constructor'
-				&& !node.computed
-				&& !node.static
-				&& node.type === 'MethodDefinition'
-				&& node.value.type === 'FunctionExpression',
+			const constructor = classBody.body.find(
+				(node) =>
+					node.kind === 'constructor' &&
+					!node.computed &&
+					!node.static &&
+					node.type === 'MethodDefinition' &&
+					node.value.type === 'FunctionExpression',
 			);
 
 			if (!constructor) {
 				return;
 			}
 
-			const node = constructor.value.body.body.find(node => node.type !== 'EmptyStatement');
+			const node = constructor.value.body.body.find(
+				(node) => node.type !== 'EmptyStatement',
+			);
 
-			if (!(
-				node?.type === 'ExpressionStatement'
-				&& node.expression.type === 'AssignmentExpression'
-				&& node.expression.operator === '='
-				&& node.expression.left.type === 'MemberExpression'
-				&& node.expression.left.object.type === 'ThisExpression'
-				&& !node.expression.left.computed
-				&& ['Identifier', 'PrivateIdentifier'].includes(node.expression.left.property.type)
-				&& node.expression.right.type === 'Literal'
-			)) {
+			if (
+				!(
+					node?.type === 'ExpressionStatement' &&
+					node.expression.type === 'AssignmentExpression' &&
+					node.expression.operator === '=' &&
+					node.expression.left.type === 'MemberExpression' &&
+					node.expression.left.object.type === 'ThisExpression' &&
+					!node.expression.left.computed &&
+					['Identifier', 'PrivateIdentifier'].includes(
+						node.expression.left.property.type,
+					) &&
+					node.expression.right.type === 'Literal'
+				)
+			) {
 				return;
 			}
 
 			const propertyName = node.expression.left.property.name;
 			const propertyValue = node.expression.right.raw;
 			const propertyType = node.expression.left.property.type;
-			const existingProperty = classBody.body.find(node =>
-				node.type === 'PropertyDefinition'
-				&& !node.computed
-				&& !node.static
-				&& node.key.type === propertyType
-				&& node.key.name === propertyName,
+			const existingProperty = classBody.body.find(
+				(node) =>
+					node.type === 'PropertyDefinition' &&
+					!node.computed &&
+					!node.static &&
+					node.key.type === propertyType &&
+					node.key.name === propertyName,
 			);
 
 			const problem = {
@@ -83,7 +91,7 @@ const create = context => {
 			/**
 			@param {import('eslint').Rule.RuleFixer} fixer
 			*/
-			function * fix(fixer) {
+			function* fix(fixer) {
 				yield removeFieldAssignment(node, sourceCode, fixer);
 
 				if (existingProperty) {
@@ -108,15 +116,16 @@ const create = context => {
 
 				let text = `${indent}${propertyName} = ${propertyValue};\n`;
 
-				const characterBefore = sourceCode.getText()[sourceCode.getRange(closingBrace)[0] - 1];
+				const characterBefore =
+					sourceCode.getText()[sourceCode.getRange(closingBrace)[0] - 1];
 				if (characterBefore !== '\n') {
 					text = `\n${text}`;
 				}
 
 				const lastProperty = classBody.body.at(-1);
 				if (
-					lastProperty.type === 'PropertyDefinition'
-					&& sourceCode.getLastToken(lastProperty).value !== ';'
+					lastProperty.type === 'PropertyDefinition' &&
+					sourceCode.getLastToken(lastProperty).value !== ';'
 				) {
 					text = `;${text}`;
 				}
@@ -146,7 +155,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Prefer class field declarations over `this` assignments in constructors.',
+			description:
+				'Prefer class field declarations over `this` assignments in constructors.',
 			recommended: true,
 		},
 		fixable: 'code',

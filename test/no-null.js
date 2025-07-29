@@ -32,7 +32,7 @@ test.snapshot({
 			'if (null === foo) {}',
 			'if (foo !== null) {}',
 			'if (null !== foo) {}',
-		].map(code => ({
+		].map((code) => ({
 			code,
 			options: [{checkStrictEquality: false}],
 		})),
@@ -66,7 +66,7 @@ test.snapshot({
 			'if (null === foo) {}',
 			'if (foo !== null) {}',
 			'if (null !== foo) {}',
-		].map(code => ({
+		].map((code) => ({
 			code,
 			options: [{checkStrictEquality: true}],
 		})),
@@ -112,8 +112,6 @@ test({
 			},
 		},
 	},
-	valid: [
-		'foo = Object.create(null)',
-	],
+	valid: ['foo = Object.create(null)'],
 	invalid: [],
 });

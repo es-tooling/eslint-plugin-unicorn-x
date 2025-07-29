@@ -7,20 +7,24 @@ const invalidTestCase = ({code, suggestions}) => {
 	if (!suggestions) {
 		return {
 			code,
-			errors: [{
-				messageId: 'consistentDestructuring',
-			}],
+			errors: [
+				{
+					messageId: 'consistentDestructuring',
+				},
+			],
 		};
 	}
 
 	return {
 		code,
-		errors: suggestions.map(suggestion => ({
+		errors: suggestions.map((suggestion) => ({
 			messageId: 'consistentDestructuring',
-			suggestions: [{
-				messageId: 'consistentDestructuringSuggest',
-				output: suggestion,
-			}],
+			suggestions: [
+				{
+					messageId: 'consistentDestructuringSuggest',
+					output: suggestion,
+				},
+			],
 		})),
 	};
 };
@@ -217,50 +221,60 @@ test({
 				const {a} = foo;
 				console.log(foo.a);
 			`,
-			suggestions: [outdent`
-				const {a} = foo;
-				console.log(a);
-			`],
+			suggestions: [
+				outdent`
+					const {a} = foo;
+					console.log(a);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a} = foo;
 				console.log(a, foo.b);
 			`,
-			suggestions: [outdent`
-				const {a, b} = foo;
-				console.log(a, b);
-			`],
+			suggestions: [
+				outdent`
+					const {a, b} = foo;
+					console.log(a, b);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a} = foo.bar;
 				console.log(foo.bar.a);
 			`,
-			suggestions: [outdent`
-				const {a} = foo.bar;
-				console.log(a);
-			`],
+			suggestions: [
+				outdent`
+					const {a} = foo.bar;
+					console.log(a);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {bar} = foo;
 				const {a} = foo.bar;
 			`,
-			suggestions: [outdent`
-				const {bar} = foo;
-				const {a} = bar;
-			`],
+			suggestions: [
+				outdent`
+					const {bar} = foo;
+					const {a} = bar;
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a} = foo;
 				const bar = foo.b;
 			`,
-			suggestions: [outdent`
-				const {a, b} = foo;
-				const bar = b;
-			`],
+			suggestions: [
+				outdent`
+					const {a, b} = foo;
+					const bar = b;
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -268,15 +282,18 @@ test({
 				console.log(foo.b);
 				console.log(foo.b);
 			`,
-			suggestions: [outdent`
-				const {a, b} = foo;
-				console.log(b);
-				console.log(foo.b);
-			`, outdent`
-				const {a, b} = foo;
-				console.log(foo.b);
-				console.log(b);
-			`],
+			suggestions: [
+				outdent`
+					const {a, b} = foo;
+					console.log(b);
+					console.log(foo.b);
+				`,
+				outdent`
+					const {a, b} = foo;
+					console.log(foo.b);
+					console.log(b);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -297,14 +314,16 @@ test({
 				} = foo;
 				console.log(foo.a);
 			`,
-			suggestions: [outdent`
-				const {
-					a: {
-						b
-					}, a
-				} = foo;
-				console.log(a);
-			`],
+			suggestions: [
+				outdent`
+					const {
+						a: {
+							b
+						}, a
+					} = foo;
+					console.log(a);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -315,64 +334,76 @@ test({
 				} = foo;
 				console.log(foo.c);
 			`,
-			suggestions: [outdent`
-				const {
-					a: {
-						b
-					}, c
-				} = foo;
-				console.log(c);
-			`],
+			suggestions: [
+				outdent`
+					const {
+						a: {
+							b
+						}, c
+					} = foo;
+					console.log(c);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {} = foo;
 				console.log(foo.a);
 			`,
-			suggestions: [outdent`
-				const {a} = foo;
-				console.log(a);
-			`],
+			suggestions: [
+				outdent`
+					const {a} = foo;
+					console.log(a);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a} = this;
 				console.log(this.a);
 			`,
-			suggestions: [outdent`
-				const {a} = this;
-				console.log(a);
-			`],
+			suggestions: [
+				outdent`
+					const {a} = this;
+					console.log(a);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a: b} = foo;
 				console.log(foo.a);
 			`,
-			suggestions: [outdent`
-				const {a: b} = foo;
-				console.log(b);
-			`],
+			suggestions: [
+				outdent`
+					const {a: b} = foo;
+					console.log(b);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a: b, c} = foo;
 				console.log(foo.d);
 			`,
-			suggestions: [outdent`
-				const {a: b, c, d} = foo;
-				console.log(d);
-			`],
+			suggestions: [
+				outdent`
+					const {a: b, c, d} = foo;
+					console.log(d);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a} = foo;
 				console.log('foo', foo.b);
 			`,
-			suggestions: [outdent`
-				const {a, b} = foo;
-				console.log('foo', b);
-			`],
+			suggestions: [
+				outdent`
+					const {a, b} = foo;
+					console.log('foo', b);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -382,13 +413,15 @@ test({
 					foo.b // comment
 				);
 			`,
-			suggestions: [outdent`
-				const {a, b} = foo;
-				console.log(
-					'foo', // comment
-					b // comment
-				);
-			`],
+			suggestions: [
+				outdent`
+					const {a, b} = foo;
+					console.log(
+						'foo', // comment
+						b // comment
+					);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -397,12 +430,14 @@ test({
 					console.log(foo.a);
 				}
 			`,
-			suggestions: [outdent`
-				const {a} = foo;
-				function bar() {
-					console.log(a);
-				}
-			`],
+			suggestions: [
+				outdent`
+					const {a} = foo;
+					function bar() {
+						console.log(a);
+					}
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
@@ -410,31 +445,37 @@ test({
 				const {b} = foo;
 				console.log(foo.c);
 			`,
-			suggestions: [outdent`
-				const {a} = foo;
-				const {b, c} = foo;
-				console.log(c);
-			`],
+			suggestions: [
+				outdent`
+					const {a} = foo;
+					const {b, c} = foo;
+					console.log(c);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a} = foo;
 				console.log(!foo.a);
 			`,
-			suggestions: [outdent`
-				const {a} = foo;
-				console.log(!a);
-			`],
+			suggestions: [
+				outdent`
+					const {a} = foo;
+					console.log(!a);
+				`,
+			],
 		}),
 		invalidTestCase({
 			code: outdent`
 				const {a, ...b} = foo;
 				console.log(foo.a);
 			`,
-			suggestions: [outdent`
-				const {a, ...b} = foo;
-				console.log(a);
-			`],
+			suggestions: [
+				outdent`
+					const {a, ...b} = foo;
+					console.log(a);
+				`,
+			],
 		}),
 		// Actual message
 		{
@@ -446,25 +487,31 @@ test({
 				} = foo;
 				console.log(foo.a.c); // 2
 			`,
-			errors: [{
-				message: 'Use destructured variables over properties.',
-			}],
+			errors: [
+				{
+					message: 'Use destructured variables over properties.',
+				},
+			],
 		},
 		{
 			code: outdent`
 				const {a} = foo;
 				console.log(foo.a); // 2
 			`,
-			errors: [{
-				message: 'Use destructured variables over properties.',
-				suggestions: [{
-					desc: 'Replace `foo.a` with destructured property `a`.',
-					output: outdent`
-						const {a} = foo;
-						console.log(a); // 2
-					`,
-				}],
-			}],
+			errors: [
+				{
+					message: 'Use destructured variables over properties.',
+					suggestions: [
+						{
+							desc: 'Replace `foo.a` with destructured property `a`.',
+							output: outdent`
+								const {a} = foo;
+								console.log(a); // 2
+							`,
+						},
+					],
+				},
+			],
 		},
 	],
 });
@@ -482,10 +529,12 @@ test.babel({
 				const {a, ...b} = bar;
 				console.log(bar.a);
 			`,
-			suggestions: [outdent`
-				const {a, ...b} = bar;
-				console.log(a);
-			`],
+			suggestions: [
+				outdent`
+					const {a, ...b} = bar;
+					console.log(a);
+				`,
+			],
 		}),
 	],
 });

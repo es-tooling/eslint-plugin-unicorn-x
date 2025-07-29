@@ -17,7 +17,7 @@ test({
 		// Not `MemberExpression`
 		'appendChild(child);',
 		// `callee.property` is not a `Identifier`
-		'parent[\'appendChild\'](child);',
+		"parent['appendChild'](child);",
 		// Computed
 		'parent[appendChild](child);',
 		// Not `appendChild`
@@ -29,9 +29,9 @@ test({
 		// Optional call
 		'parent.appendChild?.(child)',
 		// `callee.object` is not a DOM Node,
-		...notDomNodeTypes.map(data => `(${data}).appendChild(foo)`),
+		...notDomNodeTypes.map((data) => `(${data}).appendChild(foo)`),
 		// First argument is not a DOM Node,
-		...notDomNodeTypes.map(data => `foo.appendChild(${data})`),
+		...notDomNodeTypes.map((data) => `foo.appendChild(${data})`),
 	],
 	invalid: [
 		{

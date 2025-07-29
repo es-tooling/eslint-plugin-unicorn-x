@@ -50,7 +50,7 @@ const tcIdentifiers = new Set([
 	'isXMLDoc',
 ]);
 
-const tcIdentifierInvalidTest = identifier => ({
+const tcIdentifierInvalidTest = (identifier) => ({
 	code: outdent`
 		if (SomeThing.${identifier}(foo) === bar) {
 			throw new Error('foo is bar');
@@ -225,7 +225,7 @@ test({
 				throw new TypeError('Expected Foo being bar!');
 			}
 		`,
-		'throw new Error(\'💣\')',
+		"throw new Error('💣')",
 		outdent`
 			if (!Number.isNaN(foo) && foo === 10) {
 				throw new Error('foo is not 10!');
@@ -421,7 +421,9 @@ test({
 			`,
 			errors,
 		},
-		...[...tcIdentifiers].map(identifier => tcIdentifierInvalidTest(identifier)),
+		...[...tcIdentifiers].map((identifier) =>
+			tcIdentifierInvalidTest(identifier),
+		),
 	],
 });
 

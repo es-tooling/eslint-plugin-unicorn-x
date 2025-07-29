@@ -4,28 +4,22 @@ import {isMemberExpression} from '../ast/index.js';
 @param {
 	{
 		object?: string,
-		method?: string,
-		methods?: string[],
+		properties?: string[] | string,
 	}
 } [options]
 @returns {string}
 */
 function isPrototypeProperty(node, options) {
-	const {
-		object,
-		property,
-		properties,
-	} = {
-		property: '',
-		properties: [],
-		...options,
-	};
+	const object = options?.object;
+	const properties = options?.properties ?? [];
 
-	if (!isMemberExpression(node, {
-		property,
-		properties,
-		optional: false,
-	})) {
+	if (
+		!isMemberExpression(node, {
+			properties,
+			optional: false,
+			computed: undefined,
+		})
+	) {
 		return;
 	}
 
@@ -34,24 +28,21 @@ function isPrototypeProperty(node, options) {
 	return (
 		// `Object.prototype.method` or `Array.prototype.method`
 		isMemberExpression(objectNode, {
-			object,
-			property: 'prototype',
+			properties: 'prototype',
+			objects: object,
 			optional: false,
-		})
+			computed: undefined,
+		}) ||
 		// `[].method`
-		|| (
-			object === 'Array'
-			&& objectNode.type === 'ArrayExpression'
-			&& objectNode.elements.length === 0
-		)
+		(object === 'Array' &&
+			objectNode.type === 'ArrayExpression' &&
+			objectNode.elements.length === 0) ||
 		// `{}.method`
-		|| (
-			object === 'Object'
-			&& objectNode.type === 'ObjectExpression'
-			&& objectNode.properties.length === 0
-		)
+		(object === 'Object' &&
+			objectNode.type === 'ObjectExpression' &&
+			objectNode.properties.length === 0)
 	);
 }
 
-export const isArrayPrototypeProperty = (node, options) => isPrototypeProperty(node, {...options, object: 'Array'});
-export const isObjectPrototypeProperty = (node, options) => isPrototypeProperty(node, {...options, object: 'Object'});
+export const isArrayPrototypeProperty = (node, options) =>
+	isPrototypeProperty(node, {...options, object: 'Array'});

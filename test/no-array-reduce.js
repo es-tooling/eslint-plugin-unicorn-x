@@ -18,7 +18,7 @@ test({
 		'[1, 2].reduce.call(() => {}, 34)',
 
 		// First argument is not a function
-		...notFunctionTypes.map(data => `foo.reduce(${data})`),
+		...notFunctionTypes.map((data) => `foo.reduce(${data})`),
 
 		// Test `.reduce`
 		// Not `CallExpression`
@@ -88,7 +88,9 @@ test({
 		'Array.prototype.xreduce.call(array, foo)',
 
 		// Second argument is not a function
-		...notFunctionTypes.map(data => `Array.prototype.reduce.call(foo, ${data})`),
+		...notFunctionTypes.map(
+			(data) => `Array.prototype.reduce.call(foo, ${data})`,
+		),
 
 		// Option: allowSimpleOperations
 		'array.reduce((total, item) => total + item)',
@@ -103,7 +105,10 @@ test({
 			}, 0);
 		`,
 		'array.reduce((total, item) => { return total + item }, 0)',
-	].flatMap(testCase => [testCase, testCase.replace('reduce', 'reduceRight')]),
+	].flatMap((testCase) => [
+		testCase,
+		testCase.replace('reduce', 'reduceRight'),
+	]),
 	invalid: [
 		'array.reduce((str, item) => str += item, "")',
 		outdent`
@@ -168,19 +173,26 @@ test({
 			`,
 			options: [{allowSimpleOperations: false}],
 		},
-	].flatMap(testCase => {
+	].flatMap((testCase) => {
 		const {code, options} = testCase;
 
 		if (options) {
 			return [
 				{code, errors: errorsReduce, options},
-				{code: code.replace('reduce', 'reduceRight'), errors: errorsReduceRight, options},
+				{
+					code: code.replace('reduce', 'reduceRight'),
+					errors: errorsReduceRight,
+					options,
+				},
 			];
 		}
 
 		return [
 			{code: testCase, errors: errorsReduce},
-			{code: testCase.replace('reduce', 'reduceRight'), errors: errorsReduceRight},
+			{
+				code: testCase.replace('reduce', 'reduceRight'),
+				errors: errorsReduceRight,
+			},
 		];
 	}),
 });

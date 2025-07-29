@@ -10,11 +10,12 @@ Get the text of the arguments list of `CallExpression`.
 @param {SourceCode} sourceCode - The source code object.
 @returns {string}
 */
-export default function getCallExpressionArgumentsText(sourceCode, callExpression) {
-	const {
-		openingParenthesisToken,
-		closingParenthesisToken,
-	} = getCallExpressionTokens(sourceCode, callExpression);
+export default function getCallExpressionArgumentsText(
+	sourceCode,
+	callExpression,
+) {
+	const {openingParenthesisToken, closingParenthesisToken} =
+		getCallExpressionTokens(sourceCode, callExpression);
 
 	const [, start] = sourceCode.getRange(openingParenthesisToken);
 	const [end] = sourceCode.getRange(closingParenthesisToken);

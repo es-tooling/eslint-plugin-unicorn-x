@@ -1,4 +1,6 @@
 name: Smoke test
+permissions:
+  issues: write
 
 on:
   schedule:

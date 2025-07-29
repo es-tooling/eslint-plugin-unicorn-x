@@ -13,10 +13,5 @@ test.snapshot({
 		'const ONE = 1; foo.flat(ONE)',
 		'foo.notFlat(1)',
 	],
-	invalid: [
-		'foo.flat(1)',
-		'foo.flat(1.0)',
-		'foo.flat(0b01)',
-		'foo?.flat(1)',
-	],
+	invalid: ['foo.flat(1)', 'foo.flat(1.0)', 'foo.flat(0b01)', 'foo?.flat(1)'],
 });

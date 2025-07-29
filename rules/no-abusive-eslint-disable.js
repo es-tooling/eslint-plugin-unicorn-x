@@ -14,18 +14,22 @@ const eslintDisableDirectives = new Set([
 
 let commentParser;
 /** @param {import('eslint').Rule.RuleContext} context */
-const create = context => ({
-	* Program(node) {
+const create = (context) => ({
+	*Program(node) {
 		for (const comment of node.comments) {
 			commentParser ??= new ConfigCommentParser();
 			const result = commentParser.parseDirective(comment.value);
 
-			if (!(
-				// It's a eslint-disable comment
-				eslintDisableDirectives.has(result?.label)
-				// But it did not specify any rules
-				&& !result?.value
-			)) {
+			if (
+				!(
+					// It's a eslint-disable comment
+					(
+						eslintDisableDirectives.has(result?.label) &&
+						// But it did not specify any rules
+						!result?.value
+					)
+				)
+			) {
 				return;
 			}
 
@@ -53,7 +57,8 @@ const config = {
 	meta: {
 		type: 'suggestion',
 		docs: {
-			description: 'Enforce specifying rules to disable in `eslint-disable` comments.',
+			description:
+				'Enforce specifying rules to disable in `eslint-disable` comments.',
 			recommended: true,
 		},
 		messages,

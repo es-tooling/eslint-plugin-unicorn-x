@@ -116,7 +116,7 @@ test.snapshot({
 	],
 	invalid: [
 		'require("foo");',
-		'require(\'foo\');',
+		"require('foo');",
 		'require( (("foo")) );',
 		'((require))("foo");',
 		'(( require("foo") ));',

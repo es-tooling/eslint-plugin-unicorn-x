@@ -3,7 +3,7 @@ import {getTester} from './utils/test.js';
 
 const {test} = getTester(import.meta);
 
-const error = key => ({
+const error = (key) => ({
 	messageId: 'prefer-keyboard-event-key',
 	data: {name: key},
 });

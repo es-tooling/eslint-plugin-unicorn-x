@@ -1,4 +1,7 @@
-import {isOpeningParenToken, isClosingParenToken} from '@eslint-community/eslint-utils';
+import {
+	isOpeningParenToken,
+	isClosingParenToken,
+} from '@eslint-community/eslint-utils';
 
 /**
 Determine if a constructor function is newed-up with parens.
@@ -16,7 +19,9 @@ export default function isNewExpressionWithParentheses(node, sourceCode) {
 
 	const [penultimateToken, lastToken] = sourceCode.getLastTokens(node, 2);
 	// The expression should end with its own parens, for example, `new new Foo()` is not a new expression with parens.
-	return isOpeningParenToken(penultimateToken)
-		&& isClosingParenToken(lastToken)
-		&& sourceCode.getRange(node.callee)[1] < sourceCode.getRange(node)[1];
+	return (
+		isOpeningParenToken(penultimateToken) &&
+		isClosingParenToken(lastToken) &&
+		sourceCode.getRange(node.callee)[1] < sourceCode.getRange(node)[1]
+	);
 }

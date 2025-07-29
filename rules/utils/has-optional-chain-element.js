@@ -1,4 +1,5 @@
-const isChainElement = node => node.type === 'MemberExpression' || node.type === 'CallExpression';
+const isChainElement = (node) =>
+	node.type === 'MemberExpression' || node.type === 'CallExpression';
 
 export default function hasOptionalChainElement(node) {
 	if (!isChainElement(node)) {

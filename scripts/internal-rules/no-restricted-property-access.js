@@ -16,11 +16,13 @@ const config = {
 	create(context) {
 		return {
 			MemberExpression(memberExpression) {
-				if (!isMemberExpression(memberExpression, {
-					properties: propertyNames,
-					optional: false,
-					computed: false,
-				})) {
+				if (
+					!isMemberExpression(memberExpression, {
+						properties: propertyNames,
+						optional: false,
+						computed: false,
+					})
+				) {
 					return;
 				}
 
@@ -34,22 +36,31 @@ const config = {
 						name,
 						replacementFunction,
 					},
-					* fix(fixer) {
+					*fix(fixer) {
 						const {sourceCode} = context;
-						yield removeMemberExpressionProperty(fixer, memberExpression, sourceCode);
-						yield fixer.insertTextBefore(memberExpression, `${replacementFunction}(`);
+						yield removeMemberExpressionProperty(
+							fixer,
+							memberExpression,
+							sourceCode,
+						);
+						yield fixer.insertTextBefore(
+							memberExpression,
+							`${replacementFunction}(`,
+						);
 						yield fixer.insertTextAfter(memberExpression, ')');
 					},
 				});
 			},
 			ObjectPattern(objectPattern) {
 				for (const property of objectPattern.properties) {
-					if (!(
-						property.type === 'Property'
-						&& !property.computed
-						&& property.key.type === 'Identifier'
-						&& propertyNames.includes(property.key.name)
-					)) {
+					if (
+						!(
+							property.type === 'Property' &&
+							!property.computed &&
+							property.key.type === 'Identifier' &&
+							propertyNames.includes(property.key.name)
+						)
+					) {
 						continue;
 					}
 
@@ -71,7 +82,8 @@ const config = {
 	meta: {
 		fixable: 'code',
 		messages: {
-			[messageId]: 'Use `{{replacementFunction}}(node)` instead of accessing `node.{{name}}`.',
+			[messageId]:
+				'Use `{{replacementFunction}}(node)` instead of accessing `node.{{name}}`.',
 		},
 	},
 };

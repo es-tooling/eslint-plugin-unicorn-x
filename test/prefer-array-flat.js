@@ -270,7 +270,9 @@ test.snapshot({
 });
 
 // `options`
-const options = [{functions: ['flat', 'utils.flat', 'globalThis.lodash.flatten']}];
+const options = [
+	{functions: ['flat', 'utils.flat', 'globalThis.lodash.flatten']},
+];
 test.snapshot({
 	valid: [
 		'flat',
@@ -295,7 +297,7 @@ test.snapshot({
 		'GLOBALTHIS.LODASH.FLATTEN(array)',
 		'flat(array, EXTRA_ARGUMENT)',
 		'flat(...array)',
-	].map(code => ({
+	].map((code) => ({
 		code,
 		options,
 	})),
@@ -312,37 +314,39 @@ test.snapshot({
 		// Should not effect other cases
 		'_.flatten(array).length',
 		'Array.prototype.concat.apply([], array)',
-	].map(code => ({
+	].map((code) => ({
 		code,
 		options,
 	})),
 });
 
-const spacesInFunctions = [{functions: ['', ' ', ' flat1 ', 'utils..flat2', 'utils . flat3', 'utils.fl at4', 'utils.flat5  ', '  utils.flat6']}];
+const spacesInFunctions = [
+	{
+		functions: [
+			'',
+			' ',
+			' flat1 ',
+			'utils..flat2',
+			'utils . flat3',
+			'utils.fl at4',
+			'utils.flat5  ',
+			'  utils.flat6',
+		],
+	},
+];
 test.snapshot({
-	valid: [
-		'utils.flat2(x)',
-		'utils.flat3(x)',
-		'utils.flat4(x)',
-	].map(code => ({
+	valid: ['utils.flat2(x)', 'utils.flat3(x)', 'utils.flat4(x)'].map((code) => ({
 		code,
 		options: spacesInFunctions,
 	})),
-	invalid: [
-		'flat1(x)',
-		'utils.flat5(x)',
-		'utils.flat6(x)',
-	].map(code => ({
+	invalid: ['flat1(x)', 'utils.flat5(x)', 'utils.flat6(x)'].map((code) => ({
 		code,
 		options: spacesInFunctions,
 	})),
 });
 
 test.snapshot({
-	valid: [
-		'array.flat()',
-		'array.flat(1)',
-	],
+	valid: ['array.flat()', 'array.flat(1)'],
 	invalid: [
 		// ASI
 		outdent`
@@ -402,4 +406,3 @@ test.snapshot({
 		'[/**/].concat(some.array)',
 	],
 });
-
