@@ -24,6 +24,7 @@ import noArrayForEach from './no-array-for-each.js';
 import noArrayMethodThisArgument from './no-array-method-this-argument.js';
 import noArrayReduce from './no-array-reduce.js';
 import noArrayReverse from './no-array-reverse.js';
+import noArraySort from './no-array-sort.js';
 import noAwaitExpressionMember from './no-await-expression-member.js';
 import noAwaitInPromiseMethods from './no-await-in-promise-methods.js';
 import noConsoleSpaces from './no-console-spaces.js';
@@ -199,6 +200,7 @@ const rules = {
 	),
 	'no-array-reduce': createRule(noArrayReduce, 'no-array-reduce'),
 	'no-array-reverse': createRule(noArrayReverse, 'no-array-reverse', true),
+	'no-array-sort': createRule(noArraySort, 'no-array-sort', true),
 	'no-await-expression-member': createRule(
 		noAwaitExpressionMember,
 		'no-await-expression-member',

@@ -12,11 +12,11 @@ exports[`invalid(0): 'reversed = [...array].reverse()' > Error 1/1 1`] = `
     |                       ^^^^^^^ Use \`Array#toReversed()\` instead of \`Array#reverse()\`.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: The spreading object is an array
+Suggestion 1/2: The spreading object is an array.
   1 | reversed = array.toReversed()
 
 --------------------------------------------------------------------------------
-Suggestion 2/2: The spreading object is NOT an array
+Suggestion 2/2: The spreading object is NOT an array.
   1 | reversed = [...array].toReversed()
 "
 `;
@@ -33,11 +33,11 @@ exports[`invalid(1): 'reversed = [...array]?.reverse()' > Error 1/1 1`] = `
     |                        ^^^^^^^ Use \`Array#toReversed()\` instead of \`Array#reverse()\`.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: The spreading object is an array
+Suggestion 1/2: The spreading object is an array.
   1 | reversed = array?.toReversed()
 
 --------------------------------------------------------------------------------
-Suggestion 2/2: The spreading object is NOT an array
+Suggestion 2/2: The spreading object is NOT an array.
   1 | reversed = [...array]?.toReversed()
 "
 `;
@@ -142,11 +142,11 @@ exports[`invalid(6): '[...array].reverse()' > Error 1/1 1`] = `
     |            ^^^^^^^ Use \`Array#toReversed()\` instead of \`Array#reverse()\`.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: The spreading object is an array
+Suggestion 1/2: The spreading object is an array.
   1 | array.toReversed()
 
 --------------------------------------------------------------------------------
-Suggestion 2/2: The spreading object is NOT an array
+Suggestion 2/2: The spreading object is NOT an array.
   1 | [...array].toReversed()
 "
 `;
@@ -173,11 +173,11 @@ exports[`invalid(7): 'reversed = [...(0, array)].reverse()' > Error 1/1 1`] = `
     |                            ^^^^^^^ Use \`Array#toReversed()\` instead of \`Array#reverse()\`.
 
 --------------------------------------------------------------------------------
-Suggestion 1/2: The spreading object is an array
+Suggestion 1/2: The spreading object is an array.
   1 | reversed = (0, array).toReversed()
 
 --------------------------------------------------------------------------------
-Suggestion 2/2: The spreading object is NOT an array
+Suggestion 2/2: The spreading object is NOT an array.
   1 | reversed = [...(0, array)].toReversed()
 "
 `;

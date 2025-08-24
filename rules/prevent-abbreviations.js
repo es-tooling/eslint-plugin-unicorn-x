@@ -120,7 +120,7 @@ const getWordReplacements = (word, {replacements, allowList}) => {
 		}
 	}
 
-	return wordReplacement.length > 0 ? wordReplacement.sort() : [];
+	return wordReplacement.length > 0 ? wordReplacement.toSorted() : [];
 };
 
 const getNameReplacements = (name, options, limit = 3) => {
