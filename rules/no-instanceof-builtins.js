@@ -1,5 +1,6 @@
 import {checkVueTemplate} from './utils/rule.js';
 import {getParenthesizedRange} from './utils/parentheses.js';
+import {getTokenStore} from './utils/get-token-store.js';
 import {
 	replaceNodeOrTokenAndSpacesBefore,
 	fixSpaceAroundKeyword,
@@ -58,10 +59,12 @@ const strictStrategyConstructors = [
 	'FinalizationRegistry',
 ];
 
-const replaceWithFunctionCall = (node, sourceCode, functionName) =>
+const replaceWithFunctionCall = (node, context, functionName) =>
 	function* (fixer) {
-		const {tokenStore, instanceofToken} = getInstanceOfToken(sourceCode, node);
 		const {left, right} = node;
+		const tokenStore = getTokenStore(context, node);
+		const instanceofToken = tokenStore.getTokenAfter(left, isInstanceofToken);
+		const {sourceCode} = context;
 
 		yield* fixSpaceAroundKeyword(fixer, node, sourceCode);
 
@@ -85,10 +88,12 @@ const replaceWithFunctionCall = (node, sourceCode, functionName) =>
 		);
 	};
 
-const replaceWithTypeOfExpression = (node, sourceCode) =>
+const replaceWithTypeOfExpression = (node, context) =>
 	function* (fixer) {
-		const {tokenStore, instanceofToken} = getInstanceOfToken(sourceCode, node);
 		const {left, right} = node;
+		const tokenStore = getTokenStore(context, node);
+		const instanceofToken = tokenStore.getTokenAfter(left, isInstanceofToken);
+		const {sourceCode} = context;
 
 		// Check if the node is in a Vue template expression
 		const vueExpressionContainer = sourceCode
@@ -117,19 +122,6 @@ const replaceWithTypeOfExpression = (node, sourceCode) =>
 		);
 	};
 
-const getInstanceOfToken = (sourceCode, node) => {
-	const {left} = node;
-
-	let tokenStore = sourceCode;
-	let instanceofToken = tokenStore.getTokenAfter(left, isInstanceofToken);
-	if (!instanceofToken && sourceCode.parserServices.getTemplateBodyTokenStore) {
-		tokenStore = sourceCode.parserServices.getTemplateBodyTokenStore();
-		instanceofToken = tokenStore.getTokenAfter(left, isInstanceofToken);
-	}
-
-	return {tokenStore, instanceofToken};
-};
-
 /** @param {import('eslint').Rule.RuleContext} context */
 const create = (context) => {
 	const {
@@ -144,8 +136,6 @@ const create = (context) => {
 			? [...strictStrategyConstructors, ...include]
 			: include,
 	);
-
-	const {sourceCode} = context;
 
 	return {
 		/** @param {import('estree').BinaryExpression} node */
@@ -174,12 +164,12 @@ const create = (context) => {
 			) {
 				const functionName =
 					constructorName === 'Array' ? 'Array.isArray' : 'Error.isError';
-				problem.fix = replaceWithFunctionCall(node, sourceCode, functionName);
+				problem.fix = replaceWithFunctionCall(node, context, functionName);
 				return problem;
 			}
 
 			if (constructorName === 'Function') {
-				problem.fix = replaceWithTypeOfExpression(node, sourceCode);
+				problem.fix = replaceWithTypeOfExpression(node, context);
 				return problem;
 			}
 
@@ -188,7 +178,7 @@ const create = (context) => {
 					{
 						messageId: MESSAGE_ID_SWITCH_TO_TYPE_OF,
 						data: {type: constructorName.toLowerCase()},
-						fix: replaceWithTypeOfExpression(node, sourceCode),
+						fix: replaceWithTypeOfExpression(node, context),
 					},
 				];
 				return problem;

@@ -909,3 +909,28 @@ exports[`invalid(32): '<template><div v-if="foo.indexOf(bar,…' > Output 1`] = 
   1 | <template><div v-if="foo.includes(bar, 1)"></div></template>
 "
 `;
+
+exports[`invalid(33): '<script setup lang="ts">\\nconsole.log…' > Code 1`] = `
+"
+  1 | <script setup lang="ts">
+  2 | console.log([].indexOf(1) != -1);
+  3 | </script>
+"
+`;
+
+exports[`invalid(33): '<script setup lang="ts">\\nconsole.log…' > Error 1/1 1`] = `
+"
+  1 | <script setup lang="ts">
+> 2 | console.log([].indexOf(1) != -1);
+    |                ^^^^^^^ Use \`.includes()\`, rather than \`.indexOf()\`, when checking for existence.
+  3 | </script>
+"
+`;
+
+exports[`invalid(33): '<script setup lang="ts">\\nconsole.log…' > Output 1`] = `
+"
+  1 | <script setup lang="ts">
+  2 | console.log([].includes(1));
+  3 | </script>
+"
+`;
